@@ -2,6 +2,8 @@ package vn.agriconnect.API.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import vn.agriconnect.API.dto.response.ApiResponse;
 import vn.agriconnect.API.model.AdminLog;
@@ -13,6 +15,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/admin")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('ADMIN')")
 public class AdminController {
 
     private final AdminService adminService;
@@ -25,8 +28,16 @@ public class AdminController {
 
     @GetMapping("/logs")
     public ResponseEntity<ApiResponse<List<AdminLog>>> getLogs() {
-        // TODO: Get current admin ID from SecurityContext
-        List<AdminLog> logs = adminService.getLogs("currentAdminId");
+        List<AdminLog> logs = adminService.getAllLogs();
         return ResponseEntity.ok(ApiResponse.success(logs));
+    }
+
+    @PostMapping("/logs")
+    public ResponseEntity<ApiResponse<Void>> createLog(
+            @RequestParam String action,
+            @RequestParam(required = false) String detail) {
+        String adminId = SecurityContextHolder.getContext().getAuthentication().getName();
+        adminService.logAction(adminId, action, detail);
+        return ResponseEntity.ok(ApiResponse.success("Log created", null));
     }
 }

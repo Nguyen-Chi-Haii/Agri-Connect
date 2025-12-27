@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface AdminLogRepository extends MongoRepository<AdminLog, String> {
     List<AdminLog> findByAdminIdOrderByTimestampDesc(String adminId);
+    List<AdminLog> findAllByOrderByTimestampDesc();
 }

@@ -2,6 +2,7 @@ package vn.agriconnect.API.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import vn.agriconnect.API.dto.response.ApiResponse;
 import vn.agriconnect.API.model.Notification;
@@ -18,15 +19,15 @@ public class NotificationController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<Notification>>> getNotifications() {
-        // TODO: Get current user ID from SecurityContext
-        List<Notification> notifications = notificationService.getByUser("currentUserId");
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        List<Notification> notifications = notificationService.getByUser(userId);
         return ResponseEntity.ok(ApiResponse.success(notifications));
     }
 
     @GetMapping("/unread-count")
     public ResponseEntity<ApiResponse<Long>> getUnreadCount() {
-        // TODO: Get current user ID from SecurityContext
-        long count = notificationService.countUnread("currentUserId");
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        long count = notificationService.countUnread(userId);
         return ResponseEntity.ok(ApiResponse.success(count));
     }
 
@@ -38,8 +39,8 @@ public class NotificationController {
 
     @PutMapping("/read-all")
     public ResponseEntity<ApiResponse<Void>> markAllAsRead() {
-        // TODO: Get current user ID from SecurityContext
-        notificationService.markAllAsRead("currentUserId");
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        notificationService.markAllAsRead(userId);
         return ResponseEntity.ok(ApiResponse.success("All marked as read", null));
     }
 }

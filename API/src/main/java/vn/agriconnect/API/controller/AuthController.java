@@ -3,6 +3,7 @@ package vn.agriconnect.API.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import vn.agriconnect.API.dto.request.auth.LoginRequest;
 import vn.agriconnect.API.dto.request.auth.RegisterRequest;
@@ -38,8 +39,8 @@ public class AuthController {
 
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<Void>> logout() {
-        // TODO: Get current user ID from SecurityContext
-        authService.logout("currentUserId");
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        authService.logout(userId);
         return ResponseEntity.ok(ApiResponse.success("Logout successful", null));
     }
 }
