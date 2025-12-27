@@ -8,5 +8,6 @@ import java.util.Map;
 public interface AdminService {
     void logAction(String adminId, String action, String detail);
     List<AdminLog> getLogs(String adminId);
+    List<AdminLog> getAllLogs();
     Map<String, Object> getDashboardStats();
 }

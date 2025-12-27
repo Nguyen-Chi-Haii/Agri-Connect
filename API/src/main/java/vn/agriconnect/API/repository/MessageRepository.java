@@ -10,5 +10,6 @@ import java.util.List;
 public interface MessageRepository extends MongoRepository<Message, String> {
     List<Message> findByConversationIdOrderByCreatedAtAsc(String conversationId);
     List<Message> findByConversationIdAndIsReadFalse(String conversationId);
+    List<Message> findByConversationIdAndSenderIdNotAndReadFalse(String conversationId, String senderId);
     long countByConversationIdAndIsReadFalseAndSenderIdNot(String conversationId, String userId);
 }

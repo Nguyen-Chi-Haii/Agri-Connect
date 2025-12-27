@@ -3,10 +3,12 @@ package vn.agriconnect.API.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import vn.agriconnect.API.dto.request.post.PostCreateRequest;
 import vn.agriconnect.API.dto.request.post.PostFilterRequest;
 import vn.agriconnect.API.dto.response.ApiResponse;
+import vn.agriconnect.API.dto.response.PagedResponse;
 import vn.agriconnect.API.dto.response.PostDetailResponse;
 import vn.agriconnect.API.service.PostService;
 
@@ -22,8 +24,8 @@ public class PostController {
     @PostMapping
     public ResponseEntity<ApiResponse<PostDetailResponse>> create(
             @Valid @RequestBody PostCreateRequest request) {
-        // TODO: Get current user ID from SecurityContext
-        PostDetailResponse post = postService.create("currentUserId", request);
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        PostDetailResponse post = postService.create(userId, request);
         return ResponseEntity.ok(ApiResponse.success("Bài đăng đã được tạo", post));
     }
 
@@ -49,8 +51,8 @@ public class PostController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<PostDetailResponse>>> search(PostFilterRequest filter) {
-        List<PostDetailResponse> posts = postService.search(filter);
+    public ResponseEntity<ApiResponse<PagedResponse<PostDetailResponse>>> search(PostFilterRequest filter) {
+        PagedResponse<PostDetailResponse> posts = postService.search(filter);
         return ResponseEntity.ok(ApiResponse.success(posts));
     }
 
@@ -68,8 +70,8 @@ public class PostController {
 
     @GetMapping("/my-posts")
     public ResponseEntity<ApiResponse<List<PostDetailResponse>>> getMyPosts() {
-        // TODO: Get current user ID from SecurityContext
-        List<PostDetailResponse> posts = postService.getBySeller("currentUserId");
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        List<PostDetailResponse> posts = postService.getBySeller(userId);
         return ResponseEntity.ok(ApiResponse.success(posts));
     }
 

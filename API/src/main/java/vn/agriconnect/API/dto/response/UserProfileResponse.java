@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import vn.agriconnect.API.model.embedded.KycInfo;
 import vn.agriconnect.API.model.enums.Role;
 
 @Data
@@ -18,4 +19,6 @@ public class UserProfileResponse {
     private String address;
     private Role role;
     private boolean isActive;
+    private KycInfo kyc;
 }
+

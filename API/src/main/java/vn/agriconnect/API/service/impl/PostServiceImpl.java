@@ -1,9 +1,20 @@
 package vn.agriconnect.API.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.support.PageableExecutionUtils;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import vn.agriconnect.API.dto.request.post.PostCreateRequest;
 import vn.agriconnect.API.dto.request.post.PostFilterRequest;
+import vn.agriconnect.API.dto.response.PagedResponse;
 import vn.agriconnect.API.dto.response.PostDetailResponse;
 import vn.agriconnect.API.exception.ResourceNotFoundException;
 import vn.agriconnect.API.mapper.PostMapper;
@@ -21,6 +32,7 @@ public class PostServiceImpl implements PostService {
 
     private final PostRepository postRepository;
     private final PostMapper postMapper;
+    private final MongoTemplate mongoTemplate;
 
     @Override
     public PostDetailResponse create(String sellerId, PostCreateRequest request) {
@@ -62,12 +74,83 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public List<PostDetailResponse> search(PostFilterRequest filter) {
-        // TODO: Implement search with filters
-        return postRepository.findByStatusOrderByCreatedAtDesc(PostStatus.APPROVED)
-                .stream()
+    public PagedResponse<PostDetailResponse> search(PostFilterRequest filter) {
+        Query query = new Query();
+        
+        // Filter by keyword (search in title and description)
+        if (StringUtils.hasText(filter.getKeyword())) {
+            Criteria keywordCriteria = new Criteria().orOperator(
+                    Criteria.where("title").regex(filter.getKeyword(), "i"),
+                    Criteria.where("description").regex(filter.getKeyword(), "i")
+            );
+            query.addCriteria(keywordCriteria);
+        }
+        
+        // Filter by category
+        if (StringUtils.hasText(filter.getCategoryId())) {
+            query.addCriteria(Criteria.where("categoryId").is(filter.getCategoryId()));
+        }
+        
+        // Filter by location (province)
+        if (StringUtils.hasText(filter.getProvince())) {
+            query.addCriteria(Criteria.where("location.province").is(filter.getProvince()));
+        }
+        
+        // Filter by location (district)
+        if (StringUtils.hasText(filter.getDistrict())) {
+            query.addCriteria(Criteria.where("location.district").is(filter.getDistrict()));
+        }
+        
+        // Filter by price range
+        if (filter.getMinPrice() != null) {
+            query.addCriteria(Criteria.where("price").gte(filter.getMinPrice()));
+        }
+        if (filter.getMaxPrice() != null) {
+            query.addCriteria(Criteria.where("price").lte(filter.getMaxPrice()));
+        }
+        
+        // Filter by status (default to APPROVED for public search)
+        if (filter.getStatus() != null) {
+            query.addCriteria(Criteria.where("status").is(filter.getStatus()));
+        } else {
+            query.addCriteria(Criteria.where("status").is(PostStatus.APPROVED));
+        }
+        
+        // Sorting
+        Sort sort = Sort.by(Sort.Direction.DESC, "createdAt");
+        if (StringUtils.hasText(filter.getSortBy())) {
+            Sort.Direction direction = "asc".equalsIgnoreCase(filter.getSortOrder()) 
+                    ? Sort.Direction.ASC 
+                    : Sort.Direction.DESC;
+            sort = Sort.by(direction, filter.getSortBy());
+        }
+        
+        // Pagination
+        int page = filter.getPage() != null ? filter.getPage() : 0;
+        int size = filter.getSize() != null ? filter.getSize() : 10;
+        Pageable pageable = PageRequest.of(page, size, sort);
+        
+        query.with(pageable);
+        
+        // Execute query
+        List<Post> posts = mongoTemplate.find(query, Post.class);
+        long total = mongoTemplate.count(Query.of(query).limit(-1).skip(-1), Post.class);
+        
+        List<PostDetailResponse> content = posts.stream()
                 .map(postMapper::toResponse)
                 .collect(Collectors.toList());
+        
+        int totalPages = (int) Math.ceil((double) total / size);
+        
+        return PagedResponse.<PostDetailResponse>builder()
+                .content(content)
+                .currentPage(page)
+                .size(size)
+                .totalElements(total)
+                .totalPages(totalPages)
+                .first(page == 0)
+                .last(page >= totalPages - 1)
+                .build();
     }
 
     @Override
@@ -87,6 +170,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+    @PreAuthorize("hasRole('ADMIN')")
     public void approve(String postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new ResourceNotFoundException("Post", "id", postId));
@@ -95,6 +179,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+    @PreAuthorize("hasRole('ADMIN')")
     public void reject(String postId, String reason) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new ResourceNotFoundException("Post", "id", postId));
@@ -110,3 +195,4 @@ public class PostServiceImpl implements PostService {
         postRepository.save(post);
     }
 }
+
