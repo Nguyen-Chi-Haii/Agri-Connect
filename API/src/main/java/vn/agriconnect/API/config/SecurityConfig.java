@@ -62,8 +62,11 @@ public class SecurityConfig {
                 .requestMatchers("/api/posts/approved").permitAll()
                 .requestMatchers("/api/posts/{id}").permitAll()
                 .requestMatchers("/api/categories/**").permitAll()
-                .requestMatchers("/api/market-prices/**").permitAll()
-                .requestMatchers("/api/upload/**").permitAll()
+                .requestMatchers("/api/market-prices").permitAll()
+                .requestMatchers("/api/market-prices/category/**").permitAll()
+                // Feedback - public: xem rating của user
+                .requestMatchers("/api/feedbacks/user/**").permitAll()
+                .requestMatchers("/api/feedbacks/search").permitAll()
                 // Swagger UI
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 // All other endpoints require authentication

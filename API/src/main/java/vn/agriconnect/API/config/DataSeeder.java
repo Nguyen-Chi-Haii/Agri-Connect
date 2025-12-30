@@ -7,9 +7,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import vn.agriconnect.API.model.*;
 import vn.agriconnect.API.model.embedded.KycInfo;
-import vn.agriconnect.API.model.embedded.LastMessage;
 import vn.agriconnect.API.model.embedded.Location;
-import vn.agriconnect.API.model.embedded.ProductContext;
 import vn.agriconnect.API.model.enums.*;
 import vn.agriconnect.API.repository.*;
 
@@ -24,6 +22,7 @@ import java.util.List;
 @Slf4j
 @Component
 @RequiredArgsConstructor
+@SuppressWarnings("null")
 public class DataSeeder implements CommandLineRunner {
 
     private final UserRepository userRepository;

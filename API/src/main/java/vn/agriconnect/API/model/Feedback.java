@@ -20,6 +20,17 @@ public class Feedback {
     
     private String userId;
     
+    /**
+     * ID của user được đánh giá (thương lái hoặc nông dân)
+     * Null nếu đây là feedback cho hệ thống
+     */
+    private String targetUserId;
+    
+    /**
+     * Đánh giá sao (1-5), chỉ áp dụng khi targetUserId không null
+     */
+    private Integer rating;
+    
     private String title;
     private String content;
     
