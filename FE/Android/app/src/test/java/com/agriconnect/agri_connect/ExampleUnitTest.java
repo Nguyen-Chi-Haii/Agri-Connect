@@ -1,4 +1,4 @@
-package com.agriconnect.FE;
+package com.agriconnect.agri_connect;
 
 import org.junit.Test;
 

@@ -1,4 +1,4 @@
-package com.agriconnect.FE;
+package com.agriconnect.agri_connect;
 
 import android.content.Context;
 
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
     public void useAppContext() {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        assertEquals("com.agriconnect.FE", appContext.getPackageName());
+        assertEquals("com.agriconnect.agri_connect", appContext.getPackageName());
     }
 }

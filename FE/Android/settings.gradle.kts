@@ -19,6 +19,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "FE"
+rootProject.name = "Agri-Connect"
 include(":app")
  

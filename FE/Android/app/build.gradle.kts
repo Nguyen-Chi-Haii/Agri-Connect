@@ -3,13 +3,13 @@ plugins {
 }
 
 android {
-    namespace = "com.agriconnect.FE"
+    namespace = "com.agriconnect.agri_connect"
     compileSdk {
         version = release(36)
     }
 
     defaultConfig {
-        applicationId = "com.agriconnect.FE"
+        applicationId = "com.agriconnect.agri_connect"
         minSdk = 24
         targetSdk = 36
         versionCode = 1
