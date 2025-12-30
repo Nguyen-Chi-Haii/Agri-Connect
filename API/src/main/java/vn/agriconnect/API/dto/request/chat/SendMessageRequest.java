@@ -13,4 +13,8 @@ public class SendMessageRequest {
     private String content;
     
     private MessageType type = MessageType.TEXT;
+    
+    // Optional: Used for WebSocket messages when auth context is not available
+    private String senderId;
 }
+
