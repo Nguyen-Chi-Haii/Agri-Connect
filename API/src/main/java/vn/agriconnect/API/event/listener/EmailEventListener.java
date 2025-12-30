@@ -13,7 +13,6 @@ public class EmailEventListener {
     @Async
     @EventListener
     public void handleUserRegistered(UserRegisteredEvent event) {
-        // TODO: Send welcome email
         log.info("Sending welcome SMS to: {}", event.getUser().getPhone());
     }
 }
