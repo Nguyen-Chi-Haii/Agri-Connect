@@ -62,6 +62,11 @@ public class SecurityConfig {
                 .requestMatchers("/api/posts/approved").permitAll()
                 .requestMatchers("/api/posts/{id}").permitAll()
                 .requestMatchers("/api/categories/**").permitAll()
+                .requestMatchers("/api/market-prices").permitAll()
+                .requestMatchers("/api/market-prices/category/**").permitAll()
+                // Feedback - public: xem rating của user
+                .requestMatchers("/api/feedbacks/user/**").permitAll()
+                .requestMatchers("/api/feedbacks/search").permitAll()
                 .requestMatchers("/api/market-prices/**").permitAll()
                 .requestMatchers("/api/upload/**").permitAll()
                 // WebSocket endpoints
