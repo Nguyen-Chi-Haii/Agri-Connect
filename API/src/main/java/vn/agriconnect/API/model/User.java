@@ -29,6 +29,7 @@ public class User {
     
     private Role role;
     private boolean isActive = true;
+    private boolean phoneVerified = false;
     
     private KycInfo kyc;
     

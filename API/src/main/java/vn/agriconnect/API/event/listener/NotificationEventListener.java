@@ -24,6 +24,6 @@ public class NotificationEventListener {
 
     @EventListener
     public void handlePostCreated(PostCreatedEvent event) {
-        // TODO: Notify relevant users about new post
+        
     }
 }

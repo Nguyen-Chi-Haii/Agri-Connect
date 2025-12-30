@@ -344,7 +344,6 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     private void updateConversationsLastMessage(List<Conversation> conversations, List<Message> messages) {
-        // TODO: Tạm thời bỏ qua để test seed data còn lại
         log.info("Bỏ qua updateConversationsLastMessage cho lần debug này");
     }
 

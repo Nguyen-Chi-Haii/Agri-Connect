@@ -67,6 +67,10 @@ public class SecurityConfig {
                 // Feedback - public: xem rating của user
                 .requestMatchers("/api/feedbacks/user/**").permitAll()
                 .requestMatchers("/api/feedbacks/search").permitAll()
+                .requestMatchers("/api/market-prices/**").permitAll()
+                .requestMatchers("/api/upload/**").permitAll()
+                // WebSocket endpoints
+                .requestMatchers("/ws/**").permitAll()
                 // Swagger UI
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 // All other endpoints require authentication
