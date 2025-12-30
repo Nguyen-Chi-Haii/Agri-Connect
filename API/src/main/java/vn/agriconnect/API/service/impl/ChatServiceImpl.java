@@ -18,6 +18,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@SuppressWarnings("null")
 public class ChatServiceImpl implements ChatService {
 
     private final ConversationRepository conversationRepository;
