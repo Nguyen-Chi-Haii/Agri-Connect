@@ -1,0 +1,21 @@
+package com.agriconnect.agri_connect.api;
+
+import com.agriconnect.agri_connect.api.model.*;
+import java.util.List;
+import retrofit2.Call;
+import retrofit2.http.*;
+
+/**
+ * Chat API interface
+ */
+public interface ChatApi {
+    
+    @GET("api/chat/conversations")
+    Call<ApiResponse<List<Conversation>>> getConversations();
+    
+    @POST("api/chat/conversations")
+    Call<ApiResponse<Conversation>> createConversation(@Query("participantId") String participantId);
+    
+    @PUT("api/chat/conversations/{conversationId}/read")
+    Call<ApiResponse<Void>> markAsRead(@Path("conversationId") String conversationId);
+}

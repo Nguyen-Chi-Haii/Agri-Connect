@@ -1,3 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Agri-Connect</string>
+    
+    <!-- Auth Screens -->
+    <string name="welcome_title">Chào mừng đến với Agri-Connect</string>
+    <string name="select_role_title">Bạn là ai?</string>
+    <string name="select_role_subtitle">Chọn vai trò của bạn để bắt đầu</string>
+    
+    <string name="role_farmer">Nông dân</string>
+    <string name="role_farmer_desc">Bán sản phẩm nông nghiệp trực tiếp đến người mua</string>
+    <string name="role_trader">Thương lái</string>
+    <string name="role_trader_desc">Mua sản phẩm từ nông dân và phân phối</string>
+    
+    <string name="create_account">Tạo tài khoản</string>
+    <string name="phone_number">Số điện thoại</string>
+    <string name="phone_hint">0xxx xxx xxx</string>
+    <string name="password">Mật khẩu</string>
+    <string name="confirm_password">Xác nhận mật khẩu</string>
+    <string name="password_hint">Nhập mật khẩu</string>
+    <string name="full_name">Họ và tên</string>
+    <string name="full_name_hint">Nhập họ và tên</string>
+    <string name="address">Địa chỉ</string>
+    <string name="address_hint">Nhập địa chỉ</string>
+    <string name="continue_btn">Tiếp tục</string>
+    <string name="register">Đăng ký</string>
+    <string name="login">Đăng nhập</string>
+    <string name="have_account">Đã có tài khoản?</string>
+    <string name="no_account">Chưa có tài khoản?</string>
+    
+    <!-- OTP Screen -->
+    <string name="verify_phone">Xác thực số điện thoại</string>
+    <string name="otp_sent_to">Mã xác thực đã được gửi đến</string>
+    <string name="enter_otp">Nhập mã OTP</string>
+    <string name="resend_otp">Gửi lại mã</string>
+    <string name="verify">Xác thực</string>
+    <string name="otp_expires_in">Mã hết hạn sau %s</string>
+    
+    <!-- eKYC Screen -->
+    <string name="ekyc_title">Xác minh danh tính</string>
+    <string name="ekyc_subtitle">Upload CMND/CCCD để xác minh tài khoản</string>
+    <string name="id_number">Số CMND/CCCD</string>
+    <string name="id_front">Mặt trước CMND/CCCD</string>
+    <string name="id_back">Mặt sau CMND/CCCD</string>
+    <string name="selfie">Ảnh chân dung</string>
+    <string name="upload_photo">Tải ảnh lên</string>
+    <string name="take_photo">Chụp ảnh</string>
+    <string name="submit_kyc">Gửi xác minh</string>
+    <string name="kyc_pending">Đang chờ xác minh</string>
+    <string name="kyc_verified">Đã xác minh</string>
+    <string name="kyc_rejected">Xác minh thất bại</string>
+    
+    <!-- Bottom Navigation -->
+    <string name="nav_home">Trang chủ</string>
+    <string name="nav_market">Thị trường</string>
+    <string name="nav_chat">Chat</string>
+    <string name="nav_profile">Tôi</string>
+    
+    <!-- Home/Feed -->
+    <string name="home_title">Bảng tin</string>
+    <string name="search_hint">Tìm kiếm sản phẩm...</string>
+    <string name="like">Thích</string>
+    <string name="comment">Bình luận</string>
+    <string name="share">Chia sẻ</string>
+    <string name="views">lượt xem</string>
+    
+    <!-- Market -->
+    <string name="market_title">Giá thị trường</string>
+    <string name="market_prices">Giá cả hôm nay</string>
+    <string name="price_trend">Xu hướng giá</string>
+    <string name="products">Sản phẩm</string>
+    <string name="price">Giá</string>
+    <string name="per_kg">/kg</string>
+    
+    <!-- Chat -->
+    <string name="chat_title">Tin nhắn</string>
+    <string name="type_message">Nhập tin nhắn...</string>
+    <string name="send">Gửi</string>
+    <string name="online">Đang hoạt động</string>
+    <string name="offline">Ngoại tuyến</string>
+    
+    <!-- Profile -->
+    <string name="profile_title">Hồ sơ</string>
+    <string name="edit_profile">Chỉnh sửa</string>
+    <string name="my_posts">Bài đăng của tôi</string>
+    <string name="settings">Cài đặt</string>
+    <string name="logout">Đăng xuất</string>
+    <string name="verified">Đã xác thực</string>
+    
+    <!-- Admin -->
+    <string name="admin_dashboard">Bảng điều khiển</string>
+    <string name="total_users">Tổng người dùng</string>
+    <string name="total_posts">Tổng bài đăng</string>
+    <string name="pending_kyc">KYC chờ duyệt</string>
+    <string name="pending_posts">Bài đăng chờ duyệt</string>
+    
+    <!-- Common -->
+    <string name="loading">Đang tải...</string>
+    <string name="error">Lỗi</string>
+    <string name="retry">Thử lại</string>
+    <string name="cancel">Hủy</string>
+    <string name="ok">OK</string>
+    <string name="save">Lưu</string>
+    <string name="delete">Xóa</string>
+    <string name="confirm">Xác nhận</string>
 </resources>
