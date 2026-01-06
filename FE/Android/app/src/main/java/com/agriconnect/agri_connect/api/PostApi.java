@@ -19,8 +19,8 @@ public interface PostApi {
     @GET("api/posts/my-posts")
     Call<ApiResponse<List<Post>>> getMyPosts();
     
-    @GET("api/posts/search")
-    Call<ApiResponse<List<Post>>> searchPosts(
+    @GET("api/posts")
+    Call<ApiResponse<PagedResponse<Post>>> searchPosts(
         @Query("keyword") String keyword,
         @Query("categoryId") String categoryId,
         @Query("minPrice") Double minPrice,

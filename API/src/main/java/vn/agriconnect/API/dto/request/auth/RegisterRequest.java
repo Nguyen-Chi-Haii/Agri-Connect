@@ -7,7 +7,11 @@ import lombok.Data;
 
 @Data
 public class RegisterRequest {
-    @NotBlank(message = "Phone is required")
+    @NotBlank(message = "Username is required")
+    @Size(min = 3, max = 50, message = "Username must be between 3 and 50 characters")
+    @Pattern(regexp = "^[a-zA-Z0-9_]+$", message = "Username can only contain letters, numbers and underscore")
+    private String username;
+
     @Pattern(regexp = "^(0|\\+84)[0-9]{9,10}$", message = "Invalid phone format")
     private String phone;
 

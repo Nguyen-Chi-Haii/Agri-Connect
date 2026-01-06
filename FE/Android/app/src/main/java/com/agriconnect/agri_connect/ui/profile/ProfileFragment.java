@@ -21,6 +21,7 @@ import com.agriconnect.agri_connect.api.UserApi;
 import com.agriconnect.agri_connect.api.model.ApiResponse;
 import com.agriconnect.agri_connect.api.model.UserProfile;
 import com.agriconnect.agri_connect.ui.auth.RoleSelectionActivity;
+import com.agriconnect.agri_connect.ui.post.MyPostsActivity;
 import com.google.android.material.button.MaterialButton;
 
 import retrofit2.Call;
@@ -119,10 +120,8 @@ public class ProfileFragment extends Fragment {
 
     private void setupListeners() {
         btnMyPosts.setOnClickListener(v -> {
-            // TODO: Navigate to my posts
-            if (getContext() != null) {
-                Toast.makeText(getContext(), "Tính năng đang phát triển", Toast.LENGTH_SHORT).show();
-            }
+            Intent intent = new Intent(getContext(), MyPostsActivity.class);
+            startActivity(intent);
         });
 
         btnEditProfile.setOnClickListener(v -> {

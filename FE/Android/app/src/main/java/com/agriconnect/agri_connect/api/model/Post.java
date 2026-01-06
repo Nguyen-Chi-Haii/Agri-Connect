@@ -13,8 +13,8 @@ public class Post {
     @SerializedName("title")
     private String title;
     
-    @SerializedName("content")
-    private String content;
+    @SerializedName("description")
+    private String description;
     
     @SerializedName("price")
     private Double price;
@@ -25,8 +25,8 @@ public class Post {
     @SerializedName("quantity")
     private Double quantity;
     
-    @SerializedName("imageUrls")
-    private List<String> imageUrls;
+    @SerializedName("images")
+    private List<String> images;
     
     @SerializedName("categoryId")
     private String categoryId;
@@ -40,8 +40,8 @@ public class Post {
     @SerializedName("sellerName")
     private String sellerName;
     
-    @SerializedName("sellerAvatarUrl")
-    private String sellerAvatarUrl;
+    @SerializedName("sellerAvatar")
+    private String sellerAvatar;
     
     @SerializedName("sellerVerified")
     private boolean sellerVerified;
@@ -54,40 +54,53 @@ public class Post {
     
     @SerializedName("createdAt")
     private String createdAt;
+    
+    @SerializedName("location")
+    private Location location;
 
     // Getters
     public String getId() { return id; }
     public String getTitle() { return title; }
-    public String getContent() { return content; }
+    public String getDescription() { return description; }
     public Double getPrice() { return price; }
     public String getUnit() { return unit; }
     public Double getQuantity() { return quantity; }
-    public List<String> getImageUrls() { return imageUrls; }
+    public List<String> getImages() { return images; }
     public String getCategoryId() { return categoryId; }
     public String getCategoryName() { return categoryName; }
     public String getSellerId() { return sellerId; }
     public String getSellerName() { return sellerName; }
-    public String getSellerAvatarUrl() { return sellerAvatarUrl; }
+    public String getSellerAvatar() { return sellerAvatar; }
     public boolean isSellerVerified() { return sellerVerified; }
     public String getStatus() { return status; }
     public int getViewCount() { return viewCount; }
     public String getCreatedAt() { return createdAt; }
+    public Location getLocation() { return location; }
     
     // Setters
     public void setId(String id) { this.id = id; }
     public void setTitle(String title) { this.title = title; }
-    public void setContent(String content) { this.content = content; }
+    public void setDescription(String description) { this.description = description; }
     public void setPrice(Double price) { this.price = price; }
     public void setUnit(String unit) { this.unit = unit; }
     public void setQuantity(Double quantity) { this.quantity = quantity; }
-    public void setImageUrls(List<String> imageUrls) { this.imageUrls = imageUrls; }
+    public void setImages(List<String> images) { this.images = images; }
     public void setCategoryId(String categoryId) { this.categoryId = categoryId; }
     public void setCategoryName(String categoryName) { this.categoryName = categoryName; }
     public void setSellerId(String sellerId) { this.sellerId = sellerId; }
     public void setSellerName(String sellerName) { this.sellerName = sellerName; }
-    public void setSellerAvatarUrl(String sellerAvatarUrl) { this.sellerAvatarUrl = sellerAvatarUrl; }
+    public void setSellerAvatar(String sellerAvatar) { this.sellerAvatar = sellerAvatar; }
     public void setSellerVerified(boolean sellerVerified) { this.sellerVerified = sellerVerified; }
     public void setStatus(String status) { this.status = status; }
     public void setViewCount(int viewCount) { this.viewCount = viewCount; }
     public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
+    public void setLocation(Location location) { this.location = location; }
+    
+    // Helper to get first image
+    public String getFirstImage() {
+        if (images != null && !images.isEmpty()) {
+            return images.get(0);
+        }
+        return null;
+    }
 }

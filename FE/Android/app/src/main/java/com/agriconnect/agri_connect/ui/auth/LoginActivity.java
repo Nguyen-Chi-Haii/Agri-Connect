@@ -83,12 +83,12 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void attemptLogin() {
-        String phone = etPhone.getText() != null ? etPhone.getText().toString().trim() : "";
+        String username = etPhone.getText() != null ? etPhone.getText().toString().trim() : "";
         String password = etPassword.getText() != null ? etPassword.getText().toString().trim() : "";
 
         // Validation
-        if (phone.isEmpty()) {
-            etPhone.setError("Vui lòng nhập số điện thoại");
+        if (username.isEmpty()) {
+            etPhone.setError("Vui lòng nhập tên đăng nhập");
             etPhone.requestFocus();
             return;
         }
@@ -102,7 +102,7 @@ public class LoginActivity extends AppCompatActivity {
         showLoading(true);
 
         // Call login API
-        LoginRequest request = new LoginRequest(phone, password);
+        LoginRequest request = new LoginRequest(username, password);
         authApi.login(request).enqueue(new Callback<ApiResponse<JwtResponse>>() {
             @Override
             public void onResponse(Call<ApiResponse<JwtResponse>> call, Response<ApiResponse<JwtResponse>> response) {

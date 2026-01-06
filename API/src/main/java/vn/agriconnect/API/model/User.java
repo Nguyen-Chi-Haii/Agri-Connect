@@ -19,6 +19,9 @@ public class User {
     @Id
     private String id;
     
+    @Indexed(unique = true, sparse = true)
+    private String username;
+    
     @Indexed(unique = true)
     private String phone;
     

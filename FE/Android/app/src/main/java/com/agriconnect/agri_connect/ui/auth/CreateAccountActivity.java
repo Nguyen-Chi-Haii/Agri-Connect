@@ -34,7 +34,7 @@ public class CreateAccountActivity extends AppCompatActivity {
 
     private ImageView btnBack;
     private TextView tvRoleBadge;
-    private TextInputEditText etFullName, etPhone, etPassword, etConfirmPassword, etAddress;
+    private TextInputEditText etFullName, etUsername, etPhone, etPassword, etConfirmPassword, etAddress;
     private MaterialButton btnRegister;
     private ProgressBar progressBar;
     private TextView tvLoginLink;
@@ -74,6 +74,7 @@ public class CreateAccountActivity extends AppCompatActivity {
         btnBack = findViewById(R.id.btnBack);
         tvRoleBadge = findViewById(R.id.tvRoleBadge);
         etFullName = findViewById(R.id.etFullName);
+        etUsername = findViewById(R.id.etUsername);
         etPhone = findViewById(R.id.etPhone);
         etPassword = findViewById(R.id.etPassword);
         etConfirmPassword = findViewById(R.id.etConfirmPassword);
@@ -111,6 +112,7 @@ public class CreateAccountActivity extends AppCompatActivity {
 
     private void attemptRegister() {
         String fullName = etFullName.getText() != null ? etFullName.getText().toString().trim() : "";
+        String username = etUsername.getText() != null ? etUsername.getText().toString().trim() : "";
         String phone = etPhone.getText() != null ? etPhone.getText().toString().trim() : "";
         String password = etPassword.getText() != null ? etPassword.getText().toString().trim() : "";
         String confirmPassword = etConfirmPassword.getText() != null ? etConfirmPassword.getText().toString().trim() : "";
@@ -120,6 +122,18 @@ public class CreateAccountActivity extends AppCompatActivity {
         if (fullName.isEmpty()) {
             etFullName.setError("Vui lòng nhập họ tên");
             etFullName.requestFocus();
+            return;
+        }
+
+        if (username.isEmpty()) {
+            etUsername.setError("Vui lòng nhập tên đăng nhập");
+            etUsername.requestFocus();
+            return;
+        }
+
+        if (username.length() < 3) {
+            etUsername.setError("Tên đăng nhập phải có ít nhất 3 ký tự");
+            etUsername.requestFocus();
             return;
         }
 
@@ -150,7 +164,7 @@ public class CreateAccountActivity extends AppCompatActivity {
         showLoading(true);
 
         // Call register API
-        RegisterRequest request = new RegisterRequest(phone, password, fullName, address, selectedRole);
+        RegisterRequest request = new RegisterRequest(username, phone, password, fullName, address, selectedRole);
         authApi.register(request).enqueue(new Callback<ApiResponse<JwtResponse>>() {
             @Override
             public void onResponse(Call<ApiResponse<JwtResponse>> call, Response<ApiResponse<JwtResponse>> response) {

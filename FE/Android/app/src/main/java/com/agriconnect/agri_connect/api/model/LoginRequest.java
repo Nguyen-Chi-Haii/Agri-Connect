@@ -6,23 +6,23 @@ import com.google.gson.annotations.SerializedName;
  * Login request DTO
  */
 public class LoginRequest {
-    @SerializedName("phone")
-    private String phone;
+    @SerializedName("username")
+    private String username;
     
     @SerializedName("password")
     private String password;
 
-    public LoginRequest(String phone, String password) {
-        this.phone = phone;
+    public LoginRequest(String username, String password) {
+        this.username = username;
         this.password = password;
     }
 
-    public String getPhone() {
-        return phone;
+    public String getUsername() {
+        return username;
     }
 
-    public void setPhone(String phone) {
-        this.phone = phone;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public String getPassword() {
