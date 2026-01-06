@@ -6,6 +6,9 @@ import com.google.gson.annotations.SerializedName;
  * Register request DTO
  */
 public class RegisterRequest {
+    @SerializedName("username")
+    private String username;
+    
     @SerializedName("phone")
     private String phone;
     
@@ -21,7 +24,8 @@ public class RegisterRequest {
     @SerializedName("role")
     private String role;
 
-    public RegisterRequest(String phone, String password, String fullName, String address, String role) {
+    public RegisterRequest(String username, String phone, String password, String fullName, String address, String role) {
+        this.username = username;
         this.phone = phone;
         this.password = password;
         this.fullName = fullName;
@@ -30,6 +34,9 @@ public class RegisterRequest {
     }
 
     // Getters and setters
+    public String getUsername() { return username; }
+    public void setUsername(String username) { this.username = username; }
+    
     public String getPhone() { return phone; }
     public void setPhone(String phone) { this.phone = phone; }
     

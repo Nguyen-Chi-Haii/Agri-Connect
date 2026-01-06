@@ -38,9 +38,33 @@ public class DataSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        // Chỉ seed nếu database trống
-        if (userRepository.count() > 0) {
-            log.info("Database đã có dữ liệu, bỏ qua seeding.");
+        // Seed users if empty
+        if (userRepository.count() == 0) {
+            log.info("Bắt đầu tạo users mẫu...");
+            List<User> savedUsers = userRepository.saveAll(createUsers());
+            log.info("Đã tạo {} users", savedUsers.size());
+        }
+
+        // Seed categories if empty
+        if (categoryRepository.count() == 0) {
+            log.info("Bắt đầu tạo danh mục mẫu...");
+            List<Category> savedCategories = categoryRepository.saveAll(createCategories());
+            log.info("Đã tạo {} categories", savedCategories.size());
+        }
+
+        // Seed posts if empty
+        if (postRepository.count() == 0) {
+            log.info("Bắt đầu tạo bài đăng mẫu...");
+            List<User> users = userRepository.findAll();
+            List<Category> categories = categoryRepository.findAll();
+            if (!users.isEmpty() && !categories.isEmpty()) {
+                List<Post> savedPosts = postRepository.saveAll(createPosts(users, categories));
+                log.info("Đã tạo {} posts", savedPosts.size());
+            }
+        }
+        
+        // Skip further seeding if users already exist (to avoid complexity in this fix)
+        if (userRepository.count() > 5) {
             return;
         }
 
@@ -118,6 +142,7 @@ public class DataSeeder implements CommandLineRunner {
     private List<User> createUsers() {
         // Admin
         User admin = new User();
+        admin.setUsername("admin");
         admin.setPhone("0901234567");
         admin.setPassword(passwordEncoder.encode("admin123"));
         admin.setFullName("Admin AgriConnect");
@@ -126,6 +151,7 @@ public class DataSeeder implements CommandLineRunner {
 
         // Nông dân 1
         User farmer1 = new User();
+        farmer1.setUsername("farmer1");
         farmer1.setPhone("0912345678");
         farmer1.setPassword(passwordEncoder.encode("farmer123"));
         farmer1.setFullName("Nguyễn Văn Nông");
@@ -139,6 +165,7 @@ public class DataSeeder implements CommandLineRunner {
 
         // Nông dân 2
         User farmer2 = new User();
+        farmer2.setUsername("farmer2");
         farmer2.setPhone("0923456789");
         farmer2.setPassword(passwordEncoder.encode("farmer123"));
         farmer2.setFullName("Trần Thị Hoa");
@@ -148,6 +175,7 @@ public class DataSeeder implements CommandLineRunner {
 
         // Thương lái 1
         User trader1 = new User();
+        trader1.setUsername("trader1");
         trader1.setPhone("0934567890");
         trader1.setPassword(passwordEncoder.encode("trader123"));
         trader1.setFullName("Lê Văn Buôn");
@@ -157,6 +185,7 @@ public class DataSeeder implements CommandLineRunner {
 
         // Thương lái 2
         User trader2 = new User();
+        trader2.setUsername("trader2");
         trader2.setPhone("0945678901");
         trader2.setPassword(passwordEncoder.encode("trader123"));
         trader2.setFullName("Phạm Thị Thu");

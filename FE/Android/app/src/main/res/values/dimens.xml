@@ -57,7 +57,7 @@
     
     <!-- Card -->
     <dimen name="card_min_height">100dp</dimen>
-    <dimen name="role_card_height">180dp</dimen>
+    <dimen name="role_card_height">200dp</dimen>
     
     <!-- Bottom Navigation -->
     <dimen name="bottom_nav_height">56dp</dimen>

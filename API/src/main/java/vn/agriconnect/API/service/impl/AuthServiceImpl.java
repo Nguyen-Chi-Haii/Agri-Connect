@@ -35,11 +35,12 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public JwtResponse login(LoginRequest request) {
-        User user = userRepository.findByPhone(request.getPhone())
-                .orElseThrow(() -> new BadRequestException("Invalid phone or password"));
+        // Find user by username
+        User user = userRepository.findByUsername(request.getUsername())
+                .orElseThrow(() -> new BadRequestException("Invalid username or password"));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new BadRequestException("Invalid phone or password");
+            throw new BadRequestException("Invalid username or password");
         }
 
         if (!user.isActive()) {
@@ -51,11 +52,19 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public JwtResponse register(RegisterRequest request) {
-        if (userRepository.existsByPhone(request.getPhone())) {
+        // Check if username already exists
+        if (userRepository.existsByUsername(request.getUsername())) {
+            throw new BadRequestException("Username already registered");
+        }
+
+        // Check if phone already exists (if provided)
+        if (request.getPhone() != null && !request.getPhone().isEmpty() 
+                && userRepository.existsByPhone(request.getPhone())) {
             throw new BadRequestException("Phone number already registered");
         }
 
         User user = new User();
+        user.setUsername(request.getUsername());
         user.setPhone(request.getPhone());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setFullName(request.getFullName());
@@ -110,6 +119,9 @@ public class AuthServiceImpl implements AuthService {
                 .refreshToken(refreshToken)
                 .tokenType("Bearer")
                 .expiresIn(jwtTokenProvider.getAccessTokenExpiration())
+                .userId(user.getId())
+                .fullName(user.getFullName())
+                .role(user.getRole().name())
                 .build();
     }
 
@@ -132,4 +144,3 @@ public class AuthServiceImpl implements AuthService {
         return refreshToken.getToken();
     }
 }
-

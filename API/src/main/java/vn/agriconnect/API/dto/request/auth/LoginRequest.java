@@ -1,14 +1,14 @@
 package vn.agriconnect.API.dto.request.auth;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
 public class LoginRequest {
-    @NotBlank(message = "Phone is required")
-    @Pattern(regexp = "^(0|\\+84)[0-9]{9,10}$", message = "Invalid phone format")
-    private String phone;
+    @NotBlank(message = "Username is required")
+    @Size(min = 3, max = 50, message = "Username must be between 3 and 50 characters")
+    private String username;
 
     @NotBlank(message = "Password is required")
     private String password;

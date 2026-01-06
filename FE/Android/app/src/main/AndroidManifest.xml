@@ -49,6 +49,27 @@
             android:name=".ui.main.MainNavigationActivity"
             android:exported="false" />
 
+        <!-- Post Activities -->
+        <activity
+            android:name=".ui.post.CreatePostActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
+            android:name=".ui.post.PostDetailActivity"
+            android:exported="false" />
+
+        <!-- Search Activity -->
+        <activity
+            android:name=".ui.search.SearchActivity"
+            android:exported="false"
+            android:windowSoftInputMode="stateVisible|adjustResize" />
+
+        <!-- My Posts Activity -->
+        <activity
+            android:name=".ui.post.MyPostsActivity"
+            android:exported="false" />
+
         <!-- Keep old MainActivity for reference -->
         <activity
             android:name=".MainActivity"

@@ -10,15 +10,18 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 
 import com.agriconnect.agri_connect.R;
+import com.agriconnect.agri_connect.api.ApiClient;
 import com.agriconnect.agri_connect.ui.chat.ChatListFragment;
 import com.agriconnect.agri_connect.ui.home.HomeFragment;
 import com.agriconnect.agri_connect.ui.market.MarketFragment;
 import com.agriconnect.agri_connect.ui.profile.ProfileFragment;
+import com.google.android.material.badge.BadgeDrawable;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class MainNavigationActivity extends AppCompatActivity {
 
     private BottomNavigationView bottomNavigation;
+    private BadgeDrawable chatBadge;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,6 +37,7 @@ public class MainNavigationActivity extends AppCompatActivity {
 
         initViews();
         setupNavigation();
+        setupBadges();
 
         // Load default fragment
         if (savedInstanceState == null) {
@@ -56,6 +60,8 @@ public class MainNavigationActivity extends AppCompatActivity {
                 fragment = new MarketFragment();
             } else if (itemId == R.id.nav_chat) {
                 fragment = new ChatListFragment();
+                // Clear badge when entering chat
+                clearChatBadge();
             } else if (itemId == R.id.nav_profile) {
                 fragment = new ProfileFragment();
             }
@@ -68,10 +74,46 @@ public class MainNavigationActivity extends AppCompatActivity {
         });
     }
 
+    private void setupBadges() {
+        // Create chat badge
+        chatBadge = bottomNavigation.getOrCreateBadge(R.id.nav_chat);
+        chatBadge.setVisible(false);
+        
+        // Demo: Show notification count
+        updateChatBadge(3);
+    }
+
+    /**
+     * Update the chat badge with unread message count
+     * @param count Number of unread messages
+     */
+    public void updateChatBadge(int count) {
+        if (count > 0) {
+            chatBadge.setNumber(count);
+            chatBadge.setVisible(true);
+        } else {
+            chatBadge.setVisible(false);
+        }
+    }
+
+    /**
+     * Clear the chat badge
+     */
+    public void clearChatBadge() {
+        chatBadge.setVisible(false);
+    }
+
     private void loadFragment(Fragment fragment) {
         getSupportFragmentManager()
             .beginTransaction()
             .replace(R.id.fragmentContainer, fragment)
             .commit();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Refresh badge count (demo - in real app, fetch from API)
+        // updateChatBadge(getUnreadCount());
     }
 }

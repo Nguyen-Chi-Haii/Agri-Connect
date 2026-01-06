@@ -2,10 +2,11 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background"
-    tools:context=".ui.home.HomeFragment">
+    tools:context=".ui.post.MyPostsActivity">
 
     <!-- Header -->
     <LinearLayout
@@ -22,34 +23,26 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
+        <ImageView
+            android:id="@+id/btnBack"
+            android:layout_width="@dimen/icon_lg"
+            android:layout_height="@dimen/icon_lg"
+            android:padding="@dimen/spacing_xs"
+            android:src="@drawable/ic_arrow_back"
+            app:tint="@color/text_primary" />
+
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_md"
             android:layout_weight="1"
-            android:text="@string/home_title"
+            android:text="Bài đăng của tôi"
             android:textColor="@color/text_primary"
-            android:textSize="@dimen/text_xl"
+            android:textSize="@dimen/text_lg"
             android:textStyle="bold" />
-
-        <ImageView
-            android:id="@+id/btnSearch"
-            android:layout_width="@dimen/icon_lg"
-            android:layout_height="@dimen/icon_lg"
-            android:padding="@dimen/spacing_xs"
-            android:src="@drawable/ic_search"
-            app:tint="@color/text_secondary" />
-
-        <ImageView
-            android:id="@+id/btnNotification"
-            android:layout_width="@dimen/icon_lg"
-            android:layout_height="@dimen/icon_lg"
-            android:layout_marginStart="@dimen/spacing_sm"
-            android:padding="@dimen/spacing_xs"
-            android:src="@drawable/ic_notification"
-            app:tint="@color/text_secondary" />
     </LinearLayout>
 
-    <!-- Posts RecyclerView -->
+    <!-- Posts List -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvPosts"
         android:layout_width="0dp"
@@ -59,8 +52,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/header"
-        tools:listitem="@layout/item_post" />
+        app:layout_constraintTop_toBottomOf="@id/header" />
 
     <!-- Empty State -->
     <LinearLayout
@@ -73,7 +65,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toBottomOf="@id/header">
 
         <ImageView
             android:layout_width="@dimen/icon_xxl"
@@ -85,9 +77,18 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/spacing_md"
-            android:text="Chưa có bài đăng nào"
+            android:text="Bạn chưa có bài đăng nào"
             android:textColor="@color/text_secondary"
             android:textSize="@dimen/text_body" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnCreatePost"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_md"
+            android:text="Tạo bài đăng"
+            android:textAllCaps="false"
+            app:cornerRadius="@dimen/radius_md" />
     </LinearLayout>
 
     <!-- Loading -->
@@ -99,7 +100,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/header" />
 
     <!-- FAB Create Post -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
