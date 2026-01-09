@@ -70,6 +70,15 @@
             android:name=".ui.post.MyPostsActivity"
             android:exported="false" />
 
+        <!-- Profile Activities -->
+        <activity
+            android:name=".ui.profile.EditProfileActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.profile.StatisticsActivity"
+            android:exported="false" />
+
         <!-- Keep old MainActivity for reference -->
         <activity
             android:name=".MainActivity"

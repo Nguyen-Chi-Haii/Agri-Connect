@@ -58,7 +58,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         // Check if phone already exists (if provided)
-        if (request.getPhone() != null && !request.getPhone().isEmpty() 
+        if (request.getPhone() != null && !request.getPhone().isEmpty()
                 && userRepository.existsByPhone(request.getPhone())) {
             throw new BadRequestException("Phone number already registered");
         }
@@ -69,7 +69,7 @@ public class AuthServiceImpl implements AuthService {
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setFullName(request.getFullName());
         user.setAddress(request.getAddress());
-        user.setRole(Role.FARMER); // Default role
+        user.setRole(request.getRole() != null ? request.getRole() : Role.FARMER);
         user.setActive(true);
 
         userRepository.save(user);

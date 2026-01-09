@@ -62,7 +62,17 @@ public class DataSeeder implements CommandLineRunner {
                 log.info("Đã tạo {} posts", savedPosts.size());
             }
         }
-        
+
+        // Seed market prices if empty
+        if (marketPriceRepository.count() == 0) {
+            log.info("Bắt đầu tạo giá thị trường mẫu...");
+            List<Category> categories = categoryRepository.findAll();
+            if (!categories.isEmpty()) {
+                List<MarketPrice> savedPrices = marketPriceRepository.saveAll(createMarketPrices(categories));
+                log.info("Đã tạo {} market prices", savedPrices.size());
+            }
+        }
+
         // Skip further seeding if users already exist (to avoid complexity in this fix)
         if (userRepository.count() > 5) {
             return;
@@ -85,12 +95,12 @@ public class DataSeeder implements CommandLineRunner {
 
             // 4. Tạo Conversations và Messages
             List<Conversation> savedConversations = conversationRepository.saveAll(
-                createConversations(savedUsers, savedPosts));
+                    createConversations(savedUsers, savedPosts));
             log.info("Đã tạo {} conversations", savedConversations.size());
 
             try {
                 List<Message> savedMessages = messageRepository.saveAll(
-                    createMessages(savedConversations, savedUsers, savedPosts));
+                        createMessages(savedConversations, savedUsers, savedPosts));
                 log.info("Đã tạo {} messages", savedMessages.size());
 
                 // Cập nhật lastMessage cho conversations
@@ -102,7 +112,7 @@ public class DataSeeder implements CommandLineRunner {
             // 5. Tạo Notifications
             try {
                 List<Notification> savedNotifications = notificationRepository.saveAll(
-                    createNotifications(savedUsers, savedPosts));
+                        createNotifications(savedUsers, savedPosts));
                 log.info("Đã tạo {} notifications", savedNotifications.size());
             } catch (Exception e) {
                 log.error("Lỗi khi tạo notifications: {}", e.getMessage(), e);
@@ -119,7 +129,7 @@ public class DataSeeder implements CommandLineRunner {
             // 7. Tạo MarketPrices
             try {
                 List<MarketPrice> savedMarketPrices = marketPriceRepository.saveAll(
-                    createMarketPrices(savedCategories));
+                        createMarketPrices(savedCategories));
                 log.info("Đã tạo {} market prices", savedMarketPrices.size());
             } catch (Exception e) {
                 log.error("Lỗi khi tạo market prices: {}", e.getMessage(), e);
@@ -320,8 +330,8 @@ public class DataSeeder implements CommandLineRunner {
 
     private List<Message> createMessages(List<Conversation> conversations, List<User> users, List<Post> posts) {
         if (conversations.size() < 2 || users.size() < 5 || posts.size() < 3) {
-            log.warn("Không đủ dữ liệu để tạo messages: conversations={}, users={}, posts={}", 
-                conversations.size(), users.size(), posts.size());
+            log.warn("Không đủ dữ liệu để tạo messages: conversations={}, users={}, posts={}",
+                    conversations.size(), users.size(), posts.size());
             return Arrays.asList();
         }
 
@@ -453,23 +463,26 @@ public class DataSeeder implements CommandLineRunner {
         // Lúa gạo
         MarketPrice mp1 = new MarketPrice();
         mp1.setCategoryId(categories.get(0).getId());
+        mp1.setProductName("Lúa ST25");
         mp1.setDate(today);
-        mp1.setAvgPrice(8500000.0);
-        mp1.setMinPrice(8000000.0);
-        mp1.setMaxPrice(9000000.0);
+        mp1.setAvgPrice(8500.0);
+        mp1.setMinPrice(8000.0);
+        mp1.setMaxPrice(9000.0);
         mp1.setPostCount(15);
 
         MarketPrice mp1b = new MarketPrice();
         mp1b.setCategoryId(categories.get(0).getId());
+        mp1b.setProductName("Gạo Nàng Hương");
         mp1b.setDate(today.minusDays(1));
-        mp1b.setAvgPrice(8400000.0);
-        mp1b.setMinPrice(8000000.0);
-        mp1b.setMaxPrice(8800000.0);
+        mp1b.setAvgPrice(12000.0);
+        mp1b.setMinPrice(11000.0);
+        mp1b.setMaxPrice(13000.0);
         mp1b.setPostCount(12);
 
         // Rau củ
         MarketPrice mp2 = new MarketPrice();
         mp2.setCategoryId(categories.get(1).getId());
+        mp2.setProductName("Rau muống");
         mp2.setDate(today);
         mp2.setAvgPrice(15000.0);
         mp2.setMinPrice(10000.0);
@@ -479,6 +492,7 @@ public class DataSeeder implements CommandLineRunner {
         // Trái cây
         MarketPrice mp3 = new MarketPrice();
         mp3.setCategoryId(categories.get(2).getId());
+        mp3.setProductName("Xoài cát Hòa Lộc");
         mp3.setDate(today);
         mp3.setAvgPrice(55000.0);
         mp3.setMinPrice(30000.0);
@@ -488,10 +502,11 @@ public class DataSeeder implements CommandLineRunner {
         // Thủy sản
         MarketPrice mp4 = new MarketPrice();
         mp4.setCategoryId(categories.get(3).getId());
+        mp4.setProductName("Cá tra phi lê");
         mp4.setDate(today);
-        mp4.setAvgPrice(120000.0);
-        mp4.setMinPrice(80000.0);
-        mp4.setMaxPrice(200000.0);
+        mp4.setAvgPrice(45000.0);
+        mp4.setMinPrice(38000.0);
+        mp4.setMaxPrice(55000.0);
         mp4.setPostCount(18);
 
         return Arrays.asList(mp1, mp1b, mp2, mp3, mp4);

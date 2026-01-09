@@ -35,19 +35,20 @@ public class MarketFragment extends Fragment {
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_market, container, false);
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        
+
         // Initialize API
         if (getContext() != null) {
             marketPriceApi = ApiClient.getInstance(getContext()).getMarketPriceApi();
         }
-        
+
         initViews(view);
         setupRecyclerView();
         loadPrices();
@@ -69,25 +70,28 @@ public class MarketFragment extends Fragment {
 
         marketPriceApi.getAllPrices().enqueue(new Callback<ApiResponse<List<MarketPrice>>>() {
             @Override
-            public void onResponse(Call<ApiResponse<List<MarketPrice>>> call, Response<ApiResponse<List<MarketPrice>>> response) {
+            public void onResponse(Call<ApiResponse<List<MarketPrice>>> call,
+                    Response<ApiResponse<List<MarketPrice>>> response) {
                 progressBar.setVisibility(View.GONE);
-                
+
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     List<MarketPrice> prices = response.body().getData();
-                    
+
                     if (prices != null && !prices.isEmpty()) {
                         List<PriceItem> priceItems = new ArrayList<>();
                         for (MarketPrice mp : prices) {
-                            String priceStr = String.format("%,.0f", mp.getPrice()) + "đ";
-                            String unit = mp.getUnit() != null ? "/" + mp.getUnit() : "";
-                            
+                            Double priceValue = mp.getAvgPrice() != null ? mp.getAvgPrice() : mp.getPrice();
+                            String priceStr = priceValue != null ? String.format("%,.0f", priceValue) + "đ" : "N/A";
+                            String productName = mp.getProductName() != null ? mp.getProductName()
+                                    : mp.getCategoryName();
+
                             priceItems.add(new PriceItem(
-                                mp.getProductName(),
-                                mp.getCategoryName() != null ? mp.getCategoryName() : "",
-                                priceStr,
-                                unit,
-                                "", // change - not available in API
-                                true // positive - default
+                                    productName != null ? productName : "Sản phẩm",
+                                    mp.getCategoryName() != null ? mp.getCategoryName() : "",
+                                    priceStr,
+                                    "/kg", // Default unit
+                                    "", // change - not available in API
+                                    true // positive - default
                             ));
                         }
                         priceAdapter.setData(priceItems);
@@ -108,7 +112,7 @@ public class MarketFragment extends Fragment {
             }
         });
     }
-    
+
     private void showDemoData() {
         // Fallback demo data when API fails
         List<PriceItem> prices = new ArrayList<>();
