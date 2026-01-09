@@ -78,13 +78,14 @@ public class MainNavigationActivity extends AppCompatActivity {
         // Create chat badge
         chatBadge = bottomNavigation.getOrCreateBadge(R.id.nav_chat);
         chatBadge.setVisible(false);
-        
-        // Demo: Show notification count
-        updateChatBadge(3);
+
+        // Badge will be updated when there are actual unread messages
+        // (This should be called from a WebSocket listener or API fetch)
     }
 
     /**
      * Update the chat badge with unread message count
+     * 
      * @param count Number of unread messages
      */
     public void updateChatBadge(int count) {
@@ -105,9 +106,9 @@ public class MainNavigationActivity extends AppCompatActivity {
 
     private void loadFragment(Fragment fragment) {
         getSupportFragmentManager()
-            .beginTransaction()
-            .replace(R.id.fragmentContainer, fragment)
-            .commit();
+                .beginTransaction()
+                .replace(R.id.fragmentContainer, fragment)
+                .commit();
     }
 
     @Override

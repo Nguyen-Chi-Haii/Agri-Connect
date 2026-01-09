@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
+import vn.agriconnect.API.model.enums.Role;
 
 @Data
 public class RegisterRequest {
@@ -23,4 +24,6 @@ public class RegisterRequest {
     private String fullName;
 
     private String address;
+
+    private Role role;
 }

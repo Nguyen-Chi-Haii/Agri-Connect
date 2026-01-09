@@ -43,6 +43,9 @@ public class UserServiceImpl implements UserService {
         if (StringUtils.hasText(request.getAddress())) {
             user.setAddress(request.getAddress());
         }
+        if (StringUtils.hasText(request.getPhone())) {
+            user.setPhone(request.getPhone());
+        }
 
         userRepository.save(user);
         return mapToResponse(user);

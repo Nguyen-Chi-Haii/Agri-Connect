@@ -22,6 +22,8 @@ import com.agriconnect.agri_connect.api.model.ApiResponse;
 import com.agriconnect.agri_connect.api.model.UserProfile;
 import com.agriconnect.agri_connect.ui.auth.RoleSelectionActivity;
 import com.agriconnect.agri_connect.ui.post.MyPostsActivity;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import com.google.android.material.button.MaterialButton;
 
 import retrofit2.Call;
@@ -34,27 +36,36 @@ public class ProfileFragment extends Fragment {
     private TextView tvUserName, tvRole, tvPhone;
     private LinearLayout btnMyPosts, btnEditProfile, btnSettings;
     private MaterialButton btnLogout;
-    
+
     private TokenManager tokenManager;
     private UserApi userApi;
 
+    private final ActivityResultLauncher<Intent> editProfileLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == android.app.Activity.RESULT_OK) {
+                    loadProfile();
+                }
+            });
+
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_profile, container, false);
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        
+
         // Initialize API
         if (getContext() != null) {
             ApiClient apiClient = ApiClient.getInstance(getContext());
             tokenManager = apiClient.getTokenManager();
             userApi = apiClient.getUserApi();
         }
-        
+
         initViews(view);
         loadProfile();
         setupListeners();
@@ -76,14 +87,14 @@ public class ProfileFragment extends Fragment {
         // First show cached data
         String cachedName = tokenManager.getUserName();
         String cachedRole = tokenManager.getUserRole();
-        
+
         if (cachedName != null) {
             tvUserName.setText(cachedName);
         }
         if (cachedRole != null) {
             tvRole.setText("FARMER".equals(cachedRole) ? R.string.role_farmer : R.string.role_trader);
         }
-        
+
         // Then fetch from API
         userApi.getProfile().enqueue(new Callback<ApiResponse<UserProfile>>() {
             @Override
@@ -102,11 +113,11 @@ public class ProfileFragment extends Fragment {
             }
         });
     }
-    
+
     private void updateUI(UserProfile profile) {
         tvUserName.setText(profile.getFullName());
         tvPhone.setText(profile.getPhone());
-        
+
         if ("FARMER".equals(profile.getRole())) {
             tvRole.setText(R.string.role_farmer);
         } else if ("TRADER".equals(profile.getRole())) {
@@ -114,7 +125,7 @@ public class ProfileFragment extends Fragment {
         } else {
             tvRole.setText(profile.getRole());
         }
-        
+
         ivVerified.setVisibility(profile.isVerified() ? View.VISIBLE : View.GONE);
     }
 
@@ -125,24 +136,20 @@ public class ProfileFragment extends Fragment {
         });
 
         btnEditProfile.setOnClickListener(v -> {
-            // TODO: Navigate to edit profile
-            if (getContext() != null) {
-                Toast.makeText(getContext(), "Tính năng đang phát triển", Toast.LENGTH_SHORT).show();
-            }
+            Intent intent = new Intent(getContext(), EditProfileActivity.class);
+            editProfileLauncher.launch(intent);
         });
 
         btnSettings.setOnClickListener(v -> {
-            // TODO: Navigate to settings
-            if (getContext() != null) {
-                Toast.makeText(getContext(), "Tính năng đang phát triển", Toast.LENGTH_SHORT).show();
-            }
+            Intent intent = new Intent(getContext(), StatisticsActivity.class);
+            startActivity(intent);
         });
 
         btnLogout.setOnClickListener(v -> {
             // Clear tokens
             tokenManager.clearTokens();
             ApiClient.resetInstance();
-            
+
             // Navigate to login
             Intent intent = new Intent(getActivity(), RoleSelectionActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);

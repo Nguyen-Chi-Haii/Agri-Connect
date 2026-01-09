@@ -2,6 +2,7 @@ package vn.agriconnect.API.model;
 
 import lombok.Data;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDate;
@@ -14,14 +15,19 @@ import java.time.LocalDate;
 public class MarketPrice {
     @Id
     private String id;
-    
+
     private String categoryId;
-    
+
+    private String productName; // Tên sản phẩm cụ thể
+
     private LocalDate date;
-    
+
     private Double avgPrice;
     private Double minPrice;
     private Double maxPrice;
-    
+
     private int postCount; // Số lượng bài đăng mẫu
+
+    @Transient
+    private String categoryName; // Transient - populated at runtime
 }
