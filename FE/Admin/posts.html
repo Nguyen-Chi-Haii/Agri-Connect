@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý bài đăng - Agri-Connect Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+
+<body>
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <h1>🌾 Agri-Connect</h1>
+                <span>Admin</span>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="index.html" class="nav-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                    </svg>
+                    <span>Dashboard</span>
+                </a>
+                <a href="posts.html" class="nav-item active">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>Quản lý bài đăng</span>
+                </a>
+                <a href="users.html" class="nav-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                    <span>Quản lý người dùng</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar">A</div>
+                    <div class="user-details">
+                        <h4>Admin</h4>
+                        <span>Quản trị viên</span>
+                    </div>
+                </div>
+                <a href="#" class="nav-item" onclick="logout()" style="margin-top: 12px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                    <span>Đăng xuất</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="page-header">
+                <div>
+                    <h2>Quản lý bài đăng</h2>
+                    <p>Duyệt và quản lý các bài đăng nông sản</p>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="filters">
+                <button class="filter-btn active" data-status="">Tất cả</button>
+                <button class="filter-btn" data-status="PENDING">Chờ duyệt</button>
+                <button class="filter-btn" data-status="APPROVED">Đã duyệt</button>
+                <button class="filter-btn" data-status="REJECTED">Từ chối</button>
+            </div>
+
+            <!-- Posts Table -->
+            <div class="card">
+                <div class="card-body">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Tiêu đề</th>
+                                <th>Người đăng</th>
+                                <th>Giá</th>
+                                <th>Trạng thái</th>
+                                <th>Ngày tạo</th>
+                                <th>Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody id="postsTable">
+                            <tr>
+                                <td colspan="6" class="empty-state">Đang tải...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Reject Modal -->
+    <div class="modal-overlay" id="rejectModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Từ chối bài đăng</h3>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="rejectReason">Lý do từ chối</label>
+                    <input type="text" id="rejectReason" placeholder="Nhập lý do từ chối...">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal()">Hủy</button>
+                <button class="btn btn-danger" onclick="confirmReject()">Từ chối</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        let currentFilter = '';
+        let selectedPostId = null;
+
+        // Load posts
+        async function loadPosts() {
+            try {
+                const response = await api.getAllPosts();
+                const tbody = document.getElementById('postsTable');
+
+                if (response && response.success && response.data) {
+                    let posts = response.data.content || response.data;
+
+                    // Filter by status if needed
+                    if (currentFilter) {
+                        posts = posts.filter(p => p.status === currentFilter);
+                    }
+
+                    if (posts.length > 0) {
+                        tbody.innerHTML = posts.map(post => `
+                            <tr>
+                                <td>
+                                    <strong>${post.title || 'Không có tiêu đề'}</strong>
+                                    <br><small style="color: var(--text-secondary)">${truncate(post.description, 50)}</small>
+                                </td>
+                                <td>${post.sellerName || 'N/A'}</td>
+                                <td>${formatPrice(post.price)}</td>
+                                <td><span class="badge badge-${post.status?.toLowerCase()}">${getStatusLabel(post.status)}</span></td>
+                                <td>${formatDate(post.createdAt)}</td>
+                                <td>
+                                    <div class="action-btns">
+                                        ${post.status === 'PENDING' ? `
+                                            <button class="btn btn-success btn-sm" onclick="approvePost('${post.id}')">Duyệt</button>
+                                            <button class="btn btn-danger btn-sm" onclick="showRejectModal('${post.id}')">Từ chối</button>
+                                        ` : '-'}
+                                    </div>
+                                </td>
+                            </tr>
+                        `).join('');
+                    } else {
+                        tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Không có bài đăng nào</td></tr>';
+                    }
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Lỗi tải dữ liệu</td></tr>';
+                }
+            } catch (error) {
+                console.error('Failed to load posts:', error);
+            }
+        }
+
+        async function approvePost(postId) {
+            if (!confirm('Bạn có chắc muốn duyệt bài đăng này?')) return;
+
+            try {
+                const response = await api.approvePost(postId);
+                if (response && response.success) {
+                    alert('Đã duyệt bài đăng thành công!');
+                    loadPosts();
+                } else {
+                    alert('Lỗi: ' + (response?.message || 'Không thể duyệt'));
+                }
+            } catch (error) {
+                alert('Lỗi kết nối server');
+            }
+        }
+
+        function showRejectModal(postId) {
+            selectedPostId = postId;
+            document.getElementById('rejectModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('rejectModal').classList.remove('active');
+            document.getElementById('rejectReason').value = '';
+            selectedPostId = null;
+        }
+
+        async function confirmReject() {
+            const reason = document.getElementById('rejectReason').value;
+
+            try {
+                const response = await api.rejectPost(selectedPostId, reason);
+                if (response && response.success) {
+                    alert('Đã từ chối bài đăng!');
+                    closeModal();
+                    loadPosts();
+                } else {
+                    alert('Lỗi: ' + (response?.message || 'Không thể từ chối'));
+                }
+            } catch (error) {
+                alert('Lỗi kết nối server');
+            }
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('vi-VN');
+        }
+
+        function formatPrice(price) {
+            if (!price) return 'Liên hệ';
+            return new Intl.NumberFormat('vi-VN').format(price) + 'đ';
+        }
+
+        function truncate(str, len) {
+            if (!str) return '';
+            return str.length > len ? str.substring(0, len) + '...' : str;
+        }
+
+        function getStatusLabel(status) {
+            const labels = {
+                'PENDING': 'Chờ duyệt',
+                'APPROVED': 'Đã duyệt',
+                'REJECTED': 'Từ chối'
+            };
+            return labels[status] || status;
+        }
+
+        function logout() {
+            localStorage.removeItem('adminToken');
+            localStorage.removeItem('adminUser');
+            window.location.href = 'login.html';
+        }
+
+        // Filter buttons
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentFilter = btn.dataset.status;
+                loadPosts();
+            });
+        });
+
+        // Load data
+        loadPosts();
+    </script>
+</body>
+
+</html>

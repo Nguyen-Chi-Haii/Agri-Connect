@@ -19,6 +19,13 @@ public class UserController {
 
     private final UserService userService;
 
+    @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<java.util.List<UserProfileResponse>>> getAllUsers() {
+        java.util.List<UserProfileResponse> users = userService.getAllUsers();
+        return ResponseEntity.ok(ApiResponse.success(users));
+    }
+
     @GetMapping("/profile")
     public ResponseEntity<ApiResponse<UserProfileResponse>> getProfile() {
         String userId = SecurityContextHolder.getContext().getAuthentication().getName();

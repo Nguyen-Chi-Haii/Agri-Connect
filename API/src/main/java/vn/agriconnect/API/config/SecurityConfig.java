@@ -51,35 +51,48 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(AbstractHttpConfigurer::disable)
-            .exceptionHandling(exception -> exception
-                .authenticationEntryPoint(jwtAuthEntryPoint))
-            .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> auth
-                // Public endpoints
-                .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/api/posts/approved").permitAll()
-                .requestMatchers("/api/posts/{id}").permitAll()
-                .requestMatchers("/api/categories/**").permitAll()
-                .requestMatchers("/api/market-prices").permitAll()
-                .requestMatchers("/api/market-prices/category/**").permitAll()
-                // Feedback - public: xem rating của user
-                .requestMatchers("/api/feedbacks/user/**").permitAll()
-                .requestMatchers("/api/feedbacks/search").permitAll()
-                .requestMatchers("/api/market-prices/**").permitAll()
-                .requestMatchers("/api/upload/**").permitAll()
-                // WebSocket endpoints
-                .requestMatchers("/ws/**").permitAll()
-                // Swagger UI
-                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                // All other endpoints require authentication
-                .anyRequest().authenticated()
-            )
-            .authenticationProvider(authenticationProvider())
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .csrf(AbstractHttpConfigurer::disable)
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint(jwtAuthEntryPoint))
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        // Public endpoints
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/posts/approved").permitAll()
+                        .requestMatchers("/api/posts/{id}").permitAll()
+                        .requestMatchers("/api/categories/**").permitAll()
+                        .requestMatchers("/api/market-prices").permitAll()
+                        .requestMatchers("/api/market-prices/category/**").permitAll()
+                        // Feedback - public: xem rating của user
+                        .requestMatchers("/api/feedbacks/user/**").permitAll()
+                        .requestMatchers("/api/feedbacks/search").permitAll()
+                        .requestMatchers("/api/market-prices/**").permitAll()
+                        .requestMatchers("/api/upload/**").permitAll()
+                        // WebSocket endpoints
+                        .requestMatchers("/ws/**").permitAll()
+                        // Swagger UI
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        // All other endpoints require authentication
+                        .anyRequest().authenticated())
+                .authenticationProvider(authenticationProvider())
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
-}
 
+    @Bean
+    public org.springframework.web.cors.CorsConfigurationSource corsConfigurationSource() {
+        org.springframework.web.cors.CorsConfiguration configuration = new org.springframework.web.cors.CorsConfiguration();
+        configuration.setAllowedOriginPatterns(java.util.List.of("*"));
+        configuration.setAllowedMethods(java.util.Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+        configuration.setAllowedHeaders(java.util.List.of("*"));
+        configuration.setAllowCredentials(true);
+        configuration.setExposedHeaders(java.util.List.of("Authorization"));
+
+        org.springframework.web.cors.UrlBasedCorsConfigurationSource source = new org.springframework.web.cors.UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
+}

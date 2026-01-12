@@ -20,6 +20,7 @@ import com.agriconnect.agri_connect.api.TokenManager;
 import com.agriconnect.agri_connect.api.model.ApiResponse;
 import com.agriconnect.agri_connect.api.model.JwtResponse;
 import com.agriconnect.agri_connect.api.model.LoginRequest;
+import com.agriconnect.agri_connect.ui.admin.AdminMainActivity;
 import com.agriconnect.agri_connect.ui.main.MainNavigationActivity;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
@@ -34,7 +35,7 @@ public class LoginActivity extends AppCompatActivity {
     private MaterialButton btnLogin;
     private ProgressBar progressBar;
     private TextView tvRegisterLink;
-    
+
     private AuthApi authApi;
     private TokenManager tokenManager;
 
@@ -54,7 +55,7 @@ public class LoginActivity extends AppCompatActivity {
         ApiClient apiClient = ApiClient.getInstance(this);
         authApi = apiClient.getAuthApi();
         tokenManager = apiClient.getTokenManager();
-        
+
         // Check if already logged in
         if (tokenManager.isLoggedIn()) {
             navigateToMain();
@@ -107,14 +108,14 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<ApiResponse<JwtResponse>> call, Response<ApiResponse<JwtResponse>> response) {
                 showLoading(false);
-                
+
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     JwtResponse jwt = response.body().getData();
-                    
+
                     // Save tokens
                     tokenManager.saveTokens(jwt.getAccessToken(), jwt.getRefreshToken());
                     tokenManager.saveUserInfo(jwt.getUserId(), jwt.getFullName(), jwt.getRole());
-                    
+
                     Toast.makeText(LoginActivity.this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
                     navigateToMain();
                 } else {
@@ -129,14 +130,23 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<ApiResponse<JwtResponse>> call, Throwable t) {
                 showLoading(false);
-                Toast.makeText(LoginActivity.this, 
-                    "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                Toast.makeText(LoginActivity.this,
+                        "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
     }
-    
+
     private void navigateToMain() {
-        Intent intent = new Intent(this, MainNavigationActivity.class);
+        String role = tokenManager.getUserRole();
+        Intent intent;
+
+        // Check if admin role - redirect to AdminMainActivity
+        if ("ADMIN".equals(role)) {
+            intent = new Intent(this, AdminMainActivity.class);
+        } else {
+            intent = new Intent(this, MainNavigationActivity.class);
+        }
+
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();

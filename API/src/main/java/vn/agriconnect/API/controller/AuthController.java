@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import vn.agriconnect.API.dto.request.auth.LoginRequest;
 import vn.agriconnect.API.dto.request.auth.RegisterRequest;
@@ -13,6 +14,9 @@ import vn.agriconnect.API.dto.request.auth.VerifyOtpRequest;
 import vn.agriconnect.API.dto.response.ApiResponse;
 import vn.agriconnect.API.dto.response.JwtResponse;
 import vn.agriconnect.API.dto.response.OtpResponse;
+import vn.agriconnect.API.model.User;
+import vn.agriconnect.API.model.enums.Role;
+import vn.agriconnect.API.repository.UserRepository;
 import vn.agriconnect.API.service.AuthService;
 import vn.agriconnect.API.service.OtpService;
 
@@ -23,6 +27,8 @@ public class AuthController {
 
     private final AuthService authService;
     private final OtpService otpService;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<JwtResponse>> login(@Valid @RequestBody LoginRequest request) {
@@ -61,5 +67,31 @@ public class AuthController {
     public ResponseEntity<ApiResponse<OtpResponse>> verifyOtp(@Valid @RequestBody VerifyOtpRequest request) {
         OtpResponse response = otpService.verifyOtp(request);
         return ResponseEntity.ok(ApiResponse.success("Phone verified successfully", response));
+    }
+
+    // ==================== Setup Admin (One-time use) ====================
+
+    @PostMapping("/setup-admin")
+    public ResponseEntity<ApiResponse<String>> setupAdmin() {
+        // Check if admin already exists
+        if (userRepository.findByUsername("admin").isPresent()) {
+            return ResponseEntity
+                    .ok(ApiResponse.success("Admin account already exists. Login with username: admin", "exists"));
+        }
+
+        // Create admin user with unique phone
+        String uniquePhone = "09" + System.currentTimeMillis() % 100000000;
+
+        User admin = new User();
+        admin.setUsername("admin");
+        admin.setPhone(uniquePhone);
+        admin.setPassword(passwordEncoder.encode("admin123"));
+        admin.setFullName("Admin AgriConnect");
+        admin.setRole(Role.ADMIN);
+        admin.setActive(true);
+        userRepository.save(admin);
+
+        return ResponseEntity
+                .ok(ApiResponse.success("Admin account created! Username: admin, Password: admin123", "created"));
     }
 }

@@ -79,6 +79,23 @@
             android:name=".ui.profile.StatisticsActivity"
             android:exported="false" />
 
+        <!-- Admin Activities -->
+        <activity
+            android:name=".ui.admin.AdminMainActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.admin.AdminDashboardActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.admin.AdminPostsActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.admin.AdminUsersActivity"
+            android:exported="false" />
+
         <!-- Keep old MainActivity for reference -->
         <activity
             android:name=".MainActivity"

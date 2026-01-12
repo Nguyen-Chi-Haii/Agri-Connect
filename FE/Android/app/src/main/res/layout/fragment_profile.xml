@@ -195,6 +195,47 @@
                     android:src="@drawable/ic_arrow_forward"
                     app:tint="@color/text_hint" />
             </LinearLayout>
+
+            <View
+                android:id="@+id/dividerAdmin"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginStart="56dp"
+                android:background="@color/divider"
+                android:visibility="gone" />
+
+            <!-- Admin (only visible for ADMIN role) -->
+            <LinearLayout
+                android:id="@+id/btnAdmin"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?attr/selectableItemBackground"
+                android:gravity="center_vertical"
+                android:padding="@dimen/spacing_md"
+                android:visibility="gone">
+
+                <ImageView
+                    android:layout_width="@dimen/icon_md"
+                    android:layout_height="@dimen/icon_md"
+                    android:src="@drawable/ic_settings"
+                    app:tint="@color/error" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/spacing_md"
+                    android:layout_weight="1"
+                    android:text="Quản trị viên"
+                    android:textColor="@color/error"
+                    android:textSize="@dimen/text_body"
+                    android:textStyle="bold" />
+
+                <ImageView
+                    android:layout_width="@dimen/icon_md"
+                    android:layout_height="@dimen/icon_md"
+                    android:src="@drawable/ic_arrow_forward"
+                    app:tint="@color/text_hint" />
+            </LinearLayout>
         </LinearLayout>
 
         <!-- Logout Button -->
