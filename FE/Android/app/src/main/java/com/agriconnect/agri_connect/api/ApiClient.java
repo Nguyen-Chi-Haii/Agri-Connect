@@ -18,7 +18,7 @@ public class ApiClient {
     // For local development on emulator: 10.0.2.2
     // For local development on device: your PC's IP address
     private static final String BASE_URL = "http://10.0.2.2:8080/";
-    
+
     private static ApiClient instance;
     private final Retrofit retrofit;
     private final TokenManager tokenManager;
@@ -32,37 +32,37 @@ public class ApiClient {
 
     private ApiClient(Context context) {
         tokenManager = TokenManager.getInstance(context);
-        
+
         // Logging interceptor for debugging
         HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
         loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
-        
+
         // Auth interceptor to add token to requests
         Interceptor authInterceptor = chain -> {
             Request original = chain.request();
             String authHeader = tokenManager.getAuthHeader();
-            
+
             if (authHeader != null && !original.url().encodedPath().contains("/auth/")) {
                 Request.Builder builder = original.newBuilder()
-                    .header("Authorization", authHeader);
+                        .header("Authorization", authHeader);
                 return chain.proceed(builder.build());
             }
             return chain.proceed(original);
         };
-        
+
         OkHttpClient client = new OkHttpClient.Builder()
-            .addInterceptor(authInterceptor)
-            .addInterceptor(loggingInterceptor)
-            .connectTimeout(30, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS)
-            .writeTimeout(30, TimeUnit.SECONDS)
-            .build();
-        
+                .addInterceptor(authInterceptor)
+                .addInterceptor(loggingInterceptor)
+                .connectTimeout(30, TimeUnit.SECONDS)
+                .readTimeout(30, TimeUnit.SECONDS)
+                .writeTimeout(30, TimeUnit.SECONDS)
+                .build();
+
         retrofit = new Retrofit.Builder()
-            .baseUrl(BASE_URL)
-            .client(client)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build();
+                .baseUrl(BASE_URL)
+                .client(client)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
     }
 
     public static synchronized ApiClient getInstance(Context context) {
@@ -71,7 +71,7 @@ public class ApiClient {
         }
         return instance;
     }
-    
+
     public static void resetInstance() {
         instance = null;
     }
@@ -110,7 +110,16 @@ public class ApiClient {
         }
         return chatApi;
     }
-    
+
+    private AdminApi adminApi;
+
+    public AdminApi getAdminApi() {
+        if (adminApi == null) {
+            adminApi = retrofit.create(AdminApi.class);
+        }
+        return adminApi;
+    }
+
     public TokenManager getTokenManager() {
         return tokenManager;
     }

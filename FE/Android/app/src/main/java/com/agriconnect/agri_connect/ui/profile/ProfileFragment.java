@@ -20,6 +20,7 @@ import com.agriconnect.agri_connect.api.TokenManager;
 import com.agriconnect.agri_connect.api.UserApi;
 import com.agriconnect.agri_connect.api.model.ApiResponse;
 import com.agriconnect.agri_connect.api.model.UserProfile;
+import com.agriconnect.agri_connect.ui.admin.AdminDashboardActivity;
 import com.agriconnect.agri_connect.ui.auth.RoleSelectionActivity;
 import com.agriconnect.agri_connect.ui.post.MyPostsActivity;
 import androidx.activity.result.ActivityResultLauncher;
@@ -34,7 +35,7 @@ public class ProfileFragment extends Fragment {
 
     private ImageView ivAvatar, ivVerified;
     private TextView tvUserName, tvRole, tvPhone;
-    private LinearLayout btnMyPosts, btnEditProfile, btnSettings;
+    private LinearLayout btnMyPosts, btnEditProfile, btnSettings, btnAdmin;
     private MaterialButton btnLogout;
 
     private TokenManager tokenManager;
@@ -80,6 +81,7 @@ public class ProfileFragment extends Fragment {
         btnMyPosts = view.findViewById(R.id.btnMyPosts);
         btnEditProfile = view.findViewById(R.id.btnEditProfile);
         btnSettings = view.findViewById(R.id.btnSettings);
+        btnAdmin = view.findViewById(R.id.btnAdmin);
         btnLogout = view.findViewById(R.id.btnLogout);
     }
 
@@ -93,6 +95,10 @@ public class ProfileFragment extends Fragment {
         }
         if (cachedRole != null) {
             tvRole.setText("FARMER".equals(cachedRole) ? R.string.role_farmer : R.string.role_trader);
+            // Show admin button if cached role is ADMIN
+            if (btnAdmin != null) {
+                btnAdmin.setVisibility("ADMIN".equals(cachedRole) ? View.VISIBLE : View.GONE);
+            }
         }
 
         // Then fetch from API
@@ -118,15 +124,33 @@ public class ProfileFragment extends Fragment {
         tvUserName.setText(profile.getFullName());
         tvPhone.setText(profile.getPhone());
 
-        if ("FARMER".equals(profile.getRole())) {
+        String role = profile.getRole();
+        android.util.Log.d("ProfileFragment", "User role from API: " + role);
+
+        if ("FARMER".equals(role)) {
             tvRole.setText(R.string.role_farmer);
-        } else if ("TRADER".equals(profile.getRole())) {
+        } else if ("TRADER".equals(role)) {
             tvRole.setText(R.string.role_trader);
+        } else if ("ADMIN".equals(role)) {
+            tvRole.setText("Quản trị viên");
         } else {
-            tvRole.setText(profile.getRole());
+            tvRole.setText(role);
         }
 
         ivVerified.setVisibility(profile.isVerified() ? View.VISIBLE : View.GONE);
+
+        // Show admin button only for ADMIN role
+        boolean isAdmin = "ADMIN".equals(role);
+        android.util.Log.d("ProfileFragment", "Is admin: " + isAdmin);
+
+        if (btnAdmin != null) {
+            btnAdmin.setVisibility(isAdmin ? View.VISIBLE : View.GONE);
+        }
+
+        View dividerAdmin = getView() != null ? getView().findViewById(R.id.dividerAdmin) : null;
+        if (dividerAdmin != null) {
+            dividerAdmin.setVisibility(isAdmin ? View.VISIBLE : View.GONE);
+        }
     }
 
     private void setupListeners() {
@@ -144,6 +168,14 @@ public class ProfileFragment extends Fragment {
             Intent intent = new Intent(getContext(), StatisticsActivity.class);
             startActivity(intent);
         });
+
+        // Admin button
+        if (btnAdmin != null) {
+            btnAdmin.setOnClickListener(v -> {
+                Intent intent = new Intent(getContext(), AdminDashboardActivity.class);
+                startActivity(intent);
+            });
+        }
 
         btnLogout.setOnClickListener(v -> {
             // Clear tokens

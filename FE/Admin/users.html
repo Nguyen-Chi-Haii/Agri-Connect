@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý người dùng - Agri-Connect Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+
+<body>
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <h1>🌾 Agri-Connect</h1>
+                <span>Admin</span>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="index.html" class="nav-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                    </svg>
+                    <span>Dashboard</span>
+                </a>
+                <a href="posts.html" class="nav-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>Quản lý bài đăng</span>
+                </a>
+                <a href="users.html" class="nav-item active">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                    <span>Quản lý người dùng</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar">A</div>
+                    <div class="user-details">
+                        <h4>Admin</h4>
+                        <span>Quản trị viên</span>
+                    </div>
+                </div>
+                <a href="#" class="nav-item" onclick="logout()" style="margin-top: 12px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                    <span>Đăng xuất</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="page-header">
+                <div>
+                    <h2>Quản lý người dùng</h2>
+                    <p>Xem và xác minh thông tin người dùng</p>
+                </div>
+            </div>
+
+            <!-- Users Table -->
+            <div class="card">
+                <div class="card-body">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Người dùng</th>
+                                <th>Số điện thoại</th>
+                                <th>Vai trò</th>
+                                <th>Trạng thái KYC</th>
+                                <th>Ngày đăng ký</th>
+                                <th>Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTable">
+                            <tr>
+                                <td colspan="6" class="empty-state">Đang tải...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- KYC Detail Modal -->
+    <div class="modal-overlay" id="kycModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Thông tin KYC</h3>
+            </div>
+            <div class="modal-body" id="kycModalBody">
+                <!-- KYC details will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal()">Đóng</button>
+                <button class="btn btn-danger" id="kycRejectBtn" onclick="rejectKyc()">Từ chối</button>
+                <button class="btn btn-success" id="kycVerifyBtn" onclick="verifyKyc()">Xác minh</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        let selectedUserId = null;
+
+        // Load users
+        async function loadUsers() {
+            try {
+                const response = await api.getAllUsers();
+                const tbody = document.getElementById('usersTable');
+
+                if (response && response.success && response.data) {
+                    const users = response.data;
+
+                    if (users.length > 0) {
+                        tbody.innerHTML = users.map(user => `
+                            <tr>
+                                <td>
+                                    <div style="display: flex; align-items: center; gap: 12px;">
+                                        <div class="user-avatar" style="width: 36px; height: 36px; font-size: 14px;">
+                                            ${user.fullName?.charAt(0) || 'U'}
+                                        </div>
+                                        <div>
+                                            <strong>${user.fullName || 'Chưa cập nhật'}</strong>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>${user.phone || '-'}</td>
+                                <td><span class="badge badge-${user.role === 'ADMIN' ? 'approved' : 'pending'}">${getRoleLabel(user.role)}</span></td>
+                                <td><span class="badge badge-${getKycBadge(user.kyc?.status)}">${getKycLabel(user.kyc?.status)}</span></td>
+                                <td>${formatDate(user.createdAt)}</td>
+                                <td>
+                                    <div class="action-btns">
+                                        <button class="btn btn-outline btn-sm" onclick="showKycDetail('${user.id}', ${JSON.stringify(user.kyc || {}).replace(/"/g, '&quot;')}, '${user.kyc?.status || ''}')">
+                                            Chi tiết
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        `).join('');
+                    } else {
+                        tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Không có người dùng nào</td></tr>';
+                    }
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Lỗi tải dữ liệu</td></tr>';
+                }
+            } catch (error) {
+                console.error('Failed to load users:', error);
+            }
+        }
+
+        function showKycDetail(userId, kyc, status) {
+            selectedUserId = userId;
+            const body = document.getElementById('kycModalBody');
+            const verifyBtn = document.getElementById('kycVerifyBtn');
+            const rejectBtn = document.getElementById('kycRejectBtn');
+
+            if (!kyc || !kyc.cccd) {
+                body.innerHTML = `
+                    <div class="empty-state">
+                        <p>Người dùng chưa gửi thông tin KYC</p>
+                    </div>
+                `;
+                verifyBtn.style.display = 'none';
+                rejectBtn.style.display = 'none';
+            } else {
+                body.innerHTML = `
+                    <p><strong>Số CCCD:</strong> ${kyc.cccd || '-'}</p>
+                    <p><strong>Trạng thái:</strong> <span class="badge badge-${getKycBadge(status)}">${getKycLabel(status)}</span></p>
+                    ${kyc.cccdFrontImage ? `<p><strong>Ảnh mặt trước:</strong><br><img src="${kyc.cccdFrontImage}" style="max-width: 100%; border-radius: 8px; margin-top: 8px;"></p>` : ''}
+                    ${kyc.cccdBackImage ? `<p><strong>Ảnh mặt sau:</strong><br><img src="${kyc.cccdBackImage}" style="max-width: 100%; border-radius: 8px; margin-top: 8px;"></p>` : ''}
+                    ${kyc.rejectionReason ? `<p><strong>Lý do từ chối:</strong> ${kyc.rejectionReason}</p>` : ''}
+                `;
+
+                if (status === 'PENDING') {
+                    verifyBtn.style.display = 'inline-flex';
+                    rejectBtn.style.display = 'inline-flex';
+                } else {
+                    verifyBtn.style.display = 'none';
+                    rejectBtn.style.display = 'none';
+                }
+            }
+
+            document.getElementById('kycModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('kycModal').classList.remove('active');
+            selectedUserId = null;
+        }
+
+        async function verifyKyc() {
+            if (!confirm('Xác nhận xác minh KYC cho người dùng này?')) return;
+
+            try {
+                const response = await api.verifyKyc(selectedUserId);
+                if (response && response.success) {
+                    alert('Đã xác minh KYC thành công!');
+                    closeModal();
+                    loadUsers();
+                } else {
+                    alert('Lỗi: ' + (response?.message || 'Không thể xác minh'));
+                }
+            } catch (error) {
+                alert('Lỗi kết nối server');
+            }
+        }
+
+        async function rejectKyc() {
+            const reason = prompt('Nhập lý do từ chối:');
+            if (reason === null) return;
+
+            try {
+                const response = await api.rejectKyc(selectedUserId, reason);
+                if (response && response.success) {
+                    alert('Đã từ chối KYC!');
+                    closeModal();
+                    loadUsers();
+                } else {
+                    alert('Lỗi: ' + (response?.message || 'Không thể từ chối'));
+                }
+            } catch (error) {
+                alert('Lỗi kết nối server');
+            }
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('vi-VN');
+        }
+
+        function getRoleLabel(role) {
+            const labels = {
+                'ADMIN': 'Quản trị',
+                'FARMER': 'Nông dân',
+                'TRADER': 'Thương lái'
+            };
+            return labels[role] || role;
+        }
+
+        function getKycLabel(status) {
+            const labels = {
+                'VERIFIED': 'Đã xác minh',
+                'PENDING': 'Chờ duyệt',
+                'REJECTED': 'Từ chối'
+            };
+            return labels[status] || 'Chưa gửi';
+        }
+
+        function getKycBadge(status) {
+            if (status === 'VERIFIED') return 'approved';
+            if (status === 'PENDING') return 'pending';
+            if (status === 'REJECTED') return 'rejected';
+            return 'pending';
+        }
+
+        function logout() {
+            localStorage.removeItem('adminToken');
+            localStorage.removeItem('adminUser');
+            window.location.href = 'login.html';
+        }
+
+        // Load data
+        loadUsers();
+    </script>
+</body>
+
+</html>
