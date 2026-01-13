@@ -14,10 +14,9 @@ import java.util.concurrent.TimeUnit;
  * Singleton API Client using Retrofit
  */
 public class ApiClient {
-    // TODO: Change this to your actual API URL
-    // For local development on emulator: 10.0.2.2
-    // For local development on device: your PC's IP address
-    private static final String BASE_URL = "http://10.0.2.2:8080/";
+    // Default URL for Android Emulator.
+    // Can be overridden by creating a file "api_url.txt" in Android/data/.../files/
+    private static String BASE_URL = "http://10.0.2.2:8080/";
 
     private static ApiClient instance;
     private final Retrofit retrofit;
@@ -32,6 +31,9 @@ public class ApiClient {
 
     private ApiClient(Context context) {
         tokenManager = TokenManager.getInstance(context);
+        
+        // Try to load custom URL from config file
+        loadBaseUrlConfig(context);
 
         // Logging interceptor for debugging
         HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
@@ -63,6 +65,22 @@ public class ApiClient {
                 .client(client)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
+    }
+
+    private void loadBaseUrlConfig(Context context) {
+        try {
+            java.io.File file = new java.io.File(context.getExternalFilesDir(null), "api_url.txt");
+            if (file.exists()) {
+                java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.FileReader(file));
+                String url = reader.readLine();
+                reader.close();
+                if (url != null && !url.trim().isEmpty()) {
+                    BASE_URL = url.trim();
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public static synchronized ApiClient getInstance(Context context) {
