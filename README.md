@@ -63,8 +63,9 @@ The Android application supports **Dynamic Runtime Configuration** for the API U
         adb reverse tcp:8080 tcp:8080
         ```
 *   **Configuration:**
-    Run this command to point the app to `localhost`:
+    Run these commands to create the directory and point the app to `localhost`:
     ```bash
+    adb shell "mkdir -p /sdcard/Android/data/com.agriconnect.agri_connect/files/"
     adb shell "echo http://localhost:8080/ > /sdcard/Android/data/com.agriconnect.agri_connect/files/api_url.txt"
     ```
 *   **Action:** Restart the app.
@@ -77,8 +78,9 @@ The Android application supports **Dynamic Runtime Configuration** for the API U
     2.  Ensure your PC and the device/VM are on the same network.
     3.  (Windows) Ensure Firewall allows inbound connections on port `8080`.
 *   **Configuration:**
-    Run this command (or create the file manually on the device) with your LAN IP:
+    Run these commands (or create the file manually on the device) with your LAN IP:
     ```bash
+    adb shell "mkdir -p /sdcard/Android/data/com.agriconnect.agri_connect/files/"
     adb shell "echo http://192.168.1.5:8080/ > /sdcard/Android/data/com.agriconnect.agri_connect/files/api_url.txt"
     ```
     *(Replace `192.168.1.5` with your actual IP address)*.
