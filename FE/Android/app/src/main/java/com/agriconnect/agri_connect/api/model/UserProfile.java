@@ -27,7 +27,7 @@ public class UserProfile {
     @SerializedName("kyc")
     private KycInfo kyc;
 
-    @SerializedName("isActive")
+    @SerializedName("active")
     private boolean isActive;
 
     // Getters

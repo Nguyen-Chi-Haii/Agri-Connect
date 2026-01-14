@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base Colors -->
+    <color name="black">#FFFFFFFF</color> <!-- Invert black/white logic for some uses or keep standard -->
+    <color name="white">#FF000000</color>
+    
+    <!-- Brand Colors -->
+    <color name="primary">#4CAF50</color> <!-- Lighter primary for dark mode -->
+    <color name="primary_dark">#2E7D32</color>
+    <color name="primary_light">#81C784</color>
+    <color name="primary_variant">#388E3C</color>
+    
+    <!-- Secondary Colors -->
+    <color name="secondary">#42A5F5</color>
+    <color name="secondary_dark">#1976D2</color>
+    <color name="secondary_light">#90CAF9</color>
+    
+    <!-- Surface Colors -->
+    <color name="background">#121212</color>
+    <color name="surface">#1E1E1E</color>
+    <color name="surface_variant">#2C2C2C</color>
+    
+    <!-- Text Colors -->
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#B0BEC5</color>
+    <color name="text_hint">#757575</color>
+    <color name="text_on_primary">#000000</color>
+    
+    <!-- Status Colors -->
+    <color name="success">#81C784</color>
+    <color name="warning">#FFB74D</color>
+    <color name="error">#E57373</color>
+    <color name="info">#64B5F6</color>
+    
+    <!-- Role Colors -->
+    <color name="farmer_green">#81C784</color>
+    <color name="trader_blue">#64B5F6</color>
+    
+    <!-- Divider & Border -->
+    <color name="divider">#424242</color>
+    <color name="border">#616161</color>
+    
+    <!-- OTP Input -->
+    <color name="otp_background">#2C2C2C</color>
+    <color name="otp_focused">#81C784</color>
+    
+    <!-- Chat Colors -->
+    <color name="chat_bubble_sent">#1B5E20</color>
+    <color name="chat_bubble_received">#2C2C2C</color>
+    
+    <!-- Status Badge Colors -->
+    <color name="badge_verified">#81C784</color>
+    <color name="badge_pending">#FFD54F</color>
+    <color name="badge_rejected">#E57373</color>
+    
+    <!-- Gray Scale -->
+    <color name="gray_50">#121212</color>
+    <color name="gray_200">#2C2C2C</color>
+    <color name="gray_400">#757575</color>
+    
+    <!-- Accent -->
+    <color name="accent">#81C784</color>
+
+    <!-- Generic Input Background -->
+    <color name="input_background">#2C2C2C</color>
+</resources>

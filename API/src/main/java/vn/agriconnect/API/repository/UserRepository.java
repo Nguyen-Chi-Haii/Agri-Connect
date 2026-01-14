@@ -12,4 +12,7 @@ public interface UserRepository extends MongoRepository<User, String> {
     Optional<User> findByPhone(String phone);
     boolean existsByUsername(String username);
     boolean existsByPhone(String phone);
+
+    @org.springframework.data.mongodb.repository.Query("{ '$or': [ { 'fullName': { '$regex': ?0, '$options': 'i' } }, { 'phone': { '$regex': ?0, '$options': 'i' } } ] }")
+    java.util.List<User> searchUsers(String keyword);
 }

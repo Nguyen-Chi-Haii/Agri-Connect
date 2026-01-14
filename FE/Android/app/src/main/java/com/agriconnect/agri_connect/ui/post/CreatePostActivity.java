@@ -114,10 +114,39 @@ public class CreatePostActivity extends AppCompatActivity {
         progressBar = findViewById(R.id.progressBar);
     }
 
+    private List<com.agriconnect.agri_connect.api.model.Category> categoryList = new ArrayList<>();
+
     private void setupCategoryDropdown() {
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, 
-                android.R.layout.simple_dropdown_item_1line, categories);
-        actvCategory.setAdapter(adapter);
+        // Fetch categories from API
+        com.agriconnect.agri_connect.api.CategoryApi categoryApi = ApiClient.getInstance(this).getCategoryApi();
+        categoryApi.getAllCategories().enqueue(new Callback<ApiResponse<List<com.agriconnect.agri_connect.api.model.Category>>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<List<com.agriconnect.agri_connect.api.model.Category>>> call, 
+                                   Response<ApiResponse<List<com.agriconnect.agri_connect.api.model.Category>>> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().getData() != null) {
+                    categoryList = response.body().getData();
+                    List<String> categoryNames = new ArrayList<>();
+                    for (com.agriconnect.agri_connect.api.model.Category cat : categoryList) {
+                        // Display Icon + Name
+                        String display = (cat.getIcon() != null ? cat.getIcon() + " " : "") + cat.getName();
+                        categoryNames.add(display);
+                    }
+                    
+                    ArrayAdapter<String> adapter = new ArrayAdapter<>(CreatePostActivity.this, 
+                            android.R.layout.simple_dropdown_item_1line, categoryNames);
+                    actvCategory.setAdapter(adapter);
+                    
+                    actvCategory.setOnItemClickListener((parent, view, position, id) -> {
+                        selectedCategoryId = categoryList.get(position).getId();
+                    });
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<List<com.agriconnect.agri_connect.api.model.Category>>> call, Throwable t) {
+                Toast.makeText(CreatePostActivity.this, "Không thể tải danh mục: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void setupListeners() {
@@ -168,7 +197,23 @@ public class CreatePostActivity extends AppCompatActivity {
         String unit = getText(etUnit);
         String quantityStr = getText(etQuantity);
         String location = getText(etLocation);
-        String category = actvCategory.getText().toString().trim();
+        
+        // Find selected category if not set by click listener
+        // This handles cases where user might type and select, or we rely on click listener. 
+        // Best to rely on click listener or match string.
+        String categoryText = actvCategory.getText().toString().trim();
+
+        // Validate Category
+        if (selectedCategoryId == null) {
+             // Try to match text to category name
+             for (com.agriconnect.agri_connect.api.model.Category cat : categoryList) {
+                 String display = (cat.getIcon() != null ? cat.getIcon() + " " : "") + cat.getName();
+                 if (display.equals(categoryText) || cat.getName().equals(categoryText)) {
+                     selectedCategoryId = cat.getId();
+                     break;
+                 }
+             }
+        }
 
         // Validation
         if (title.isEmpty()) {
@@ -177,7 +222,7 @@ public class CreatePostActivity extends AppCompatActivity {
             return;
         }
 
-        if (category.isEmpty()) {
+        if (selectedCategoryId == null || categoryText.isEmpty()) {
             Toast.makeText(this, "Vui lòng chọn danh mục", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -194,6 +239,9 @@ public class CreatePostActivity extends AppCompatActivity {
         Post post = new Post();
         post.setTitle(title);
         post.setDescription(content);
+        post.setCategoryId(selectedCategoryId);
+        post.setCategoryName(categoryText); // Fallback name
+        
         try {
             post.setPrice(Double.parseDouble(priceStr));
         } catch (NumberFormatException e) {
@@ -207,12 +255,10 @@ public class CreatePostActivity extends AppCompatActivity {
         }
         
         Location loc = new Location();
-        loc.setProvince(location); // Temporary mapping of simple text to province field
+        loc.setProvince(location); 
         post.setLocation(loc);
-        // Note: Category ID should be fetched from API, using name for now
         
-        // TODO: Upload images first, then create post with image URLs
-        // For now, create post without images
+        // TODO: Upload images first
         
         postApi.createPost(post).enqueue(new Callback<ApiResponse<Post>>() {
             @Override

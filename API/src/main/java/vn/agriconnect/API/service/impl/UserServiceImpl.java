@@ -24,7 +24,31 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserProfileResponse> getAllUsers() {
-        return userRepository.findAll().stream()
+        return getAllUsers(null, null, null);
+    }
+
+    @Override
+    public List<UserProfileResponse> getAllUsers(String search, String role, String kycStatus) {
+        List<User> users;
+        if (StringUtils.hasText(search)) {
+            users = userRepository.searchUsers(search);
+        } else {
+            users = userRepository.findAll();
+        }
+
+        return users.stream()
+                .filter(user -> {
+                    boolean match = true;
+                    if (StringUtils.hasText(role)) {
+                        match = match && role.equalsIgnoreCase(user.getRole().name());
+                    }
+                    if (StringUtils.hasText(kycStatus)) {
+                        String currentStatus = (user.getKyc() != null && user.getKyc().getStatus() != null)
+                                ? user.getKyc().getStatus() : "NONE";
+                        match = match && kycStatus.equalsIgnoreCase(currentStatus);
+                    }
+                    return match;
+                })
                 .map(this::mapToResponse)
                 .toList();
     }
@@ -122,6 +146,26 @@ public class UserServiceImpl implements UserService {
         user.getKyc().setRejectionReason(reason);
         userRepository.save(user);
     }
+
+    @Override
+    @PreAuthorize("hasRole('ADMIN')")
+    public void lockUser(String userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
+        user.setActive(false);
+        userRepository.save(user);
+    }
+
+    @Override
+    @PreAuthorize("hasRole('ADMIN')")
+    public void unlockUser(String userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
+        user.setActive(true);
+        userRepository.save(user);
+    }
+    
+    // Helper method to map User to UserProfileResponse
 
     private UserProfileResponse mapToResponse(User user) {
         return UserProfileResponse.builder()

@@ -3,11 +3,15 @@
     <item
         android:id="@+id/nav_admin_dashboard"
         android:icon="@drawable/ic_home"
-        android:title="Dashboard" />
+        android:title="Tổng quan" />
     <item
         android:id="@+id/nav_admin_posts"
         android:icon="@drawable/ic_post"
         android:title="Bài đăng" />
+    <item
+        android:id="@+id/nav_admin_categories"
+        android:icon="@drawable/ic_category"
+        android:title="Danh mục" />
     <item
         android:id="@+id/nav_admin_users"
         android:icon="@drawable/ic_person"

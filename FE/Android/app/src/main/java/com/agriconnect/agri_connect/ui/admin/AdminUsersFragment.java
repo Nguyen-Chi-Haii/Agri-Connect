@@ -29,11 +29,17 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+import androidx.appcompat.widget.SearchView;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
+
 public class AdminUsersFragment extends Fragment implements AdminUserAdapter.OnUserActionListener {
 
     private RecyclerView recyclerUsers;
     private TextView tvEmpty;
     private ProgressBar progressBar;
+    private SearchView searchView;
+    private ChipGroup chipGroupFilter;
 
     private AdminUserAdapter adapter;
     private AdminApi adminApi;
@@ -50,6 +56,7 @@ public class AdminUsersFragment extends Fragment implements AdminUserAdapter.OnU
         super.onViewCreated(view, savedInstanceState);
         initViews(view);
         setupRecyclerView();
+        setupListeners();
         loadUsers();
     }
 
@@ -57,6 +64,8 @@ public class AdminUsersFragment extends Fragment implements AdminUserAdapter.OnU
         recyclerUsers = view.findViewById(R.id.recyclerUsers);
         tvEmpty = view.findViewById(R.id.tvEmpty);
         progressBar = view.findViewById(R.id.progressBar);
+        searchView = view.findViewById(R.id.searchView);
+        chipGroupFilter = view.findViewById(R.id.chipGroupFilter);
 
         if (getContext() != null) {
             adminApi = ApiClient.getInstance(getContext()).getAdminApi();
@@ -70,10 +79,57 @@ public class AdminUsersFragment extends Fragment implements AdminUserAdapter.OnU
         recyclerUsers.setAdapter(adapter);
     }
 
+    private void setupListeners() {
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                loadUsers();
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                // Optional: Debounce here if needed, for now load immediately or on submit
+                // Let's load immediately for responsive feel, maybe check length
+                loadUsers();
+                return true;
+            }
+        });
+
+        // Use standard OnCheckedChangeListener for simple ChipGroups (singleSelection=false)
+        // Or for material ChipGroup, we can use setOnCheckedStateChangeListener in newer versions but old way is valid too
+        // Let's iterate chips in loadUsers(), so just trigger load on any click
+        for (int i = 0; i < chipGroupFilter.getChildCount(); i++) {
+            View child = chipGroupFilter.getChildAt(i);
+            if (child instanceof Chip) {
+                ((Chip) child).setOnCheckedChangeListener((buttonView, isChecked) -> loadUsers());
+            }
+        }
+    }
+
     private void loadUsers() {
         progressBar.setVisibility(View.VISIBLE);
 
-        adminApi.getAllUsers().enqueue(new Callback<ApiResponse<List<UserProfile>>>() {
+        String search = searchView.getQuery().toString();
+        if (search.trim().isEmpty()) search = null;
+
+        String role = null;
+        String kycStatus = null;
+
+        if (chipGroupFilter != null) {
+            Chip chipRoleFarmer = chipGroupFilter.findViewById(R.id.chipRoleFarmer);
+            Chip chipRoleTrader = chipGroupFilter.findViewById(R.id.chipRoleTrader);
+            Chip chipKycVerified = chipGroupFilter.findViewById(R.id.chipKycVerified);
+            Chip chipKycPending = chipGroupFilter.findViewById(R.id.chipKycPending);
+
+            if (chipRoleFarmer != null && chipRoleFarmer.isChecked()) role = "FARMER";
+            else if (chipRoleTrader != null && chipRoleTrader.isChecked()) role = "TRADER";
+
+            if (chipKycVerified != null && chipKycVerified.isChecked()) kycStatus = "VERIFIED";
+            else if (chipKycPending != null && chipKycPending.isChecked()) kycStatus = "PENDING";
+        }
+
+        adminApi.getAllUsers(search, role, kycStatus).enqueue(new Callback<ApiResponse<List<UserProfile>>>() {
             @Override
             public void onResponse(Call<ApiResponse<List<UserProfile>>> call,
                     Response<ApiResponse<List<UserProfile>>> response) {
@@ -153,5 +209,144 @@ public class AdminUsersFragment extends Fragment implements AdminUserAdapter.OnU
                 })
                 .setNegativeButton("Hủy", null)
                 .show();
+    }
+    @Override
+    public void onLockUser(UserProfile user) {
+        new AlertDialog.Builder(getContext())
+                .setTitle("Khóa tài khoản")
+                .setMessage("Bạn có chắc chắn muốn khóa tài khoản " + user.getFullName() + "?\nNgười dùng này sẽ không thể đăng nhập hoặc thực hiện hành động nào.")
+                .setPositiveButton("Khóa", (dialog, which) -> {
+                    progressBar.setVisibility(View.VISIBLE);
+                    adminApi.lockUser(user.getId()).enqueue(new Callback<ApiResponse<Void>>() {
+                        @Override
+                        public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
+                            progressBar.setVisibility(View.GONE);
+                            if (response.isSuccessful()) {
+                                Toast.makeText(getContext(), "Đã khóa tài khoản", Toast.LENGTH_SHORT).show();
+                                loadUsers();
+                            } else {
+                                Toast.makeText(getContext(), "Lỗi: " + response.message(), Toast.LENGTH_SHORT).show();
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
+                            progressBar.setVisibility(View.GONE);
+                            Toast.makeText(getContext(), "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                })
+                .setNegativeButton("Hủy", null)
+                .show();
+    }
+
+    @Override
+    public void onUnlockUser(UserProfile user) {
+        new AlertDialog.Builder(getContext())
+                .setTitle("Mở khóa tài khoản")
+                .setMessage("Bạn có chắc chắn muốn mở khóa tài khoản " + user.getFullName() + "?")
+                .setPositiveButton("Mở khóa", (dialog, which) -> {
+                    progressBar.setVisibility(View.VISIBLE);
+                    adminApi.unlockUser(user.getId()).enqueue(new Callback<ApiResponse<Void>>() {
+                        @Override
+                        public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
+                            progressBar.setVisibility(View.GONE);
+                            if (response.isSuccessful()) {
+                                Toast.makeText(getContext(), "Đã mở khóa tài khoản", Toast.LENGTH_SHORT).show();
+                                loadUsers();
+                            } else {
+                                Toast.makeText(getContext(), "Lỗi: " + response.message(), Toast.LENGTH_SHORT).show();
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
+                            progressBar.setVisibility(View.GONE);
+                            Toast.makeText(getContext(), "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                })
+                .show();
+    }
+
+    @Override
+    public void onUserClick(UserProfile user) {
+        if (getContext() == null) return;
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        View view = LayoutInflater.from(getContext()).inflate(R.layout.dialog_user_detail, null);
+
+        // Bind data
+        TextView tvAvatar = view.findViewById(R.id.tvDetailAvatar);
+        TextView tvFullName = view.findViewById(R.id.tvDetailFullName);
+        TextView tvRole = view.findViewById(R.id.tvDetailRole);
+        TextView tvStatus = view.findViewById(R.id.tvDetailStatus);
+        TextView tvPhone = view.findViewById(R.id.tvDetailPhone);
+        TextView tvAddress = view.findViewById(R.id.tvDetailAddress);
+        TextView tvKycStatus = view.findViewById(R.id.tvDetailKycStatus);
+        TextView tvCccd = view.findViewById(R.id.tvDetailCccd);
+        View btnClose = view.findViewById(R.id.btnCloseDialog);
+
+        // Name & Avatar
+        String name = user.getFullName();
+        if (name != null && !name.isEmpty()) {
+            tvAvatar.setText(String.valueOf(name.charAt(0)).toUpperCase());
+            tvFullName.setText(name);
+        } else {
+            tvAvatar.setText("U");
+            tvFullName.setText("Chưa cập nhật");
+        }
+
+        // Role
+        String role = user.getRole();
+        if ("ADMIN".equals(role)) tvRole.setText("Quản trị viên");
+        else if ("FARMER".equals(role)) tvRole.setText("Nông dân");
+        else if ("TRADER".equals(role)) tvRole.setText("Thương lái");
+        else tvRole.setText("Người dùng");
+
+        // Status
+        if (user.isActive()) {
+            tvStatus.setVisibility(View.GONE);
+        } else {
+            tvStatus.setVisibility(View.VISIBLE);
+        }
+
+        // Contact
+        tvPhone.setText(user.getPhone() != null ? user.getPhone() : "Chưa cập nhật");
+        tvAddress.setText(user.getAddress() != null ? user.getAddress() : "Chưa cập nhật");
+
+        // KYC
+        if (user.getKyc() != null && user.getKyc().getStatus() != null) {
+            String status = user.getKyc().getStatus();
+            if ("VERIFIED".equals(status)) {
+                tvKycStatus.setText("Đã xác minh");
+                tvKycStatus.setTextColor(getResources().getColor(R.color.success));
+            } else if ("PENDING".equals(status)) {
+                tvKycStatus.setText("Chờ duyệt");
+                tvKycStatus.setTextColor(getResources().getColor(R.color.warning));
+            } else if ("REJECTED".equals(status)) {
+                tvKycStatus.setText("Đã từ chối");
+                tvKycStatus.setTextColor(getResources().getColor(R.color.error));
+            }
+            
+            if (user.getKyc().getCccd() != null) {
+                tvCccd.setVisibility(View.VISIBLE);
+                tvCccd.setText("CCCD: " + user.getKyc().getCccd());
+            } else {
+                tvCccd.setVisibility(View.GONE);
+            }
+        } else {
+            tvKycStatus.setText("Chưa gửi KYC");
+            tvKycStatus.setTextColor(getResources().getColor(R.color.text_hint));
+            tvCccd.setVisibility(View.GONE);
+        }
+
+        builder.setView(view);
+        AlertDialog dialog = builder.create();
+        dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        
+        btnClose.setOnClickListener(v -> dialog.dismiss());
+        
+        dialog.show();
     }
 }

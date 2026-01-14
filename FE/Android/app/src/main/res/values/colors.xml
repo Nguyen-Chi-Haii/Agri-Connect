@@ -60,4 +60,7 @@
     
     <!-- Accent -->
     <color name="accent">#4CAF50</color>
+    
+    <!-- Generic Input Background -->
+    <color name="input_background">#F5F5F5</color>
 </resources>

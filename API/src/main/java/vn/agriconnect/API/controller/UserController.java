@@ -21,8 +21,12 @@ public class UserController {
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse<java.util.List<UserProfileResponse>>> getAllUsers() {
-        java.util.List<UserProfileResponse> users = userService.getAllUsers();
+    public ResponseEntity<ApiResponse<java.util.List<UserProfileResponse>>> getAllUsers(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String role,
+            @RequestParam(required = false) String kycStatus
+    ) {
+        java.util.List<UserProfileResponse> users = userService.getAllUsers(search, role, kycStatus);
         return ResponseEntity.ok(ApiResponse.success(users));
     }
 
@@ -76,5 +80,19 @@ public class UserController {
             @RequestParam(required = false) String reason) {
         userService.rejectKyc(userId, reason);
         return ResponseEntity.ok(ApiResponse.success("KYC rejected", null));
+    }
+
+    @PutMapping("/{userId}/lock")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<Void>> lockUser(@PathVariable String userId) {
+        userService.lockUser(userId);
+        return ResponseEntity.ok(ApiResponse.success("Account locked", null));
+    }
+
+    @PutMapping("/{userId}/unlock")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<Void>> unlockUser(@PathVariable String userId) {
+        userService.unlockUser(userId);
+        return ResponseEntity.ok(ApiResponse.success("Account unlocked", null));
     }
 }

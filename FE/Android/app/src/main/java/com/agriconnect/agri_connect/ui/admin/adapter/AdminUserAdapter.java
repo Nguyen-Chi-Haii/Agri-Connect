@@ -4,7 +4,9 @@ import android.graphics.drawable.GradientDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -28,6 +30,12 @@ public class AdminUserAdapter extends RecyclerView.Adapter<AdminUserAdapter.View
         void onVerifyKyc(UserProfile user);
 
         void onRejectKyc(UserProfile user);
+
+        void onLockUser(UserProfile user);
+
+        void onUnlockUser(UserProfile user);
+        
+        void onUserClick(UserProfile user);
     }
 
     public void setOnUserActionListener(OnUserActionListener listener) {
@@ -59,9 +67,10 @@ public class AdminUserAdapter extends RecyclerView.Adapter<AdminUserAdapter.View
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {
-        TextView tvAvatar, tvFullName, tvPhone, tvRole, tvKycStatus, tvCccd;
+        TextView tvAvatar, tvFullName, tvPhone, tvRole, tvStatus, tvKycStatus, tvCccd;
         LinearLayout layoutActions;
         MaterialButton btnVerifyKyc, btnRejectKyc;
+        ImageButton btnMore;
 
         ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -69,11 +78,13 @@ public class AdminUserAdapter extends RecyclerView.Adapter<AdminUserAdapter.View
             tvFullName = itemView.findViewById(R.id.tvFullName);
             tvPhone = itemView.findViewById(R.id.tvPhone);
             tvRole = itemView.findViewById(R.id.tvRole);
+            tvStatus = itemView.findViewById(R.id.tvStatus);
             tvKycStatus = itemView.findViewById(R.id.tvKycStatus);
             tvCccd = itemView.findViewById(R.id.tvCccd);
             layoutActions = itemView.findViewById(R.id.layoutActions);
             btnVerifyKyc = itemView.findViewById(R.id.btnVerifyKyc);
             btnRejectKyc = itemView.findViewById(R.id.btnRejectKyc);
+            btnMore = itemView.findViewById(R.id.btnMore);
         }
 
         void bind(UserProfile user) {
@@ -110,6 +121,25 @@ public class AdminUserAdapter extends RecyclerView.Adapter<AdminUserAdapter.View
             GradientDrawable roleDrawable = (GradientDrawable) tvRole.getBackground();
             if (roleDrawable != null) {
                 roleDrawable.setColor(ContextCompat.getColor(itemView.getContext(), roleColor));
+            }
+
+            // Status
+            boolean isActive = user.isActive();
+            if (isActive) {
+                tvStatus.setText("Hoạt động");
+                tvStatus.setVisibility(View.GONE); // Optional: hide if active, or show green
+                // Or better: show "Locked" if false
+            } else {
+                tvStatus.setText("Đã khóa");
+                tvStatus.setVisibility(View.VISIBLE);
+                GradientDrawable statusDrawable = (GradientDrawable) tvStatus.getBackground();
+                if (statusDrawable != null) {
+                    statusDrawable.setColor(ContextCompat.getColor(itemView.getContext(), R.color.error));
+                }
+            }
+            if (isActive) {
+                 // Reset color or hide
+                 tvStatus.setVisibility(View.GONE);
             }
 
             // KYC Status
@@ -167,6 +197,32 @@ public class AdminUserAdapter extends RecyclerView.Adapter<AdminUserAdapter.View
             btnRejectKyc.setOnClickListener(v -> {
                 if (listener != null)
                     listener.onRejectKyc(user);
+            });
+            
+            // More Menu
+            btnMore.setOnClickListener(v -> {
+                PopupMenu popup = new PopupMenu(itemView.getContext(), btnMore);
+                if (user.isActive()) {
+                    popup.getMenu().add("Khóa tài khoản");
+                } else {
+                    popup.getMenu().add("Mở khóa tài khoản");
+                }
+                
+                popup.setOnMenuItemClickListener(item -> {
+                    String title = item.getTitle().toString();
+                    if (title.equals("Khóa tài khoản")) {
+                        if (listener != null) listener.onLockUser(user);
+                    } else if (title.equals("Mở khóa tài khoản")) {
+                        if (listener != null) listener.onUnlockUser(user);
+                    }
+                    return true;
+                });
+                popup.show();
+            });
+
+            // Item Click
+            itemView.setOnClickListener(v -> {
+                if (listener != null) listener.onUserClick(user);
             });
         }
     }

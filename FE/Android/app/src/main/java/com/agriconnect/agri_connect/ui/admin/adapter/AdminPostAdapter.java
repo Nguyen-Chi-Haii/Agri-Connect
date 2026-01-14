@@ -127,7 +127,7 @@ public class AdminPostAdapter extends RecyclerView.Adapter<AdminPostAdapter.View
                 bgColor = R.color.error;
                 statusText = "Từ chối";
             } else if ("CLOSED".equals(status)) {
-                bgColor = R.color.text_secondary; // Assuming this color exists or use gray
+                bgColor = R.color.secondary;
                 statusText = "Đã đóng";
             } else {
                 bgColor = R.color.text_hint;

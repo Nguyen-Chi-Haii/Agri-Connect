@@ -129,6 +129,15 @@ public class ApiClient {
         return chatApi;
     }
 
+    private CategoryApi categoryApi;
+
+    public CategoryApi getCategoryApi() {
+        if (categoryApi == null) {
+            categoryApi = retrofit.create(CategoryApi.class);
+        }
+        return categoryApi;
+    }
+
     private AdminApi adminApi;
 
     public AdminApi getAdminApi() {

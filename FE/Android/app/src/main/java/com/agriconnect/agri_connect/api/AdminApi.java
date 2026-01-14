@@ -18,7 +18,11 @@ public interface AdminApi {
     Call<ApiResponse<List<AdminLog>>> getAdminLogs();
 
     @GET("api/users")
-    Call<ApiResponse<List<UserProfile>>> getAllUsers();
+    Call<ApiResponse<List<UserProfile>>> getAllUsers(
+            @Query("search") String search,
+            @Query("role") String role,
+            @Query("kycStatus") String kycStatus
+    );
 
     @GET("api/posts")
     Call<ApiResponse<PagedResponse<Post>>> getAllPosts(
@@ -41,4 +45,10 @@ public interface AdminApi {
 
     @PUT("api/users/{userId}/kyc/reject")
     Call<ApiResponse<Void>> rejectKyc(@Path("userId") String userId, @Query("reason") String reason);
+
+    @PUT("api/users/{userId}/lock")
+    Call<ApiResponse<Void>> lockUser(@Path("userId") String userId);
+
+    @PUT("api/users/{userId}/unlock")
+    Call<ApiResponse<Void>> unlockUser(@Path("userId") String userId);
 }
