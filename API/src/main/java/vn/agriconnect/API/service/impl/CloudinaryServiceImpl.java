@@ -50,7 +50,7 @@ public class CloudinaryServiceImpl implements CloudinaryService {
     }
 
     @Override
-    public List<String> uploadMultiple(List<MultipartFile> files, String folder) {
+    public java.util.List<String> uploadMultiple(java.util.List<MultipartFile> files, String folder) {
         List<String> urls = new ArrayList<>();
         
         for (MultipartFile file : files) {

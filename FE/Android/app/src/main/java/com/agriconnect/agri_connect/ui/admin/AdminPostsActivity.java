@@ -102,7 +102,7 @@ public class AdminPostsActivity extends AppCompatActivity implements AdminPostAd
     private void loadPosts() {
         progressBar.setVisibility(View.VISIBLE);
 
-        adminApi.getAllPosts().enqueue(new Callback<ApiResponse<PagedResponse<Post>>>() {
+        adminApi.getAllPosts(null, 0, 10).enqueue(new Callback<ApiResponse<PagedResponse<Post>>>() {
             @Override
             public void onResponse(Call<ApiResponse<PagedResponse<Post>>> call,
                     Response<ApiResponse<PagedResponse<Post>>> response) {
@@ -213,6 +213,36 @@ public class AdminPostsActivity extends AppCompatActivity implements AdminPostAd
                             progressBar.setVisibility(View.GONE);
                             Toast.makeText(AdminPostsActivity.this,
                                     "Lỗi kết nối", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                })
+                .setNegativeButton("Hủy", null)
+                .show();
+    }
+
+    @Override
+    public void onClose(Post post) {
+        new AlertDialog.Builder(this)
+                .setTitle("Đóng bài đăng")
+                .setMessage("Bạn có chắc chắn muốn đóng bài đăng này? Người dùng sẽ không thể tìm thấy bài đăng này nữa.")
+                .setPositiveButton("Đóng", (dialog, which) -> {
+                    progressBar.setVisibility(View.VISIBLE);
+                    adminApi.closePost(post.getId()).enqueue(new Callback<ApiResponse<Void>>() {
+                        @Override
+                        public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
+                            progressBar.setVisibility(View.GONE);
+                            if (response.isSuccessful()) {
+                                Toast.makeText(AdminPostsActivity.this, "Đã đóng bài đăng", Toast.LENGTH_SHORT).show();
+                                loadPosts();
+                            } else {
+                                Toast.makeText(AdminPostsActivity.this, "Lỗi: " + response.message(), Toast.LENGTH_SHORT).show();
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
+                            progressBar.setVisibility(View.GONE);
+                            Toast.makeText(AdminPostsActivity.this, "Lỗi mạng: " + t.getMessage(), Toast.LENGTH_SHORT).show();
                         }
                     });
                 })

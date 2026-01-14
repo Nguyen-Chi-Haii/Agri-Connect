@@ -21,13 +21,20 @@ public interface AdminApi {
     Call<ApiResponse<List<UserProfile>>> getAllUsers();
 
     @GET("api/posts")
-    Call<ApiResponse<PagedResponse<Post>>> getAllPosts();
+    Call<ApiResponse<PagedResponse<Post>>> getAllPosts(
+            @Query("status") String status,
+            @Query("page") int page,
+            @Query("size") int size
+    );
 
     @PUT("api/posts/{postId}/approve")
     Call<ApiResponse<Void>> approvePost(@Path("postId") String postId);
 
     @PUT("api/posts/{postId}/reject")
     Call<ApiResponse<Void>> rejectPost(@Path("postId") String postId, @Query("reason") String reason);
+
+    @PUT("api/posts/{postId}/close")
+    Call<ApiResponse<Void>> closePost(@Path("postId") String postId);
 
     @PUT("api/users/{userId}/kyc/verify")
     Call<ApiResponse<Void>> verifyKyc(@Path("userId") String userId);
