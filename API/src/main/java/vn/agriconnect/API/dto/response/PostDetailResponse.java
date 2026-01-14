@@ -36,4 +36,9 @@ public class PostDetailResponse {
     private int viewCount;
     
     private Instant createdAt;
+
+    // Interaction stats
+    private int likeCount;
+    private int commentCount;
+    private boolean isLiked;
 }

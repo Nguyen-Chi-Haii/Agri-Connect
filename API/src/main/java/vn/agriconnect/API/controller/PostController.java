@@ -88,4 +88,15 @@ public class PostController {
         postService.reject(postId, reason);
         return ResponseEntity.ok(ApiResponse.success("Bài đăng đã bị từ chối", null));
     }
+    @PostMapping("/{postId}/like")
+    public ResponseEntity<ApiResponse<Void>> toggleLike(@PathVariable String postId) {
+        postService.toggleLike(postId);
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+    @PutMapping("/{postId}/close")
+    public ResponseEntity<ApiResponse<Void>> close(@PathVariable String postId) {
+        postService.close(postId);
+        return ResponseEntity.ok(ApiResponse.success("Bài đăng đã được đóng", null));
+    }
 }

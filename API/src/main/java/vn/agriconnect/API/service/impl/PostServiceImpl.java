@@ -32,6 +32,7 @@ public class PostServiceImpl implements PostService {
     private final PostRepository postRepository;
     private final PostMapper postMapper;
     private final MongoTemplate mongoTemplate;
+    private final vn.agriconnect.API.service.AuthService authService;
 
     @Override
     public PostDetailResponse create(String sellerId, PostCreateRequest request) {
@@ -39,14 +40,14 @@ public class PostServiceImpl implements PostService {
         post.setSellerId(sellerId);
         post.setStatus(PostStatus.PENDING);
         post = postRepository.save(post);
-        return postMapper.toResponse(post);
+        return toDetailResponse(post);
     }
 
     @Override
     public PostDetailResponse getById(String postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new ResourceNotFoundException("Post", "id", postId));
-        return postMapper.toResponse(post);
+        return toDetailResponse(post);
     }
 
     @Override
@@ -64,7 +65,7 @@ public class PostServiceImpl implements PostService {
         post.setLocation(request.getLocation());
         
         post = postRepository.save(post);
-        return postMapper.toResponse(post);
+        return toDetailResponse(post);
     }
 
     @Override
@@ -108,11 +109,22 @@ public class PostServiceImpl implements PostService {
             query.addCriteria(Criteria.where("price").lte(filter.getMaxPrice()));
         }
         
-        // Filter by status (default to APPROVED for public search)
+        // Filter by status
         if (filter.getStatus() != null) {
             query.addCriteria(Criteria.where("status").is(filter.getStatus()));
         } else {
-            query.addCriteria(Criteria.where("status").is(PostStatus.APPROVED));
+            // Logic: If status is null (viewing "All")
+            // - If ADMIN: show everything (don't filter status)
+            // - If User/Guest: show only APPROVED
+            
+            boolean isAdmin = org.springframework.security.core.context.SecurityContextHolder.getContext()
+                    .getAuthentication().getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+            
+            if (!isAdmin) {
+                query.addCriteria(Criteria.where("status").is(PostStatus.APPROVED));
+            }
+            // If Admin, do nothing -> mean return all status
         }
         
         // Sorting
@@ -136,7 +148,7 @@ public class PostServiceImpl implements PostService {
         long total = mongoTemplate.count(Query.of(query).limit(-1).skip(-1), Post.class);
         
         List<PostDetailResponse> content = posts.stream()
-                .map(postMapper::toResponse)
+                .map(this::toDetailResponse)
                 .collect(Collectors.toList());
         
         int totalPages = (int) Math.ceil((double) total / size);
@@ -156,7 +168,7 @@ public class PostServiceImpl implements PostService {
     public List<PostDetailResponse> getBySeller(String sellerId) {
         return postRepository.findBySellerId(sellerId)
                 .stream()
-                .map(postMapper::toResponse)
+                .map(this::toDetailResponse)
                 .collect(Collectors.toList());
     }
 
@@ -164,7 +176,7 @@ public class PostServiceImpl implements PostService {
     public List<PostDetailResponse> getApproved() {
         return postRepository.findByStatusOrderByCreatedAtDesc(PostStatus.APPROVED)
                 .stream()
-                .map(postMapper::toResponse)
+                .map(this::toDetailResponse)
                 .collect(Collectors.toList());
     }
 
@@ -192,6 +204,66 @@ public class PostServiceImpl implements PostService {
                 .orElseThrow(() -> new ResourceNotFoundException("Post", "id", postId));
         post.setViewCount(post.getViewCount() + 1);
         postRepository.save(post);
+    }
+
+    @Override
+    public void toggleLike(String postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new ResourceNotFoundException("Post", "id", postId));
+        
+        String currentUserId = authService.getCurrentUserId();
+        if (currentUserId == null) {
+            throw new vn.agriconnect.API.exception.BadRequestException("Authentication required to like post");
+        }
+
+        if (post.getLikedUserIds().contains(currentUserId)) {
+            post.getLikedUserIds().remove(currentUserId);
+        } else {
+            post.getLikedUserIds().add(currentUserId);
+        }
+        
+        postRepository.save(post);
+    }
+
+    @Override
+    public void close(String postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new ResourceNotFoundException("Post", "id", postId));
+        
+        String currentUserId = authService.getCurrentUserId();
+        if (currentUserId == null) {
+            throw new vn.agriconnect.API.exception.BadRequestException("Authentication required");
+        }
+        
+        // Check if admin
+        boolean isAdmin = org.springframework.security.core.context.SecurityContextHolder.getContext()
+                .getAuthentication().getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        
+        // Check if owner
+        if (!isAdmin && !post.getSellerId().equals(currentUserId)) {
+             throw new vn.agriconnect.API.exception.BadRequestException("You do not have permission to close this post");
+        }
+        
+        post.setStatus(PostStatus.CLOSED);
+        postRepository.save(post);
+    }
+
+    private PostDetailResponse toDetailResponse(Post post) {
+        PostDetailResponse response = postMapper.toResponse(post);
+        
+        // Enrich interaction data
+        response.setLikeCount(post.getLikedUserIds().size());
+        response.setCommentCount(post.getCommentCount());
+        
+        String currentUserId = authService.getCurrentUserId();
+        if (currentUserId != null) {
+            response.setLiked(post.getLikedUserIds().contains(currentUserId));
+        } else {
+            response.setLiked(false);
+        }
+        
+        return response;
     }
 }
 

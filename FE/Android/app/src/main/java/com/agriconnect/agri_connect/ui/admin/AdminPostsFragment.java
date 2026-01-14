@@ -37,12 +37,14 @@ public class AdminPostsFragment extends Fragment implements AdminPostAdapter.OnP
     private RecyclerView recyclerPosts;
     private TextView tvEmpty;
     private ProgressBar progressBar;
-    private Chip chipAll, chipPending, chipApproved, chipRejected;
+    private Chip chipAll, chipPending, chipApproved, chipRejected, chipClosed;
+    private com.agriconnect.agri_connect.ui.component.PaginationControl paginationControl;
 
     private AdminPostAdapter adapter;
     private AdminApi adminApi;
-    private List<Post> allPosts = new ArrayList<>();
-    private String currentFilter = null;
+    // Removed allPosts list as we fetch per page
+    private String currentFilter = null; // null = All
+    private int PAGE_SIZE = 10;
 
     @Nullable
     @Override
@@ -57,7 +59,8 @@ public class AdminPostsFragment extends Fragment implements AdminPostAdapter.OnP
         initViews(view);
         setupRecyclerView();
         setupFilters();
-        loadPosts();
+        setupPagination();
+        loadPosts(currentFilter, 0);
     }
 
     private void initViews(View view) {
@@ -68,6 +71,8 @@ public class AdminPostsFragment extends Fragment implements AdminPostAdapter.OnP
         chipPending = view.findViewById(R.id.chipPending);
         chipApproved = view.findViewById(R.id.chipApproved);
         chipRejected = view.findViewById(R.id.chipRejected);
+        chipClosed = view.findViewById(R.id.chipClosed);
+        paginationControl = view.findViewById(R.id.paginationControl);
 
         if (getContext() != null) {
             adminApi = ApiClient.getInstance(getContext()).getAdminApi();
@@ -87,6 +92,7 @@ public class AdminPostsFragment extends Fragment implements AdminPostAdapter.OnP
             chipPending.setChecked(v == chipPending);
             chipApproved.setChecked(v == chipApproved);
             chipRejected.setChecked(v == chipRejected);
+            chipClosed.setChecked(v == chipClosed);
 
             if (v == chipAll)
                 currentFilter = null;
@@ -96,20 +102,31 @@ public class AdminPostsFragment extends Fragment implements AdminPostAdapter.OnP
                 currentFilter = "APPROVED";
             else if (v == chipRejected)
                 currentFilter = "REJECTED";
+            else if (v == chipClosed)
+                currentFilter = "CLOSED";
 
-            filterPosts();
+            // Reload from page 0 when filter changes
+            loadPosts(currentFilter, 0);
         };
 
         chipAll.setOnClickListener(filterListener);
         chipPending.setOnClickListener(filterListener);
         chipApproved.setOnClickListener(filterListener);
         chipRejected.setOnClickListener(filterListener);
+        chipClosed.setOnClickListener(filterListener);
     }
 
-    private void loadPosts() {
+    private void setupPagination() {
+        paginationControl.setOnPageChangeListener(newPage -> {
+            loadPosts(currentFilter, newPage);
+        });
+    }
+
+    private void loadPosts(String status, int page) {
         progressBar.setVisibility(View.VISIBLE);
 
-        adminApi.getAllPosts().enqueue(new Callback<ApiResponse<PagedResponse<Post>>>() {
+        // Call API with status, page, size
+        adminApi.getAllPosts(status, page, PAGE_SIZE).enqueue(new Callback<ApiResponse<PagedResponse<Post>>>() {
             @Override
             public void onResponse(Call<ApiResponse<PagedResponse<Post>>> call,
                     Response<ApiResponse<PagedResponse<Post>>> response) {
@@ -117,36 +134,32 @@ public class AdminPostsFragment extends Fragment implements AdminPostAdapter.OnP
 
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     PagedResponse<Post> pagedResponse = response.body().getData();
-                    allPosts = pagedResponse != null && pagedResponse.getContent() != null
+                    List<Post> posts = pagedResponse != null && pagedResponse.getContent() != null
                             ? pagedResponse.getContent()
                             : new ArrayList<>();
-                    filterPosts();
+
+                    adapter.setPosts(posts);
+                    
+                    // Update UI state
+                    tvEmpty.setVisibility(posts.isEmpty() ? View.VISIBLE : View.GONE);
+                    recyclerPosts.setVisibility(posts.isEmpty() ? View.GONE : View.VISIBLE);
+                    
+                    // Update pagination control
+                    if (pagedResponse != null) {
+                        paginationControl.setPageData(pagedResponse.getCurrentPage(), pagedResponse.getTotalPages());
+                        paginationControl.setVisibility(posts.isEmpty() ? View.GONE : View.VISIBLE); 
+                    }
+                } else {
+                    Toast.makeText(getContext(), "Lỗi tải dữ liệu", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<ApiResponse<PagedResponse<Post>>> call, Throwable t) {
                 progressBar.setVisibility(View.GONE);
+                Toast.makeText(getContext(), "Lỗi mạng: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
-    }
-
-    private void filterPosts() {
-        List<Post> filtered;
-        if (currentFilter == null) {
-            filtered = allPosts;
-        } else {
-            filtered = new ArrayList<>();
-            for (Post post : allPosts) {
-                if (currentFilter.equals(post.getStatus())) {
-                    filtered.add(post);
-                }
-            }
-        }
-
-        adapter.setPosts(filtered);
-        tvEmpty.setVisibility(filtered.isEmpty() ? View.VISIBLE : View.GONE);
-        recyclerPosts.setVisibility(filtered.isEmpty() ? View.GONE : View.VISIBLE);
     }
 
     @Override
@@ -162,7 +175,7 @@ public class AdminPostsFragment extends Fragment implements AdminPostAdapter.OnP
                             progressBar.setVisibility(View.GONE);
                             if (response.isSuccessful()) {
                                 Toast.makeText(getContext(), "Đã duyệt", Toast.LENGTH_SHORT).show();
-                                loadPosts();
+                                loadPosts(currentFilter, 0); // Reload current view
                             }
                         }
 
@@ -194,13 +207,43 @@ public class AdminPostsFragment extends Fragment implements AdminPostAdapter.OnP
                             progressBar.setVisibility(View.GONE);
                             if (response.isSuccessful()) {
                                 Toast.makeText(getContext(), "Đã từ chối", Toast.LENGTH_SHORT).show();
-                                loadPosts();
+                                loadPosts(currentFilter, 0); // Reload current view
                             }
                         }
 
                         @Override
                         public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
                             progressBar.setVisibility(View.GONE);
+                        }
+                    });
+                })
+                .setNegativeButton("Hủy", null)
+                .show();
+    }
+
+    @Override
+    public void onClose(Post post) {
+        new AlertDialog.Builder(getContext())
+                .setTitle("Đóng bài đăng")
+                .setMessage("Bạn có chắc chắn muốn đóng bài đăng này? Người dùng sẽ không thể tìm thấy bài đăng này nữa.")
+                .setPositiveButton("Đóng", (dialog, which) -> {
+                    progressBar.setVisibility(View.VISIBLE);
+                    adminApi.closePost(post.getId()).enqueue(new Callback<ApiResponse<Void>>() {
+                        @Override
+                        public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
+                            progressBar.setVisibility(View.GONE);
+                            if (response.isSuccessful()) {
+                                Toast.makeText(getContext(), "Đã đóng bài đăng", Toast.LENGTH_SHORT).show();
+                                loadPosts(currentFilter, 0); // Reload current view
+                            } else {
+                                Toast.makeText(getContext(), "Lỗi: " + response.message(), Toast.LENGTH_SHORT).show();
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
+                            progressBar.setVisibility(View.GONE);
+                            Toast.makeText(getContext(), "Lỗi mạng: " + t.getMessage(), Toast.LENGTH_SHORT).show();
                         }
                     });
                 })

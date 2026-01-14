@@ -58,6 +58,15 @@ public class Post {
     @SerializedName("location")
     private Location location;
 
+    @SerializedName("likeCount")
+    private int likeCount;
+
+    @SerializedName("commentCount")
+    private int commentCount;
+
+    @SerializedName("liked")
+    private boolean liked;
+
     // Getters
     public String getId() { return id; }
     public String getTitle() { return title; }
@@ -76,6 +85,9 @@ public class Post {
     public int getViewCount() { return viewCount; }
     public String getCreatedAt() { return createdAt; }
     public Location getLocation() { return location; }
+    public int getLikeCount() { return likeCount; }
+    public int getCommentCount() { return commentCount; }
+    public boolean isLiked() { return liked; }
     
     // Setters
     public void setId(String id) { this.id = id; }
@@ -95,6 +107,9 @@ public class Post {
     public void setViewCount(int viewCount) { this.viewCount = viewCount; }
     public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
     public void setLocation(Location location) { this.location = location; }
+    public void setLikeCount(int likeCount) { this.likeCount = likeCount; }
+    public void setCommentCount(int commentCount) { this.commentCount = commentCount; }
+    public void setLiked(boolean liked) { this.liked = liked; }
     
     // Helper to get first image
     public String getFirstImage() {

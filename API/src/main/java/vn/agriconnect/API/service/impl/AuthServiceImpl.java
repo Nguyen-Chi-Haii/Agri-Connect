@@ -110,6 +110,24 @@ public class AuthServiceImpl implements AuthService {
                 });
     }
 
+    @Override
+    public String getCurrentUserId() {
+        org.springframework.security.core.Authentication authentication = 
+                org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        
+        if (authentication == null || !authentication.isAuthenticated() || 
+                authentication instanceof org.springframework.security.authentication.AnonymousAuthenticationToken) {
+            return null;
+        }
+        
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof org.springframework.security.core.userdetails.UserDetails) {
+            return ((org.springframework.security.core.userdetails.UserDetails) principal).getUsername();
+        }
+        
+        return null;
+    }
+
     private JwtResponse generateTokens(User user) {
         String accessToken = jwtTokenProvider.generateAccessToken(user.getId());
         String refreshToken = createRefreshToken(user.getId());

@@ -7,5 +7,6 @@ public enum PostStatus {
     PENDING,
     APPROVED,
     REJECTED,
-    SOLD
+    SOLD,
+    CLOSED
 }

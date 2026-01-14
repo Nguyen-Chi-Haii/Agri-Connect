@@ -38,4 +38,8 @@ public class Post {
     
     @CreatedDate
     private Instant createdAt;
+
+    // New fields for interaction
+    private java.util.List<String> likedUserIds = new java.util.ArrayList<>();
+    private int commentCount = 0;
 }
