@@ -36,6 +36,8 @@ public class AdminUserAdapter extends RecyclerView.Adapter<AdminUserAdapter.View
         void onUnlockUser(UserProfile user);
         
         void onUserClick(UserProfile user);
+
+        void onViewImage(String imageUrl);
     }
 
     public void setOnUserActionListener(OnUserActionListener listener) {
@@ -68,7 +70,8 @@ public class AdminUserAdapter extends RecyclerView.Adapter<AdminUserAdapter.View
 
     class ViewHolder extends RecyclerView.ViewHolder {
         TextView tvAvatar, tvFullName, tvPhone, tvRole, tvStatus, tvKycStatus, tvCccd;
-        LinearLayout layoutActions;
+        LinearLayout layoutActions, layoutKycImages;
+        android.widget.ImageView ivKycFront, ivKycBack;
         MaterialButton btnVerifyKyc, btnRejectKyc;
         ImageButton btnMore;
 
@@ -82,12 +85,17 @@ public class AdminUserAdapter extends RecyclerView.Adapter<AdminUserAdapter.View
             tvKycStatus = itemView.findViewById(R.id.tvKycStatus);
             tvCccd = itemView.findViewById(R.id.tvCccd);
             layoutActions = itemView.findViewById(R.id.layoutActions);
+            layoutKycImages = itemView.findViewById(R.id.layoutKycImages);
+            ivKycFront = itemView.findViewById(R.id.ivKycFront);
+            ivKycBack = itemView.findViewById(R.id.ivKycBack);
             btnVerifyKyc = itemView.findViewById(R.id.btnVerifyKyc);
             btnRejectKyc = itemView.findViewById(R.id.btnRejectKyc);
             btnMore = itemView.findViewById(R.id.btnMore);
         }
 
         void bind(UserProfile user) {
+            // ... (previous binding code) ...
+            
             // Avatar
             String name = user.getFullName();
             if (name != null && !name.isEmpty()) {
@@ -127,8 +135,7 @@ public class AdminUserAdapter extends RecyclerView.Adapter<AdminUserAdapter.View
             boolean isActive = user.isActive();
             if (isActive) {
                 tvStatus.setText("Hoạt động");
-                tvStatus.setVisibility(View.GONE); // Optional: hide if active, or show green
-                // Or better: show "Locked" if false
+                tvStatus.setVisibility(View.GONE); 
             } else {
                 tvStatus.setText("Đã khóa");
                 tvStatus.setVisibility(View.VISIBLE);
@@ -136,10 +143,6 @@ public class AdminUserAdapter extends RecyclerView.Adapter<AdminUserAdapter.View
                 if (statusDrawable != null) {
                     statusDrawable.setColor(ContextCompat.getColor(itemView.getContext(), R.color.error));
                 }
-            }
-            if (isActive) {
-                 // Reset color or hide
-                 tvStatus.setVisibility(View.GONE);
             }
 
             // KYC Status
@@ -174,18 +177,53 @@ public class AdminUserAdapter extends RecyclerView.Adapter<AdminUserAdapter.View
                 tvKycStatus.setText(statusText);
                 tvKycStatus.setTextColor(ContextCompat.getColor(itemView.getContext(), statusColor));
 
-                // CCCD
+                // CCCD & Images
                 if (kyc.getCccd() != null) {
                     tvCccd.setVisibility(View.VISIBLE);
                     tvCccd.setText("CCCD: " + kyc.getCccd());
                 } else {
                     tvCccd.setVisibility(View.GONE);
                 }
+
+                // Show images if available
+                if (kyc.getCccdFrontImage() != null || kyc.getCccdBackImage() != null) {
+                    layoutKycImages.setVisibility(View.VISIBLE);
+                    
+                    if (kyc.getCccdFrontImage() != null) {
+                        com.bumptech.glide.Glide.with(itemView.getContext())
+                            .load(kyc.getCccdFrontImage())
+                            .placeholder(android.R.drawable.ic_menu_gallery) 
+                            .into(ivKycFront);
+                        
+                        ivKycFront.setOnClickListener(v -> {
+                             if(listener != null) listener.onViewImage(kyc.getCccdFrontImage());
+                        });
+                    } else {
+                        ivKycFront.setImageResource(android.R.drawable.ic_menu_gallery);
+                    }
+
+                    if (kyc.getCccdBackImage() != null) {
+                        com.bumptech.glide.Glide.with(itemView.getContext())
+                            .load(kyc.getCccdBackImage())
+                            .placeholder(android.R.drawable.ic_menu_gallery)
+                            .into(ivKycBack);
+
+                        ivKycBack.setOnClickListener(v -> {
+                             if(listener != null) listener.onViewImage(kyc.getCccdBackImage());
+                        });
+                    } else {
+                        ivKycBack.setImageResource(android.R.drawable.ic_menu_gallery);
+                    }
+                } else {
+                    layoutKycImages.setVisibility(View.GONE);
+                }
+
             } else {
                 tvKycStatus.setText("Chưa gửi KYC");
                 tvKycStatus.setTextColor(ContextCompat.getColor(itemView.getContext(), R.color.text_hint));
                 tvCccd.setVisibility(View.GONE);
                 layoutActions.setVisibility(View.GONE);
+                layoutKycImages.setVisibility(View.GONE);
             }
 
             // Action buttons

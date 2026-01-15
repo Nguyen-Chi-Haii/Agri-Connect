@@ -147,6 +147,15 @@ public class ApiClient {
         return adminApi;
     }
 
+    private UploadApi uploadApi;
+
+    public UploadApi getUploadApi() {
+        if (uploadApi == null) {
+            uploadApi = retrofit.create(UploadApi.class);
+        }
+        return uploadApi;
+    }
+
     public TokenManager getTokenManager() {
         return tokenManager;
     }

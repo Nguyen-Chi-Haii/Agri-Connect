@@ -72,6 +72,14 @@ public class AuthServiceImpl implements AuthService {
         user.setRole(request.getRole() != null ? request.getRole() : Role.FARMER);
         user.setActive(true);
 
+        // Save Tax Code for Trader
+        if (user.getRole() == Role.TRADER && request.getTaxCode() != null && !request.getTaxCode().isEmpty()) {
+            vn.agriconnect.API.model.embedded.KycInfo kyc = new vn.agriconnect.API.model.embedded.KycInfo();
+            kyc.setTaxCode(request.getTaxCode());
+            kyc.setStatus("PENDING"); // Consider tax code as initial pending KYC or just informational
+            user.setKyc(kyc);
+        }
+
         userRepository.save(user);
 
         return generateTokens(user);

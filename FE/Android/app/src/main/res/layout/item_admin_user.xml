@@ -134,6 +134,34 @@
             android:textSize="12sp"
             android:visibility="gone" />
 
+        <!-- KYC Images -->
+        <LinearLayout
+            android:id="@+id/layoutKycImages"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:layout_marginTop="8dp"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <ImageView
+                android:id="@+id/ivKycFront"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginEnd="4dp"
+                android:layout_weight="1"
+                android:background="#E0E0E0"
+                android:scaleType="centerCrop" />
+
+            <ImageView
+                android:id="@+id/ivKycBack"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginStart="4dp"
+                android:layout_weight="1"
+                android:background="#E0E0E0"
+                android:scaleType="centerCrop" />
+        </LinearLayout>
+
         <!-- Action Buttons -->
         <LinearLayout
             android:id="@+id/layoutActions"

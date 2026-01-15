@@ -33,12 +33,20 @@ public class PostServiceImpl implements PostService {
     private final PostMapper postMapper;
     private final MongoTemplate mongoTemplate;
     private final vn.agriconnect.API.service.AuthService authService;
+    private final vn.agriconnect.API.repository.UserRepository userRepository;
 
     @Override
     public PostDetailResponse create(String sellerId, PostCreateRequest request) {
+        vn.agriconnect.API.model.User seller = userRepository.findById(sellerId)
+            .orElseThrow(() -> new ResourceNotFoundException("User", "id", sellerId));
+
+        if (seller.getKyc() == null || !"VERIFIED".equals(seller.getKyc().getStatus())) {
+            throw new vn.agriconnect.API.exception.BadRequestException("Bạn cần xác minh danh tính thành công để đăng bài");
+        }
+
         Post post = postMapper.toEntity(request);
         post.setSellerId(sellerId);
-        post.setStatus(PostStatus.PENDING);
+        post.setStatus(PostStatus.PENDING); // Still pending approval for content
         post = postRepository.save(post);
         return toDetailResponse(post);
     }

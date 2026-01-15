@@ -168,6 +168,25 @@
                 android:inputType="textPostalAddress" />
         </com.google.android.material.textfield.TextInputLayout>
 
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilTaxCode"
+            style="@style/TextInputStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_md"
+            android:hint="Mã số thuế"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tilAddress">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etTaxCode"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="number" />
+        </com.google.android.material.textfield.TextInputLayout>
+
         <!-- Register Button -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnRegister"
@@ -180,7 +199,7 @@
             app:cornerRadius="@dimen/radius_lg"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tilAddress" />
+            app:layout_constraintTop_toBottomOf="@id/tilTaxCode" />
 
         <!-- Loading Indicator -->
         <ProgressBar

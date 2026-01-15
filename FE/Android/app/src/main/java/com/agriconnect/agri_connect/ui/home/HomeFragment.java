@@ -51,6 +51,7 @@ public class HomeFragment extends Fragment {
     
     private PostApi postApi;
     private CategoryApi categoryApi;
+    private com.agriconnect.agri_connect.api.UserApi userApi;
 
     // Filter state
     private String currentCategoryId = null;
@@ -77,8 +78,10 @@ public class HomeFragment extends Fragment {
         
         // Initialize API
         if (getContext() != null) {
-            postApi = ApiClient.getInstance(getContext()).getPostApi();
-            categoryApi = ApiClient.getInstance(getContext()).getCategoryApi();
+            ApiClient client = ApiClient.getInstance(getContext());
+            postApi = client.getPostApi();
+            categoryApi = client.getCategoryApi();
+            userApi = client.getUserApi();
         }
         
         initViews(view);
@@ -121,8 +124,52 @@ public class HomeFragment extends Fragment {
 
     private void setupListeners() {
         fabCreatePost.setOnClickListener(v -> {
-            Intent intent = new Intent(getContext(), CreatePostActivity.class);
-            createPostLauncher.launch(intent);
+            progressBar.setVisibility(View.VISIBLE);
+            fabCreatePost.setEnabled(false);
+            
+            userApi.getProfile().enqueue(new Callback<ApiResponse<com.agriconnect.agri_connect.api.model.UserProfile>>() {
+                @Override
+                public void onResponse(Call<ApiResponse<com.agriconnect.agri_connect.api.model.UserProfile>> call, 
+                                     Response<ApiResponse<com.agriconnect.agri_connect.api.model.UserProfile>> response) {
+                    progressBar.setVisibility(View.GONE);
+                    fabCreatePost.setEnabled(true);
+                    
+                    if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                        com.agriconnect.agri_connect.api.model.UserProfile user = response.body().getData();
+                        if (user != null && user.getKyc() != null && "VERIFIED".equals(user.getKyc().getStatus())) {
+                             Intent intent = new Intent(getContext(), CreatePostActivity.class);
+                             createPostLauncher.launch(intent);
+                        } else {
+                            // Determine message based on role or just generic
+                            String msg = "Bạn cần xác minh danh tính để đăng bài.";
+                            if (user != null && user.getKyc() != null && "PENDING".equals(user.getKyc().getStatus())) {
+                                msg += "\nHồ sơ của bạn đang chờ duyệt.";
+                            } else {
+                                msg += "\nVui lòng cập nhật mã số thuế (Thương lái) hoặc CCCD (Nông dân).";
+                            }
+                            
+                            new android.app.AlertDialog.Builder(getContext())
+                                .setTitle("Yêu cầu xác minh")
+                                .setMessage(msg)
+                                .setPositiveButton("Xác minh ngay", (dialog, which) -> {
+                                    Intent intent = new Intent(getContext(), com.agriconnect.agri_connect.ui.profile.EditProfileActivity.class);
+                                    startActivity(intent);
+                                })
+                                .setNegativeButton("Để sau", null)
+                                .show();
+                        }
+                    } else {
+                        Toast.makeText(getContext(), "Không thể kiểm tra trạng thái tài khoản", Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<ApiResponse<com.agriconnect.agri_connect.api.model.UserProfile>> call, Throwable t) {
+                    progressBar.setVisibility(View.GONE);
+                    fabCreatePost.setEnabled(true);
+                    Toast.makeText(getContext(), "Lỗi kết nối", Toast.LENGTH_SHORT).show();
+                }
+            });
         });
 
         btnSearch.setOnClickListener(v -> {

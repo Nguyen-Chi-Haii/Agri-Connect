@@ -12,4 +12,5 @@ public class KycInfo {
     private String cccdBackImage;
     private String status; // PENDING, VERIFIED, REJECTED
     private String rejectionReason;
+    private String taxCode;
 }

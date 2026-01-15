@@ -34,7 +34,8 @@ public class CreateAccountActivity extends AppCompatActivity {
 
     private ImageView btnBack;
     private TextView tvRoleBadge;
-    private TextInputEditText etFullName, etUsername, etPhone, etPassword, etConfirmPassword, etAddress;
+    private TextInputEditText etFullName, etUsername, etPhone, etPassword, etConfirmPassword, etAddress, etTaxCode;
+    private com.google.android.material.textfield.TextInputLayout tilTaxCode;
     private MaterialButton btnRegister;
     private ProgressBar progressBar;
     private TextView tvLoginLink;
@@ -79,6 +80,8 @@ public class CreateAccountActivity extends AppCompatActivity {
         etPassword = findViewById(R.id.etPassword);
         etConfirmPassword = findViewById(R.id.etConfirmPassword);
         etAddress = findViewById(R.id.etAddress);
+        etTaxCode = findViewById(R.id.etTaxCode);
+        tilTaxCode = findViewById(R.id.tilTaxCode);
         btnRegister = findViewById(R.id.btnRegister);
         progressBar = findViewById(R.id.progressBar);
         tvLoginLink = findViewById(R.id.tvLoginLink);
@@ -94,6 +97,7 @@ public class CreateAccountActivity extends AppCompatActivity {
             tvRoleBadge.setText(R.string.role_trader);
             tvRoleBadge.setBackgroundTintList(
                 ContextCompat.getColorStateList(this, R.color.trader_blue));
+            tilTaxCode.setVisibility(View.VISIBLE);
         }
     }
 
@@ -161,10 +165,17 @@ public class CreateAccountActivity extends AppCompatActivity {
             return;
         }
 
+        String taxCode = etTaxCode.getText() != null ? etTaxCode.getText().toString().trim() : "";
+        
+        // For TRADER, taxCode is optional now. For FARMER, explicitly null.
+        if (!"TRADER".equals(selectedRole)) {
+            taxCode = null; 
+        }
+
         showLoading(true);
 
         // Call register API
-        RegisterRequest request = new RegisterRequest(username, phone, password, fullName, address, selectedRole);
+        RegisterRequest request = new RegisterRequest(username, phone, password, fullName, address, selectedRole, taxCode);
         authApi.register(request).enqueue(new Callback<ApiResponse<JwtResponse>>() {
             @Override
             public void onResponse(Call<ApiResponse<JwtResponse>> call, Response<ApiResponse<JwtResponse>> response) {
@@ -179,8 +190,16 @@ public class CreateAccountActivity extends AppCompatActivity {
                     
                     Toast.makeText(CreateAccountActivity.this, "Đăng ký thành công!", Toast.LENGTH_SHORT).show();
                     
-                    // Navigate to eKYC upload (optional)
-                    Intent intent = new Intent(CreateAccountActivity.this, EkycUploadActivity.class);
+                    // Navigate based on role
+                    Intent intent;
+                    if ("TRADER".equals(jwt.getRole())) {
+                        // Trader skips eKYC upload (relies on Tax Code)
+                        intent = new Intent(CreateAccountActivity.this, MainNavigationActivity.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    } else {
+                        // Farmer proceeds to eKYC upload
+                        intent = new Intent(CreateAccountActivity.this, EkycUploadActivity.class);
+                    }
                     startActivity(intent);
                     finish();
                 } else {

@@ -7,6 +7,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ProgressBar;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -283,6 +285,10 @@ public class AdminUsersFragment extends Fragment implements AdminUserAdapter.OnU
         TextView tvStatus = view.findViewById(R.id.tvDetailStatus);
         TextView tvPhone = view.findViewById(R.id.tvDetailPhone);
         TextView tvAddress = view.findViewById(R.id.tvDetailAddress);
+        
+        LinearLayout layoutTaxCode = view.findViewById(R.id.layoutTaxCode);
+        TextView tvTaxCode = view.findViewById(R.id.tvTaxCode);
+
         TextView tvKycStatus = view.findViewById(R.id.tvDetailKycStatus);
         TextView tvCccd = view.findViewById(R.id.tvDetailCccd);
         View btnClose = view.findViewById(R.id.btnCloseDialog);
@@ -315,8 +321,16 @@ public class AdminUsersFragment extends Fragment implements AdminUserAdapter.OnU
         tvPhone.setText(user.getPhone() != null ? user.getPhone() : "Chưa cập nhật");
         tvAddress.setText(user.getAddress() != null ? user.getAddress() : "Chưa cập nhật");
 
-        // KYC
-        if (user.getKyc() != null && user.getKyc().getStatus() != null) {
+        // Tax Code (Trader only)
+        if ("TRADER".equals(user.getRole()) && user.getKyc() != null && user.getKyc().getTaxCode() != null) {
+            layoutTaxCode.setVisibility(View.VISIBLE);
+            tvTaxCode.setText(user.getKyc().getTaxCode());
+        } else {
+            layoutTaxCode.setVisibility(View.GONE);
+        }
+
+        // KYC Info
+        if (user.getKyc() != null) {
             String status = user.getKyc().getStatus();
             if ("VERIFIED".equals(status)) {
                 tvKycStatus.setText("Đã xác minh");
@@ -348,5 +362,59 @@ public class AdminUsersFragment extends Fragment implements AdminUserAdapter.OnU
         btnClose.setOnClickListener(v -> dialog.dismiss());
         
         dialog.show();
+    }
+    @Override
+    public void onViewImage(String imageUrl) {
+        if (getContext() == null) return;
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext(), android.R.style.Theme_Black_NoTitleBar_Fullscreen);
+        
+        // Create a layout for the dialog (ImageView with a Close button)
+        android.widget.RelativeLayout layout = new android.widget.RelativeLayout(getContext());
+        layout.setLayoutParams(new android.view.ViewGroup.LayoutParams(
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT, 
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT));
+        layout.setBackgroundColor(android.graphics.Color.BLACK);
+
+        // ImageView
+        // Use standard ImageView with fitCenter
+        android.widget.ImageView standardImageView = new android.widget.ImageView(getContext());
+        standardImageView.setLayoutParams(new android.widget.RelativeLayout.LayoutParams(
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT, 
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT));
+        standardImageView.setScaleType(android.widget.ImageView.ScaleType.FIT_CENTER);
+        
+        layout.addView(standardImageView);
+
+        // Close Button
+        android.widget.ImageButton closeButton = new android.widget.ImageButton(getContext());
+        android.widget.RelativeLayout.LayoutParams closeParams = new android.widget.RelativeLayout.LayoutParams(
+                dpToPx(48), dpToPx(48));
+        closeParams.addRule(android.widget.RelativeLayout.ALIGN_PARENT_TOP);
+        closeParams.addRule(android.widget.RelativeLayout.ALIGN_PARENT_END);
+        closeParams.setMargins(0, dpToPx(16), dpToPx(16), 0);
+        closeButton.setLayoutParams(closeParams);
+        closeButton.setImageResource(android.R.drawable.ic_menu_close_clear_cancel);
+        closeButton.setBackgroundResource(android.R.color.transparent);
+        closeButton.setColorFilter(android.graphics.Color.WHITE);
+        
+        layout.addView(closeButton);
+
+        builder.setView(layout);
+        AlertDialog dialog = builder.create();
+        
+        closeButton.setOnClickListener(v -> dialog.dismiss());
+        
+        // Load image
+        com.bumptech.glide.Glide.with(getContext())
+                .load(imageUrl)
+                .into(standardImageView);
+
+        dialog.show();
+    }
+    
+    private int dpToPx(int dp) {
+        float density = getResources().getDisplayMetrics().density;
+        return Math.round((float) dp * density);
     }
 }
