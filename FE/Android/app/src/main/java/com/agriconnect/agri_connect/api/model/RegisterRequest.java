@@ -24,13 +24,17 @@ public class RegisterRequest {
     @SerializedName("role")
     private String role;
 
-    public RegisterRequest(String username, String phone, String password, String fullName, String address, String role) {
+    @SerializedName("taxCode")
+    private String taxCode;
+
+    public RegisterRequest(String username, String phone, String password, String fullName, String address, String role, String taxCode) {
         this.username = username;
         this.phone = phone;
         this.password = password;
         this.fullName = fullName;
         this.address = address;
         this.role = role;
+        this.taxCode = taxCode;
     }
 
     // Getters and setters
@@ -51,4 +55,7 @@ public class RegisterRequest {
     
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
+
+    public String getTaxCode() { return taxCode; }
+    public void setTaxCode(String taxCode) { this.taxCode = taxCode; }
 }

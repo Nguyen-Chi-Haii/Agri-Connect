@@ -77,6 +77,18 @@ public class UserServiceImpl implements UserService {
         if (StringUtils.hasText(request.getPhone())) {
             user.setPhone(request.getPhone());
         }
+        
+        if (StringUtils.hasText(request.getTaxCode())) {
+            if (user.getKyc() == null) {
+                user.setKyc(new KycInfo());
+            }
+            user.getKyc().setTaxCode(request.getTaxCode());
+            // If updating tax code, reset status to PENDING for re-verification if it was REJECTED
+            // If it was NULL/NONE, set to PENDING
+            if (user.getKyc().getStatus() == null || "REJECTED".equals(user.getKyc().getStatus())) {
+                 user.getKyc().setStatus("PENDING");
+            }
+        }
 
         userRepository.save(user);
         return mapToResponse(user);

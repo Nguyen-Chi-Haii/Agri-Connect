@@ -15,6 +15,13 @@ public class KycInfo {
     @SerializedName("rejectionReason")
     private String rejectionReason;
 
+    @SerializedName("taxCode")
+    private String taxCode;
+    @SerializedName("cccdFrontImage")
+    private String cccdFrontImage;
+    @SerializedName("cccdBackImage")
+    private String cccdBackImage;
+
     public String getCccd() {
         return cccd;
     }
@@ -25,5 +32,17 @@ public class KycInfo {
 
     public String getRejectionReason() {
         return rejectionReason;
+    }
+
+    public String getTaxCode() {
+        return taxCode;
+    }
+
+    public String getCccdFrontImage() {
+        return cccdFrontImage;
+    }
+
+    public String getCccdBackImage() {
+        return cccdBackImage;
     }
 }

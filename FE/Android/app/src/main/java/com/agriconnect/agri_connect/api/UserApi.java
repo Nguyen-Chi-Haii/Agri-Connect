@@ -19,6 +19,9 @@ public interface UserApi {
     @GET("api/users/{userId}")
     Call<ApiResponse<UserProfile>> getUserById(@Path("userId") String userId);
 
+    @POST("api/users/kyc/submit")
+    Call<ApiResponse<UserProfile>> submitKyc(@Body KycSubmissionRequest request);
+
     @GET("api/statistics/summary")
     Call<ApiResponse<StatisticsResponse>> getStatistics();
 }

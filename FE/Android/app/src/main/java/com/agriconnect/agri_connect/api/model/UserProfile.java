@@ -30,6 +30,9 @@ public class UserProfile {
     @SerializedName("active")
     private boolean isActive;
 
+    @SerializedName("taxCode")
+    private String taxCode;
+
     // Getters
     public String getId() {
         return id;
@@ -100,4 +103,7 @@ public class UserProfile {
     public boolean isVerified() {
         return kyc != null && "VERIFIED".equals(kyc.getStatus());
     }
+
+    public String getTaxCode() { return taxCode; }
+    public void setTaxCode(String taxCode) { this.taxCode = taxCode; }
 }

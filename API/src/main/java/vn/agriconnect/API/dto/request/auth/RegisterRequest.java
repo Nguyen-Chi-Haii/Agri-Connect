@@ -25,5 +25,7 @@ public class RegisterRequest {
 
     private String address;
 
+    private String taxCode;
+
     private Role role;
 }

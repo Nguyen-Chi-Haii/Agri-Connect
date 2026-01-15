@@ -17,6 +17,10 @@ import androidx.core.view.WindowInsetsCompat;
 import com.agriconnect.agri_connect.R;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
+import com.agriconnect.agri_connect.api.ApiClient;
+import com.agriconnect.agri_connect.api.TokenManager;
+import com.agriconnect.agri_connect.ui.admin.AdminMainActivity;
+import com.agriconnect.agri_connect.ui.main.MainNavigationActivity;
 
 public class RoleSelectionActivity extends AppCompatActivity {
 
@@ -32,6 +36,10 @@ public class RoleSelectionActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        
+        // Auto Login Check
+        checkAutoLogin();
+        
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_role_selection);
         
@@ -43,6 +51,27 @@ public class RoleSelectionActivity extends AppCompatActivity {
 
         initViews();
         setupListeners();
+    }
+    
+    private void checkAutoLogin() {
+        ApiClient apiClient = ApiClient.getInstance(this);
+        TokenManager tokenManager = apiClient.getTokenManager();
+        
+        if (tokenManager.isLoggedIn()) {
+            String role = tokenManager.getUserRole();
+            Intent intent;
+
+            // Check if admin role - redirect to AdminMainActivity
+            if ("ADMIN".equals(role)) {
+                intent = new Intent(this, AdminMainActivity.class);
+            } else {
+                intent = new Intent(this, MainNavigationActivity.class);
+            }
+
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+            finish();
+        }
     }
 
     private void initViews() {

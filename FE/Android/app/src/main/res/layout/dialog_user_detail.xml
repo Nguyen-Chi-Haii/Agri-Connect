@@ -126,7 +126,34 @@
             android:layout_height="1dp"
             android:layout_marginVertical="8dp"
             android:background="@color/divider" />
-            
+
+        <!-- Tax Code -->
+        <LinearLayout
+            android:id="@+id/layoutTaxCode"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Mã số thuế: "
+                android:textColor="@color/text_secondary"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/tvTaxCode"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="0123456789"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
         <!-- KYC Info -->
         <TextView
              android:layout_width="wrap_content"
