@@ -20,10 +20,14 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.agriconnect.agri_connect.R;
 import com.agriconnect.agri_connect.api.ApiClient;
+import com.agriconnect.agri_connect.api.CategoryApi;
 import com.agriconnect.agri_connect.api.PostApi;
 import com.agriconnect.agri_connect.api.model.ApiResponse;
+import com.agriconnect.agri_connect.api.model.Category;
+import com.agriconnect.agri_connect.api.model.PagedResponse;
 import com.agriconnect.agri_connect.api.model.Post;
 import com.agriconnect.agri_connect.ui.post.CreatePostActivity;
+import com.agriconnect.agri_connect.ui.post.PostDetailActivity;
 import com.agriconnect.agri_connect.ui.search.SearchActivity;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -36,20 +40,27 @@ import retrofit2.Response;
 
 public class HomeFragment extends Fragment {
 
-    private RecyclerView rvPosts;
+    private RecyclerView rvPosts, rvCategories;
     private LinearLayout layoutEmpty;
     private ProgressBar progressBar;
     private FloatingActionButton fabCreatePost;
     private ImageView btnSearch;
+    
     private PostAdapter postAdapter;
+    private HomeCategoryAdapter categoryAdapter;
+    
     private PostApi postApi;
+    private CategoryApi categoryApi;
+
+    // Filter state
+    private String currentCategoryId = null;
 
     private final ActivityResultLauncher<Intent> createPostLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
                 if (result.getResultCode() == android.app.Activity.RESULT_OK) {
                     // Refresh posts
-                    loadPosts();
+                    loadPosts(currentCategoryId);
                 }
             }
     );
@@ -67,16 +78,20 @@ public class HomeFragment extends Fragment {
         // Initialize API
         if (getContext() != null) {
             postApi = ApiClient.getInstance(getContext()).getPostApi();
+            categoryApi = ApiClient.getInstance(getContext()).getCategoryApi();
         }
         
         initViews(view);
         setupRecyclerView();
         setupListeners();
-        loadPosts();
+        
+        loadCategories();
+        loadPosts(null);
     }
 
     private void initViews(View view) {
         rvPosts = view.findViewById(R.id.rvPosts);
+        rvCategories = view.findViewById(R.id.rvCategories);
         layoutEmpty = view.findViewById(R.id.layoutEmpty);
         progressBar = view.findViewById(R.id.progressBar);
         fabCreatePost = view.findViewById(R.id.fabCreatePost);
@@ -84,9 +99,24 @@ public class HomeFragment extends Fragment {
     }
 
     private void setupRecyclerView() {
+        // Posts
         postAdapter = new PostAdapter();
+        postAdapter.setOnPostClickListener(postId -> {
+            Intent intent = new Intent(getContext(), PostDetailActivity.class);
+            intent.putExtra("postId", postId);
+            startActivity(intent);
+        });
         rvPosts.setLayoutManager(new LinearLayoutManager(getContext()));
         rvPosts.setAdapter(postAdapter);
+
+        // Categories
+        categoryAdapter = new HomeCategoryAdapter();
+        categoryAdapter.setOnCategoryClickListener(category -> {
+            currentCategoryId = category != null ? category.getId() : null;
+            loadPosts(currentCategoryId);
+        });
+        rvCategories.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
+        rvCategories.setAdapter(categoryAdapter);
     }
 
     private void setupListeners() {
@@ -101,59 +131,102 @@ public class HomeFragment extends Fragment {
         });
     }
 
-    private void loadPosts() {
-        progressBar.setVisibility(View.VISIBLE);
-        layoutEmpty.setVisibility(View.GONE);
-        
-        postApi.getApprovedPosts().enqueue(new Callback<ApiResponse<List<Post>>>() {
+    private void loadCategories() {
+        categoryApi.getAllCategories().enqueue(new Callback<ApiResponse<List<Category>>>() {
             @Override
-            public void onResponse(Call<ApiResponse<List<Post>>> call, Response<ApiResponse<List<Post>>> response) {
-                progressBar.setVisibility(View.GONE);
-                
-                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                    List<Post> posts = response.body().getData();
-                    
-                    if (posts != null && !posts.isEmpty()) {
-                        // Convert to PostItem for adapter
-                        List<PostItem> postItems = new ArrayList<>();
-                        for (Post post : posts) {
-                            PostItem item = new PostItem(
-                                post.getId(),
-                                post.getSellerName(),
-                                formatTime(post.getCreatedAt()),
-                                post.getDescription() != null ? post.getDescription() : post.getTitle(),
-                                formatPrice(post.getPrice(), post.getUnit()),
-                                0, // likeCount
-                                0, // commentCount
-                                post.getViewCount(),
-                                post.isSellerVerified()
-                            );
-                            if (post.getImages() != null && !post.getImages().isEmpty()) {
-                                item.imageUrl = post.getImages().get(0);
-                            }
-                            postItems.add(item);
-                        }
-                        
-                        postAdapter.setData(postItems);
-                        rvPosts.setVisibility(View.VISIBLE);
-                        layoutEmpty.setVisibility(View.GONE);
-                    } else {
-                        showEmpty();
-                    }
-                } else {
-                    showEmpty();
+            public void onResponse(Call<ApiResponse<List<Category>>> call, Response<ApiResponse<List<Category>>> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().getData() != null) {
+                    categoryAdapter.setCategories(response.body().getData());
                 }
             }
 
             @Override
-            public void onFailure(Call<ApiResponse<List<Post>>> call, Throwable t) {
-                progressBar.setVisibility(View.GONE);
-                showEmpty();
-                if (getContext() != null) {
-                    Toast.makeText(getContext(), "Lỗi tải dữ liệu: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-                }
+            public void onFailure(Call<ApiResponse<List<Category>>> call, Throwable t) {
+                // Silently fail for categories, just don't show them
             }
         });
+    }
+
+    private void loadPosts(String categoryId) {
+        progressBar.setVisibility(View.VISIBLE);
+        layoutEmpty.setVisibility(View.GONE);
+        rvPosts.setVisibility(View.GONE);
+        
+        if (categoryId == null) {
+            // Load All Approved Posts
+            postApi.getApprovedPosts().enqueue(new Callback<ApiResponse<List<Post>>>() {
+                @Override
+                public void onResponse(Call<ApiResponse<List<Post>>> call, Response<ApiResponse<List<Post>>> response) {
+                    progressBar.setVisibility(View.GONE);
+                    if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                        displayPosts(response.body().getData());
+                    } else {
+                        showEmpty();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<ApiResponse<List<Post>>> call, Throwable t) {
+                    handleError(t);
+                }
+            });
+        } else {
+            // Filter by Category
+            postApi.searchPosts(null, categoryId, null, null).enqueue(new Callback<ApiResponse<PagedResponse<Post>>>() {
+                @Override
+                public void onResponse(Call<ApiResponse<PagedResponse<Post>>> call, Response<ApiResponse<PagedResponse<Post>>> response) {
+                    progressBar.setVisibility(View.GONE);
+                    if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                        PagedResponse<Post> pagedResponse = response.body().getData();
+                        displayPosts(pagedResponse != null ? pagedResponse.getContent() : null);
+                    } else {
+                        showEmpty();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<ApiResponse<PagedResponse<Post>>> call, Throwable t) {
+                    handleError(t);
+                }
+            });
+        }
+    }
+
+    private void displayPosts(List<Post> posts) {
+        if (posts != null && !posts.isEmpty()) {
+            List<PostItem> postItems = new ArrayList<>();
+            for (Post post : posts) {
+                PostItem item = new PostItem(
+                    post.getId(),
+                    post.getSellerName(),
+                    formatTime(post.getCreatedAt()),
+                    post.getDescription() != null ? post.getDescription() : post.getTitle(),
+                    formatPrice(post.getPrice(), post.getUnit()),
+                    0, // likeCount
+                    0, // commentCount
+                    post.getViewCount(),
+                    post.isSellerVerified()
+                );
+                if (post.getImages() != null && !post.getImages().isEmpty()) {
+                    item.imageUrl = post.getImages().get(0);
+                }
+                postItems.add(item);
+            }
+            
+            postAdapter.setData(postItems);
+            rvPosts.setVisibility(View.VISIBLE);
+            layoutEmpty.setVisibility(View.GONE);
+        } else {
+            showEmpty();
+        }
+    }
+
+    private void handleError(Throwable t) {
+        progressBar.setVisibility(View.GONE);
+        showEmpty();
+        if (getContext() != null) {
+            Toast.makeText(getContext(), "Lỗi tải dữ liệu", Toast.LENGTH_SHORT).show();
+        }
     }
     
     private void showEmpty() {

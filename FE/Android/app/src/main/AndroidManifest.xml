@@ -96,9 +96,7 @@
             android:name=".ui.admin.AdminUsersActivity"
             android:exported="false" />
 
-        <activity
-            android:name=".ui.admin.CategoryManagementActivity"
-            android:exported="false" />
+
 
         <!-- Keep old MainActivity for reference -->
         <activity

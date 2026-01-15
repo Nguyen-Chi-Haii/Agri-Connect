@@ -27,6 +27,16 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         notifyDataSetChanged();
     }
 
+    private OnPostClickListener listener;
+
+    public interface OnPostClickListener {
+        void onPostClick(String postId);
+    }
+
+    public void setOnPostClickListener(OnPostClickListener listener) {
+        this.listener = listener;
+    }
+
     @NonNull
     @Override
     public PostViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -37,7 +47,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
 
     @Override
     public void onBindViewHolder(@NonNull PostViewHolder holder, int position) {
-        holder.bind(posts.get(position));
+        holder.bind(posts.get(position), listener);
     }
 
     @Override
@@ -75,7 +85,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
             ivLike = itemView.findViewById(R.id.ivLike);
         }
 
-        public void bind(HomeFragment.PostItem post) {
+        public void bind(HomeFragment.PostItem post, OnPostClickListener listener) {
             tvUserName.setText(post.userName);
             tvPostTime.setText(post.time);
             tvContent.setText(post.content);
@@ -103,9 +113,14 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
 
             // Click to view detail
             itemView.setOnClickListener(v -> {
-                Intent intent = new Intent(itemView.getContext(), PostDetailActivity.class);
-                intent.putExtra(PostDetailActivity.EXTRA_POST_ID, post.id);
-                itemView.getContext().startActivity(intent);
+                if (listener != null) {
+                    listener.onPostClick(post.id);
+                } else {
+                    // Fallback if listener not set
+                    Intent intent = new Intent(itemView.getContext(), PostDetailActivity.class);
+                    intent.putExtra(PostDetailActivity.EXTRA_POST_ID, post.id);
+                    itemView.getContext().startActivity(intent);
+                }
             });
 
             // Like button click

@@ -39,9 +39,7 @@ public class AdminMainActivity extends AppCompatActivity {
             } else if (itemId == R.id.nav_admin_posts) {
                 fragment = new AdminPostsFragment();
             } else if (itemId == R.id.nav_admin_categories) {
-                // Start Activity for Category Management
-                startActivity(new Intent(this, CategoryManagementActivity.class));
-                return false; // Don't select the tab
+                fragment = new AdminCategoriesFragment();
             } else if (itemId == R.id.nav_admin_users) {
                 fragment = new AdminUsersFragment();
             } else if (itemId == R.id.nav_admin_settings) {

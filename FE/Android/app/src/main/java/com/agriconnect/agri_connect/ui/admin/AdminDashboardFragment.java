@@ -107,8 +107,12 @@ public class AdminDashboardFragment extends Fragment {
             View cardCategoryManagement = getView().findViewById(R.id.cardCategoryManagement);
             if (cardCategoryManagement != null) {
                 cardCategoryManagement.setOnClickListener(v -> {
-                    android.content.Intent intent = new android.content.Intent(getContext(), CategoryManagementActivity.class);
-                    startActivity(intent);
+                    if (getActivity() instanceof AdminMainActivity) {
+                        BottomNavigationView bottomNav = getActivity().findViewById(R.id.bottom_navigation);
+                        if (bottomNav != null) {
+                            bottomNav.setSelectedItemId(R.id.nav_admin_categories);
+                        }
+                    }
                 });
             }
         }

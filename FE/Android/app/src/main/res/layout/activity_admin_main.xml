@@ -22,6 +22,8 @@
         android:background="@color/surface"
         app:itemIconTint="@color/bottom_nav_color"
         app:itemTextColor="@color/bottom_nav_color"
+        app:itemBackground="@null"
+        app:itemRippleColor="@android:color/transparent"
         app:labelVisibilityMode="labeled"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
