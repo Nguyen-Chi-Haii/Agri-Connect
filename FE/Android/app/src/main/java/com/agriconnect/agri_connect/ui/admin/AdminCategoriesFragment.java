@@ -3,14 +3,14 @@ package com.agriconnect.agri_connect.ui.admin;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
+import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -29,41 +29,42 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class CategoryManagementActivity extends AppCompatActivity {
+public class AdminCategoriesFragment extends Fragment {
 
     private RecyclerView rvCategories;
     private CategoryAdapter adapter;
     private View progressBar, tvEmpty;
     private FloatingActionButton fabAdd;
-    private View btnBack;
+    // No back button needed in fragment
 
     private CategoryApi categoryApi;
 
+    @Nullable
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_category_management);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_admin_categories, container, false);
+    }
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
 
-        categoryApi = ApiClient.getInstance(this).getCategoryApi();
+        if (getContext() != null) {
+            categoryApi = ApiClient.getInstance(getContext()).getCategoryApi();
+        }
 
-        initViews();
+        initViews(view);
         setupRecyclerView();
         setupListeners();
         loadCategories();
     }
 
-    private void initViews() {
-        rvCategories = findViewById(R.id.rvCategories);
-        progressBar = findViewById(R.id.progressBar);
-        tvEmpty = findViewById(R.id.tvEmpty);
-        fabAdd = findViewById(R.id.fabAdd);
-        btnBack = findViewById(R.id.btnBack);
+    private void initViews(View view) {
+        rvCategories = view.findViewById(R.id.rvCategories);
+        progressBar = view.findViewById(R.id.progressBar);
+        tvEmpty = view.findViewById(R.id.tvEmpty);
+        fabAdd = view.findViewById(R.id.fabAdd);
     }
 
     private void setupRecyclerView() {
@@ -79,17 +80,18 @@ public class CategoryManagementActivity extends AppCompatActivity {
                 showDeleteConfirmation(category);
             }
         });
-        rvCategories.setLayoutManager(new LinearLayoutManager(this));
+        rvCategories.setLayoutManager(new LinearLayoutManager(getContext()));
         rvCategories.setAdapter(adapter);
     }
 
     private void setupListeners() {
-        btnBack.setOnClickListener(v -> finish());
         fabAdd.setOnClickListener(v -> showAddEditDialog(null));
     }
 
     private void loadCategories() {
         showLoading(true);
+        if (categoryApi == null) return;
+
         categoryApi.getAllCategories().enqueue(new Callback<ApiResponse<List<Category>>>() {
             @Override
             public void onResponse(Call<ApiResponse<List<Category>>> call, Response<ApiResponse<List<Category>>> response) {
@@ -112,8 +114,10 @@ public class CategoryManagementActivity extends AppCompatActivity {
     }
 
     private void showAddEditDialog(Category categoryToEdit) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_add_edit_category, null);
+        if (getContext() == null) return;
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_add_edit_category, null);
         builder.setView(dialogView);
         AlertDialog dialog = builder.create();
         dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
@@ -159,8 +163,8 @@ public class CategoryManagementActivity extends AppCompatActivity {
                 public void onResponse(Call<ApiResponse<Category>> call, Response<ApiResponse<Category>> response) {
                     showLoading(false);
                     if (response.isSuccessful()) {
-                        Toast.makeText(CategoryManagementActivity.this, 
-                                categoryToEdit != null ? "Cập nhật thành công!" : "Thêm mới thành công!", 
+                        Toast.makeText(getContext(),
+                                categoryToEdit != null ? "Cập nhật thành công!" : "Thêm mới thành công!",
                                 Toast.LENGTH_SHORT).show();
                         loadCategories();
                         dialog.dismiss();
@@ -187,7 +191,9 @@ public class CategoryManagementActivity extends AppCompatActivity {
     }
 
     private void showDeleteConfirmation(Category category) {
-        new AlertDialog.Builder(this)
+        if (getContext() == null) return;
+
+        new AlertDialog.Builder(getContext())
                 .setTitle("Xóa danh mục")
                 .setMessage("Bạn có chắc chắn muốn xóa danh mục '" + category.getName() + "' không?")
                 .setPositiveButton("Xóa", (dialog, which) -> {
@@ -197,7 +203,7 @@ public class CategoryManagementActivity extends AppCompatActivity {
                         public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
                             showLoading(false);
                             if (response.isSuccessful()) {
-                                Toast.makeText(CategoryManagementActivity.this, "Đã xóa danh mục", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(getContext(), "Đã xóa danh mục", Toast.LENGTH_SHORT).show();
                                 loadCategories();
                             } else {
                                 showError("Xóa thất bại");
@@ -220,6 +226,8 @@ public class CategoryManagementActivity extends AppCompatActivity {
     }
 
     private void showError(String message) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+        if (getContext() != null) {
+            Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
+        }
     }
 }

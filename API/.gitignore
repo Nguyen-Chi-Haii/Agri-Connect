@@ -4,6 +4,15 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+###visual studio code###
+.vscode
+
+###android studio###
+.idea
+*.iws
+*.iml
+*.ipr
+
 ### STS ###
 .apt_generated
 .classpath

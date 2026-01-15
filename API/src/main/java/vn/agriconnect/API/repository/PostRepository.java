@@ -22,4 +22,6 @@ public interface PostRepository extends MongoRepository<Post, String> {
     long countBySellerId(String sellerId);
 
     long countBySellerIdAndStatus(String sellerId, PostStatus status);
+
+    long countByCategoryId(String categoryId);
 }

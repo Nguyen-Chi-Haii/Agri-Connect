@@ -26,6 +26,8 @@
         android:layout_height="wrap_content"
         android:background="@color/surface"
         app:itemActiveIndicatorStyle="@null"
+        app:itemBackground="@null"
+        app:itemRippleColor="@android:color/transparent"
         app:itemIconTint="@color/selector_bottom_nav"
         app:itemTextColor="@color/selector_bottom_nav"
         app:labelVisibilityMode="labeled"

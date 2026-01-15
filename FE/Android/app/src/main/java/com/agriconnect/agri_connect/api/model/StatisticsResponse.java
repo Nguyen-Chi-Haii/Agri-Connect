@@ -41,4 +41,20 @@ public class StatisticsResponse {
     public long getTotalInteractions() {
         return totalInteractions;
     }
+
+    @SerializedName("categoryStats")
+    private java.util.List<CategoryStat> categoryStats;
+
+    public java.util.List<CategoryStat> getCategoryStats() {
+        return categoryStats;
+    }
+
+    public static class CategoryStat {
+        @SerializedName("categoryId")
+        public String categoryId;
+        @SerializedName("categoryName")
+        public String categoryName;
+        @SerializedName("postCount")
+        public long postCount;
+    }
 }

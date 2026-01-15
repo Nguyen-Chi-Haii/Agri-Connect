@@ -68,6 +68,7 @@ The Android application supports **Dynamic Runtime Configuration** for the API U
     adb shell "mkdir -p /sdcard/Android/data/com.agriconnect.agri_connect/files/"
     adb shell "echo http://localhost:8080/ > /sdcard/Android/data/com.agriconnect.agri_connect/files/api_url.txt"
     ```
+    *(Note: On Windows PowerShell, run these commands one by one, or use `;` instead of `&&` if combining them.)*
 *   **Action:** Restart the app.
 
 ### Scenario 3: External Devices / LAN / VMware (iOS Mock)
@@ -83,6 +84,7 @@ The Android application supports **Dynamic Runtime Configuration** for the API U
     adb shell "mkdir -p /sdcard/Android/data/com.agriconnect.agri_connect/files/"
     adb shell "echo http://192.168.1.5:8080/ > /sdcard/Android/data/com.agriconnect.agri_connect/files/api_url.txt"
     ```
+    *(Note: On Windows PowerShell, run these commands one by one, or use `;` instead of `&&` if combining them.)*
     *(Replace `192.168.1.5` with your actual IP address)*.
 *   **Action:** Restart the app.
 
