@@ -2,7 +2,9 @@ import Foundation
 
 // MARK: - API Configuration
 struct APIConfig {
-    static let baseURL = "http://192.168.145.1:8080/api"
+    static var baseURL: String {
+        return Configuration.shared.baseURL
+    }
     
     // Endpoints
     struct Auth {
