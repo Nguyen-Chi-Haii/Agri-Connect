@@ -9,13 +9,19 @@ import retrofit2.http.*;
  * Chat API interface
  */
 public interface ChatApi {
-    
+
     @GET("api/chat/conversations")
     Call<ApiResponse<List<Conversation>>> getConversations();
-    
-    @POST("api/chat/conversations")
-    Call<ApiResponse<Conversation>> createConversation(@Query("participantId") String participantId);
-    
+
+    @POST("api/chat/conversations/{otherUserId}")
+    Call<ApiResponse<Conversation>> createConversation(@Path("otherUserId") String otherUserId);
+
     @PUT("api/chat/conversations/{conversationId}/read")
     Call<ApiResponse<Void>> markAsRead(@Path("conversationId") String conversationId);
+
+    @GET("api/chat/conversations/{conversationId}/messages")
+    Call<ApiResponse<List<Message>>> getMessages(@Path("conversationId") String conversationId);
+
+    @POST("api/chat/messages")
+    Call<ApiResponse<Message>> sendMessage(@Body SendMessageRequest request);
 }

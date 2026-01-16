@@ -201,6 +201,12 @@ public class CreatePostActivity extends AppCompatActivity {
         });
     }
 
+    private boolean isLocationInVietnam(double latitude, double longitude) {
+        // Broad bounding box for Vietnam
+        return latitude >= 8.0 && latitude <= 24.0 &&
+                longitude >= 102.0 && longitude <= 110.0;
+    }
+
     private void getCurrentLocation() {
         btnGetLocation.setEnabled(false);
         btnGetLocation.setText("Đang lấy...");
@@ -227,7 +233,8 @@ public class CreatePostActivity extends AppCompatActivity {
                 locationReceived[0] = true;
                 btnGetLocation.setEnabled(true);
                 btnGetLocation.setText("Lấy vị trí");
-                Toast.makeText(this, "Dùng vị trí mặc định (TP.HCM)", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Không nhận được tín hiệu GPS, dùng vị trí mặc định (TP.HCM)", Toast.LENGTH_SHORT)
+                        .show();
                 getAddressFromLocation(defaultLat, defaultLng);
             }
         }, 3000);
@@ -240,10 +247,21 @@ public class CreatePostActivity extends AppCompatActivity {
                         btnGetLocation.setText("Lấy vị trí");
 
                         if (location != null) {
-                            Toast.makeText(this, "Đang lấy địa chỉ từ GPS...", Toast.LENGTH_SHORT).show();
-                            getAddressFromLocation(location.getLatitude(), location.getLongitude());
+                            double lat = location.getLatitude();
+                            double lng = location.getLongitude();
+
+                            if (isLocationInVietnam(lat, lng)) {
+                                Toast.makeText(this, "Đang lấy địa chỉ từ GPS...", Toast.LENGTH_SHORT).show();
+                                getAddressFromLocation(lat, lng);
+                            } else {
+                                // Location is outside Vietnam (likely emulator default)
+                                Toast.makeText(this, "Vị trí GPS không thuộc Việt Nam, dùng vị trí mặc định (TP.HCM)",
+                                        Toast.LENGTH_LONG).show();
+                                getAddressFromLocation(defaultLat, defaultLng);
+                            }
                         } else {
-                            Toast.makeText(this, "Dùng vị trí mặc định (TP.HCM)", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(this, "Không lấy được vị trí, dùng vị trí mặc định (TP.HCM)",
+                                    Toast.LENGTH_SHORT).show();
                             getAddressFromLocation(defaultLat, defaultLng);
                         }
                     }
@@ -253,7 +271,7 @@ public class CreatePostActivity extends AppCompatActivity {
                         locationReceived[0] = true;
                         btnGetLocation.setEnabled(true);
                         btnGetLocation.setText("Lấy vị trí");
-                        Toast.makeText(this, "Dùng vị trí mặc định (TP.HCM)", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "Lỗi GPS, dùng vị trí mặc định (TP.HCM)", Toast.LENGTH_SHORT).show();
                         getAddressFromLocation(defaultLat, defaultLng);
                     }
                 });
