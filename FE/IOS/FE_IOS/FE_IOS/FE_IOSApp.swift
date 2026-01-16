@@ -6,7 +6,7 @@ struct FE_IOSApp: App {
         WindowGroup {
             if TokenManager.shared.isLoggedIn {
                 if TokenManager.shared.userRole == "ADMIN" {
-                    AdminDashboardView()
+                    AdminTabView()
                 } else {
                     MainTabView()
                 }
