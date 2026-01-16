@@ -16,6 +16,15 @@ import java.util.List;
 public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatViewHolder> {
 
     private List<ChatListFragment.ChatItem> chats = new ArrayList<>();
+    private OnChatClickListener listener;
+
+    public interface OnChatClickListener {
+        void onChatClick(ChatListFragment.ChatItem chat);
+    }
+
+    public void setOnChatClickListener(OnChatClickListener listener) {
+        this.listener = listener;
+    }
 
     public void setData(List<ChatListFragment.ChatItem> chats) {
         this.chats = chats;
@@ -26,8 +35,8 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatViewHolder
     @Override
     public ChatViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-            .inflate(R.layout.item_chat, parent, false);
-        return new ChatViewHolder(view);
+                .inflate(R.layout.item_chat, parent, false);
+        return new ChatViewHolder(view, listener);
     }
 
     @Override
@@ -45,16 +54,24 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatViewHolder
         private final TextView tvLastMessage;
         private final TextView tvTime;
         private final TextView tvUnreadCount;
+        private ChatListFragment.ChatItem currentItem;
 
-        public ChatViewHolder(@NonNull View itemView) {
+        public ChatViewHolder(@NonNull View itemView, OnChatClickListener listener) {
             super(itemView);
             tvUserName = itemView.findViewById(R.id.tvUserName);
             tvLastMessage = itemView.findViewById(R.id.tvLastMessage);
             tvTime = itemView.findViewById(R.id.tvTime);
             tvUnreadCount = itemView.findViewById(R.id.tvUnreadCount);
+
+            itemView.setOnClickListener(v -> {
+                if (listener != null && currentItem != null) {
+                    listener.onChatClick(currentItem);
+                }
+            });
         }
 
         public void bind(ChatListFragment.ChatItem item) {
+            this.currentItem = item;
             tvUserName.setText(item.userName);
             tvLastMessage.setText(item.lastMessage);
             tvTime.setText(item.time);
