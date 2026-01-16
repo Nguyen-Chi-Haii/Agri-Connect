@@ -14,9 +14,9 @@ import java.util.List;
 
 public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentViewHolder> {
 
-    private List<PostDetailActivity.Comment> comments;
+    private List<PostDetailActivity.CommentItem> comments;
 
-    public CommentAdapter(List<PostDetailActivity.Comment> comments) {
+    public CommentAdapter(List<PostDetailActivity.CommentItem> comments) {
         this.comments = comments;
     }
 
@@ -30,7 +30,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
 
     @Override
     public void onBindViewHolder(@NonNull CommentViewHolder holder, int position) {
-        PostDetailActivity.Comment comment = comments.get(position);
+        PostDetailActivity.CommentItem comment = comments.get(position);
         holder.bind(comment);
     }
 
@@ -49,7 +49,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
             tvContent = itemView.findViewById(R.id.tvContent);
         }
 
-        public void bind(PostDetailActivity.Comment comment) {
+        public void bind(PostDetailActivity.CommentItem comment) {
             tvUserName.setText(comment.userName);
             tvTime.setText(comment.time);
             tvContent.setText(comment.content);

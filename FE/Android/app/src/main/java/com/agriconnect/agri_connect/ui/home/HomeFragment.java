@@ -45,10 +45,10 @@ public class HomeFragment extends Fragment {
     private ProgressBar progressBar;
     private FloatingActionButton fabCreatePost;
     private ImageView btnSearch;
-    
+
     private PostAdapter postAdapter;
     private HomeCategoryAdapter categoryAdapter;
-    
+
     private PostApi postApi;
     private CategoryApi categoryApi;
     private com.agriconnect.agri_connect.api.UserApi userApi;
@@ -63,19 +63,19 @@ public class HomeFragment extends Fragment {
                     // Refresh posts
                     loadPosts(currentCategoryId);
                 }
-            }
-    );
+            });
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_home, container, false);
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        
+
         // Initialize API
         if (getContext() != null) {
             ApiClient client = ApiClient.getInstance(getContext());
@@ -83,11 +83,11 @@ public class HomeFragment extends Fragment {
             categoryApi = client.getCategoryApi();
             userApi = client.getUserApi();
         }
-        
+
         initViews(view);
         setupRecyclerView();
         setupListeners();
-        
+
         loadCategories();
         loadPosts(null);
     }
@@ -109,6 +109,9 @@ public class HomeFragment extends Fragment {
             intent.putExtra("postId", postId);
             startActivity(intent);
         });
+        postAdapter.setOnLikeClickListener((postId, position) -> {
+            toggleLike(postId, position);
+        });
         rvPosts.setLayoutManager(new LinearLayoutManager(getContext()));
         rvPosts.setAdapter(postAdapter);
 
@@ -126,50 +129,58 @@ public class HomeFragment extends Fragment {
         fabCreatePost.setOnClickListener(v -> {
             progressBar.setVisibility(View.VISIBLE);
             fabCreatePost.setEnabled(false);
-            
-            userApi.getProfile().enqueue(new Callback<ApiResponse<com.agriconnect.agri_connect.api.model.UserProfile>>() {
-                @Override
-                public void onResponse(Call<ApiResponse<com.agriconnect.agri_connect.api.model.UserProfile>> call, 
-                                     Response<ApiResponse<com.agriconnect.agri_connect.api.model.UserProfile>> response) {
-                    progressBar.setVisibility(View.GONE);
-                    fabCreatePost.setEnabled(true);
-                    
-                    if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                        com.agriconnect.agri_connect.api.model.UserProfile user = response.body().getData();
-                        if (user != null && user.getKyc() != null && "VERIFIED".equals(user.getKyc().getStatus())) {
-                             Intent intent = new Intent(getContext(), CreatePostActivity.class);
-                             createPostLauncher.launch(intent);
-                        } else {
-                            // Determine message based on role or just generic
-                            String msg = "Bạn cần xác minh danh tính để đăng bài.";
-                            if (user != null && user.getKyc() != null && "PENDING".equals(user.getKyc().getStatus())) {
-                                msg += "\nHồ sơ của bạn đang chờ duyệt.";
-                            } else {
-                                msg += "\nVui lòng cập nhật mã số thuế (Thương lái) hoặc CCCD (Nông dân).";
-                            }
-                            
-                            new android.app.AlertDialog.Builder(getContext())
-                                .setTitle("Yêu cầu xác minh")
-                                .setMessage(msg)
-                                .setPositiveButton("Xác minh ngay", (dialog, which) -> {
-                                    Intent intent = new Intent(getContext(), com.agriconnect.agri_connect.ui.profile.EditProfileActivity.class);
-                                    startActivity(intent);
-                                })
-                                .setNegativeButton("Để sau", null)
-                                .show();
-                        }
-                    } else {
-                        Toast.makeText(getContext(), "Không thể kiểm tra trạng thái tài khoản", Toast.LENGTH_SHORT).show();
-                    }
-                }
 
-                @Override
-                public void onFailure(Call<ApiResponse<com.agriconnect.agri_connect.api.model.UserProfile>> call, Throwable t) {
-                    progressBar.setVisibility(View.GONE);
-                    fabCreatePost.setEnabled(true);
-                    Toast.makeText(getContext(), "Lỗi kết nối", Toast.LENGTH_SHORT).show();
-                }
-            });
+            userApi.getProfile()
+                    .enqueue(new Callback<ApiResponse<com.agriconnect.agri_connect.api.model.UserProfile>>() {
+                        @Override
+                        public void onResponse(
+                                Call<ApiResponse<com.agriconnect.agri_connect.api.model.UserProfile>> call,
+                                Response<ApiResponse<com.agriconnect.agri_connect.api.model.UserProfile>> response) {
+                            progressBar.setVisibility(View.GONE);
+                            fabCreatePost.setEnabled(true);
+
+                            if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                                com.agriconnect.agri_connect.api.model.UserProfile user = response.body().getData();
+                                if (user != null && user.getKyc() != null
+                                        && "VERIFIED".equals(user.getKyc().getStatus())) {
+                                    Intent intent = new Intent(getContext(), CreatePostActivity.class);
+                                    createPostLauncher.launch(intent);
+                                } else {
+                                    // Determine message based on role or just generic
+                                    String msg = "Bạn cần xác minh danh tính để đăng bài.";
+                                    if (user != null && user.getKyc() != null
+                                            && "PENDING".equals(user.getKyc().getStatus())) {
+                                        msg += "\nHồ sơ của bạn đang chờ duyệt.";
+                                    } else {
+                                        msg += "\nVui lòng cập nhật mã số thuế (Thương lái) hoặc CCCD (Nông dân).";
+                                    }
+
+                                    new android.app.AlertDialog.Builder(getContext())
+                                            .setTitle("Yêu cầu xác minh")
+                                            .setMessage(msg)
+                                            .setPositiveButton("Xác minh ngay", (dialog, which) -> {
+                                                Intent intent = new Intent(getContext(),
+                                                        com.agriconnect.agri_connect.ui.profile.EditProfileActivity.class);
+                                                startActivity(intent);
+                                            })
+                                            .setNegativeButton("Để sau", null)
+                                            .show();
+                                }
+                            } else {
+                                Toast.makeText(getContext(), "Không thể kiểm tra trạng thái tài khoản",
+                                        Toast.LENGTH_SHORT).show();
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(
+                                Call<ApiResponse<com.agriconnect.agri_connect.api.model.UserProfile>> call,
+                                Throwable t) {
+                            progressBar.setVisibility(View.GONE);
+                            fabCreatePost.setEnabled(true);
+                            Toast.makeText(getContext(), "Lỗi kết nối", Toast.LENGTH_SHORT).show();
+                        }
+                    });
         });
 
         btnSearch.setOnClickListener(v -> {
@@ -181,7 +192,8 @@ public class HomeFragment extends Fragment {
     private void loadCategories() {
         categoryApi.getAllCategories().enqueue(new Callback<ApiResponse<List<Category>>>() {
             @Override
-            public void onResponse(Call<ApiResponse<List<Category>>> call, Response<ApiResponse<List<Category>>> response) {
+            public void onResponse(Call<ApiResponse<List<Category>>> call,
+                    Response<ApiResponse<List<Category>>> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().getData() != null) {
                     categoryAdapter.setCategories(response.body().getData());
                 }
@@ -198,7 +210,7 @@ public class HomeFragment extends Fragment {
         progressBar.setVisibility(View.VISIBLE);
         layoutEmpty.setVisibility(View.GONE);
         rvPosts.setVisibility(View.GONE);
-        
+
         if (categoryId == null) {
             // Load All Approved Posts
             postApi.getApprovedPosts().enqueue(new Callback<ApiResponse<List<Post>>>() {
@@ -221,7 +233,8 @@ public class HomeFragment extends Fragment {
             // Filter by Category
             postApi.searchPosts(null, categoryId, null, null).enqueue(new Callback<ApiResponse<PagedResponse<Post>>>() {
                 @Override
-                public void onResponse(Call<ApiResponse<PagedResponse<Post>>> call, Response<ApiResponse<PagedResponse<Post>>> response) {
+                public void onResponse(Call<ApiResponse<PagedResponse<Post>>> call,
+                        Response<ApiResponse<PagedResponse<Post>>> response) {
                     progressBar.setVisibility(View.GONE);
                     if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                         PagedResponse<Post> pagedResponse = response.body().getData();
@@ -244,22 +257,22 @@ public class HomeFragment extends Fragment {
             List<PostItem> postItems = new ArrayList<>();
             for (Post post : posts) {
                 PostItem item = new PostItem(
-                    post.getId(),
-                    post.getSellerName(),
-                    formatTime(post.getCreatedAt()),
-                    post.getDescription() != null ? post.getDescription() : post.getTitle(),
-                    formatPrice(post.getPrice(), post.getUnit()),
-                    0, // likeCount
-                    0, // commentCount
-                    post.getViewCount(),
-                    post.isSellerVerified()
-                );
+                        post.getId(),
+                        post.getSellerName(),
+                        formatTime(post.getCreatedAt()),
+                        post.getDescription() != null ? post.getDescription() : post.getTitle(),
+                        formatPrice(post.getPrice(), post.getUnit()),
+                        post.getLikeCount(),
+                        post.getCommentCount(),
+                        post.getViewCount(),
+                        post.isSellerVerified());
+                item.isLiked = post.isLiked();
                 if (post.getImages() != null && !post.getImages().isEmpty()) {
                     item.imageUrl = post.getImages().get(0);
                 }
                 postItems.add(item);
             }
-            
+
             postAdapter.setData(postItems);
             rvPosts.setVisibility(View.VISIBLE);
             layoutEmpty.setVisibility(View.GONE);
@@ -275,27 +288,29 @@ public class HomeFragment extends Fragment {
             Toast.makeText(getContext(), "Lỗi tải dữ liệu", Toast.LENGTH_SHORT).show();
         }
     }
-    
+
     private void showEmpty() {
         layoutEmpty.setVisibility(View.VISIBLE);
         rvPosts.setVisibility(View.GONE);
     }
-    
+
     private String formatTime(String createdAt) {
         // Simple format - in real app, use proper date parsing
-        if (createdAt == null) return "";
+        if (createdAt == null)
+            return "";
         return createdAt.substring(0, Math.min(10, createdAt.length()));
     }
-    
+
     private String formatPrice(Double price, String unit) {
-        if (price == null) return null;
+        if (price == null)
+            return null;
         String priceStr = String.format("%,.0f", price) + "đ";
         if (unit != null) {
             priceStr += "/" + unit;
         }
         return priceStr;
     }
-    
+
     // Post data class
     public static class PostItem {
         public String id;
@@ -308,9 +323,10 @@ public class HomeFragment extends Fragment {
         public int viewCount;
         public boolean isVerified;
         public String imageUrl;
-        
-        public PostItem(String id, String userName, String time, String content, 
-                       String price, int likeCount, int commentCount, int viewCount, boolean isVerified) {
+        public boolean isLiked;
+
+        public PostItem(String id, String userName, String time, String content,
+                String price, int likeCount, int commentCount, int viewCount, boolean isVerified) {
             this.id = id;
             this.userName = userName;
             this.time = time;
@@ -320,6 +336,26 @@ public class HomeFragment extends Fragment {
             this.commentCount = commentCount;
             this.viewCount = viewCount;
             this.isVerified = isVerified;
+            this.isLiked = false;
         }
+    }
+
+    private void toggleLike(String postId, int position) {
+        postApi.toggleLike(postId).enqueue(new Callback<ApiResponse<Void>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
+                if (response.isSuccessful()) {
+                    // Reload posts to get updated like count
+                    loadPosts(currentCategoryId);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
+                if (getContext() != null) {
+                    Toast.makeText(getContext(), "Lỗi kết nối", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
     }
 }
