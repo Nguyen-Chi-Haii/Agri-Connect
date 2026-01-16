@@ -62,65 +62,11 @@ struct AdminDashboardView: View {
                         )
                     }
                     
-                    // Menu Items
-                    VStack(spacing: 0) {
-                        NavigationLink(destination: AdminUsersView()) {
-                            AdminMenuRow(
-                                icon: "person.2.fill",
-                                title: "Quản lý người dùng",
-                                subtitle: "Xem, khóa, xác minh KYC",
-                                color: .blue
-                            )
-                        }
-                        
-                        Divider().padding(.horizontal)
-                        
-                        NavigationLink(destination: AdminPostsView()) {
-                            AdminMenuRow(
-                                icon: "doc.richtext.fill",
-                                title: "Quản lý bài đăng",
-                                subtitle: "Duyệt, từ chối, xóa bài",
-                                color: .green
-                            )
-                        }
-                        
-                        Divider().padding(.horizontal)
-                        
-                        NavigationLink(destination: AdminCategoriesView()) {
-                            AdminMenuRow(
-                                icon: "folder.fill",
-                                title: "Quản lý danh mục",
-                                subtitle: "Thêm, sửa, xóa danh mục",
-                                color: .orange
-                            )
-                        }
-                        
-                        Divider().padding(.horizontal)
-                        
-                        NavigationLink(destination: AdminStatsView()) {
-                            AdminMenuRow(
-                                icon: "chart.bar.fill",
-                                title: "Thống kê hệ thống",
-                                subtitle: "Xem báo cáo, biểu đồ",
-                                color: .purple
-                            )
-                        }
-                    }
+
                     .background(Color.white)
                     .cornerRadius(16)
                     
-                    // Logout
-                    Button(action: logout) {
-                        HStack {
-                            Image(systemName: "rectangle.portrait.and.arrow.right")
-                            Text("Đăng xuất")
-                        }
-                        .foregroundColor(.red)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.white)
-                        .cornerRadius(12)
-                    }
+
                     
                     // Hidden navigation
                     NavigationLink(destination: LoginView().navigationBarHidden(true), isActive: $navigateToLogin) {
@@ -153,10 +99,7 @@ struct AdminDashboardView: View {
         }
     }
     
-    private func logout() {
-        TokenManager.shared.clearAll()
-        navigateToLogin = true
-    }
+
 }
 
 // MARK: - Dashboard Stats Model

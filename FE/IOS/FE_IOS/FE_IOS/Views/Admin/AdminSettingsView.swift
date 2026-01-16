@@ -46,7 +46,6 @@ struct AdminSettingsView: View {
     
     private func logout() {
         TokenManager.shared.clearAll()
-        navigateToLogin = true
     }
 }
 

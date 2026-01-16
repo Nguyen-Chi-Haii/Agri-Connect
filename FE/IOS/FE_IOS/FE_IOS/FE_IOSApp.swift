@@ -2,10 +2,12 @@ import SwiftUI
 
 @main
 struct FE_IOSApp: App {
+    @ObservedObject private var tokenManager = TokenManager.shared
+    
     var body: some Scene {
         WindowGroup {
-            if TokenManager.shared.isLoggedIn {
-                if TokenManager.shared.userRole == "ADMIN" {
+            if tokenManager.isLoggedIn {
+                if tokenManager.userRole == "ADMIN" {
                     AdminTabView()
                 } else {
                     MainTabView()

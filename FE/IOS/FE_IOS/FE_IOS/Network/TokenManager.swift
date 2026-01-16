@@ -1,8 +1,10 @@
 import Foundation
 import Security
 
+import Combine
+
 // MARK: - Token Manager
-class TokenManager {
+class TokenManager: ObservableObject {
     static let shared = TokenManager()
     
     private let accessTokenKey = "agriconnect_access_token"
@@ -17,6 +19,7 @@ class TokenManager {
     var accessToken: String? {
         get { KeychainHelper.get(key: accessTokenKey) }
         set {
+            objectWillChange.send()
             if let value = newValue {
                 KeychainHelper.save(key: accessTokenKey, value: value)
             } else {
@@ -69,6 +72,7 @@ class TokenManager {
     }
     
     func clearAll() {
+        objectWillChange.send()
         accessToken = nil
         refreshToken = nil
         userId = nil
