@@ -1,4 +1,4 @@
-package com.agriconnect.agri_connect;
+package com.agriconnect.agri_connect.ui.main;
 
 import android.os.Bundle;
 
@@ -7,6 +7,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+
+import com.agriconnect.agri_connect.R;
 
 public class MainActivity extends AppCompatActivity {
 

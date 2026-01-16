@@ -11,44 +11,45 @@ import retrofit2.http.*;
  */
 public interface AdminApi {
 
-    @GET("api/admin/dashboard")
-    Call<ApiResponse<Map<String, Object>>> getDashboardStats();
+        @GET("api/admin/dashboard")
+        Call<ApiResponse<Map<String, Object>>> getDashboardStats();
 
-    @GET("api/admin/logs")
-    Call<ApiResponse<List<AdminLog>>> getAdminLogs();
+        @GET("api/admin/logs")
+        Call<ApiResponse<List<AdminLog>>> getAdminLogs();
 
-    @GET("api/users")
-    Call<ApiResponse<List<UserProfile>>> getAllUsers(
-            @Query("search") String search,
-            @Query("role") String role,
-            @Query("kycStatus") String kycStatus
-    );
+        @GET("api/users")
+        Call<ApiResponse<List<UserProfile>>> getAllUsers(
+                        @Query("search") String search,
+                        @Query("role") String role,
+                        @Query("kycStatus") String kycStatus);
 
-    @GET("api/posts")
-    Call<ApiResponse<PagedResponse<Post>>> getAllPosts(
-            @Query("status") String status,
-            @Query("page") int page,
-            @Query("size") int size
-    );
+        @GET("api/posts")
+        Call<ApiResponse<PagedResponse<Post>>> getAllPosts(
+                        @Query("status") String status,
+                        @Query("page") int page,
+                        @Query("size") int size);
 
-    @PUT("api/posts/{postId}/approve")
-    Call<ApiResponse<Void>> approvePost(@Path("postId") String postId);
+        @PUT("api/posts/{postId}/approve")
+        Call<ApiResponse<Void>> approvePost(@Path("postId") String postId);
 
-    @PUT("api/posts/{postId}/reject")
-    Call<ApiResponse<Void>> rejectPost(@Path("postId") String postId, @Query("reason") String reason);
+        @PUT("api/posts/{postId}/reject")
+        Call<ApiResponse<Void>> rejectPost(@Path("postId") String postId, @Query("reason") String reason);
 
-    @PUT("api/posts/{postId}/close")
-    Call<ApiResponse<Void>> closePost(@Path("postId") String postId);
+        @PUT("api/posts/{postId}/close")
+        Call<ApiResponse<Void>> closePost(@Path("postId") String postId);
 
-    @PUT("api/users/{userId}/kyc/verify")
-    Call<ApiResponse<Void>> verifyKyc(@Path("userId") String userId);
+        @PUT("api/users/{userId}/kyc/verify")
+        Call<ApiResponse<Void>> verifyKyc(@Path("userId") String userId);
 
-    @PUT("api/users/{userId}/kyc/reject")
-    Call<ApiResponse<Void>> rejectKyc(@Path("userId") String userId, @Query("reason") String reason);
+        @PUT("api/users/{userId}/kyc/reject")
+        Call<ApiResponse<Void>> rejectKyc(@Path("userId") String userId, @Query("reason") String reason);
 
-    @PUT("api/users/{userId}/lock")
-    Call<ApiResponse<Void>> lockUser(@Path("userId") String userId);
+        @PUT("api/users/{userId}/lock")
+        Call<ApiResponse<Void>> lockUser(@Path("userId") String userId);
 
-    @PUT("api/users/{userId}/unlock")
-    Call<ApiResponse<Void>> unlockUser(@Path("userId") String userId);
+        @PUT("api/users/{userId}/unlock")
+        Call<ApiResponse<Void>> unlockUser(@Path("userId") String userId);
+
+        @DELETE("api/posts/{postId}")
+        Call<ApiResponse<Void>> deletePost(@Path("postId") String postId);
 }
