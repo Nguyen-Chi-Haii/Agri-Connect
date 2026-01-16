@@ -38,6 +38,14 @@ struct APIConfig {
     }
 }
 
+// MARK: - Private Helpers
+fileprivate struct AnyEncodable: Encodable {
+    let value: Encodable
+    func encode(to encoder: Encoder) throws {
+        try value.encode(to: encoder)
+    }
+}
+
 // MARK: - API Client
 class APIClient {
     static let shared = APIClient()
@@ -67,7 +75,7 @@ class APIClient {
         
         // Add body if present
         if let body = body {
-            request.httpBody = try? JSONEncoder().encode(body)
+            request.httpBody = try? JSONEncoder().encode(AnyEncodable(value: body))
         }
         
         URLSession.shared.dataTask(with: request) { data, response, error in
@@ -98,6 +106,7 @@ class APIClient {
             }
         }.resume()
     }
+
 }
 
 // MARK: - HTTP Method
