@@ -20,11 +20,15 @@ import com.agriconnect.agri_connect.R;
 import com.agriconnect.agri_connect.api.ApiClient;
 import com.agriconnect.agri_connect.api.PostApi;
 import com.agriconnect.agri_connect.api.model.ApiResponse;
+import com.agriconnect.agri_connect.api.model.Comment;
+import com.agriconnect.agri_connect.api.model.PagedResponse;
 import com.agriconnect.agri_connect.api.model.Post;
 import com.google.android.material.textfield.TextInputEditText;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 import retrofit2.Call;
@@ -53,7 +57,7 @@ public class PostDetailActivity extends AppCompatActivity {
     private int likeCount = 0;
 
     private CommentAdapter commentAdapter;
-    private List<Comment> comments = new ArrayList<>();
+    private List<CommentItem> comments = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,6 +72,9 @@ public class PostDetailActivity extends AppCompatActivity {
         });
 
         postId = getIntent().getStringExtra(EXTRA_POST_ID);
+        if (postId == null) {
+            postId = getIntent().getStringExtra("postId");
+        }
         if (postId == null) {
             finish();
             return;
@@ -128,6 +135,7 @@ public class PostDetailActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     currentPost = response.body().getData();
                     displayPost(currentPost);
+                    loadComments(); // Load real comments from API
                 } else {
                     Toast.makeText(PostDetailActivity.this, "Không thể tải bài đăng", Toast.LENGTH_SHORT).show();
                     finish();
@@ -161,13 +169,12 @@ public class PostDetailActivity extends AppCompatActivity {
         }
 
         if (post.getQuantity() != null && post.getQuantity() > 0) {
-            tvQuantity.setText(String.format("%,.0f %s", post.getQuantity(), 
+            tvQuantity.setText(String.format("%,.0f %s", post.getQuantity(),
                     post.getUnit() != null ? post.getUnit() : ""));
         } else {
             tvQuantity.setText("Liên hệ");
         }
 
-        // Use getLocation() from Post model (which is an object now)
         String location = post.getLocation() != null ? post.getLocation().toString() : "Không xác định";
         tvLocation.setText(location);
         tvViews.setText(post.getViewCount() + " lượt xem");
@@ -176,15 +183,14 @@ public class PostDetailActivity extends AppCompatActivity {
             ivVerified.setVisibility(View.VISIBLE);
         }
 
-        // Like count (placeholder - should come from API)
-        likeCount = 0;
+        // Set like count and state from API
+        likeCount = post.getLikeCount();
+        isLiked = post.isLiked();
         updateLikeUI();
-
-        // Load demo comments
-        loadDemoComments();
     }
 
     private void toggleLike() {
+        // Optimistic UI update
         isLiked = !isLiked;
         if (isLiked) {
             likeCount++;
@@ -193,65 +199,144 @@ public class PostDetailActivity extends AppCompatActivity {
         }
         updateLikeUI();
 
-        // TODO: Call API to like/unlike
+        // Call API to toggle like
+        postApi.toggleLike(postId).enqueue(new Callback<ApiResponse<Void>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
+                if (!response.isSuccessful()) {
+                    // Revert on failure
+                    isLiked = !isLiked;
+                    if (isLiked)
+                        likeCount++;
+                    else
+                        likeCount--;
+                    updateLikeUI();
+                    Toast.makeText(PostDetailActivity.this, "Không thể thực hiện", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
+                // Revert on failure
+                isLiked = !isLiked;
+                if (isLiked)
+                    likeCount++;
+                else
+                    likeCount--;
+                updateLikeUI();
+                Toast.makeText(PostDetailActivity.this, "Lỗi kết nối", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void updateLikeUI() {
-        ivLike.setColorFilter(ContextCompat.getColor(this, 
+        ivLike.setColorFilter(ContextCompat.getColor(this,
                 isLiked ? R.color.error : R.color.text_secondary));
         tvLikeCount.setText(likeCount + " thích");
-        tvLikeCount.setTextColor(ContextCompat.getColor(this, 
+        tvLikeCount.setTextColor(ContextCompat.getColor(this,
                 isLiked ? R.color.error : R.color.text_secondary));
     }
 
     private void sendComment() {
-        String comment = etComment.getText() != null ? etComment.getText().toString().trim() : "";
-        if (comment.isEmpty()) {
+        String commentText = etComment.getText() != null ? etComment.getText().toString().trim() : "";
+        if (commentText.isEmpty()) {
             return;
         }
 
-        // Add comment locally (demo)
-        Comment newComment = new Comment("current_user", "Bạn", comment, "Vừa xong");
-        comments.add(0, newComment);
-        commentAdapter.notifyItemInserted(0);
-        rvComments.scrollToPosition(0);
-        etComment.setText("");
+        btnSendComment.setEnabled(false);
 
-        tvNoComments.setVisibility(View.GONE);
-        rvComments.setVisibility(View.VISIBLE);
+        // Call API to add comment
+        Map<String, String> body = new HashMap<>();
+        body.put("content", commentText);
 
-        // TODO: Call API to add comment
-        Toast.makeText(this, "Đã thêm bình luận", Toast.LENGTH_SHORT).show();
+        postApi.addComment(postId, body).enqueue(new Callback<ApiResponse<Comment>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<Comment>> call, Response<ApiResponse<Comment>> response) {
+                btnSendComment.setEnabled(true);
+
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    Comment savedComment = response.body().getData();
+
+                    // Add comment to list
+                    CommentItem newComment = new CommentItem(
+                            savedComment.getId(),
+                            savedComment.getUserName() != null ? savedComment.getUserName() : "Bạn",
+                            savedComment.getContent(),
+                            "Vừa xong");
+                    comments.add(0, newComment);
+                    commentAdapter.notifyItemInserted(0);
+                    rvComments.scrollToPosition(0);
+                    etComment.setText("");
+
+                    tvNoComments.setVisibility(View.GONE);
+                    rvComments.setVisibility(View.VISIBLE);
+
+                    Toast.makeText(PostDetailActivity.this, "Đã thêm bình luận", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(PostDetailActivity.this, "Không thể thêm bình luận", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<Comment>> call, Throwable t) {
+                btnSendComment.setEnabled(true);
+                Toast.makeText(PostDetailActivity.this, "Lỗi: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
-    private void loadDemoComments() {
-        comments.clear();
-        comments.add(new Comment("user1", "Trần Văn B", "Sản phẩm rất tốt!", "2 giờ trước"));
-        comments.add(new Comment("user2", "Lê Thị C", "Giá có thể giảm không ạ?", "3 giờ trước"));
-        commentAdapter.notifyDataSetChanged();
+    private void loadComments() {
+        postApi.getComments(postId, 0, 20).enqueue(new Callback<ApiResponse<PagedResponse<Comment>>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<PagedResponse<Comment>>> call,
+                    Response<ApiResponse<PagedResponse<Comment>>> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    PagedResponse<Comment> pagedResponse = response.body().getData();
+                    if (pagedResponse != null && pagedResponse.getContent() != null) {
+                        comments.clear();
+                        for (Comment c : pagedResponse.getContent()) {
+                            comments.add(new CommentItem(
+                                    c.getId(),
+                                    c.getUserName() != null ? c.getUserName() : "Người dùng",
+                                    c.getContent(),
+                                    formatTime(c.getCreatedAt())));
+                        }
+                        commentAdapter.notifyDataSetChanged();
+                    }
+                }
 
-        if (comments.isEmpty()) {
-            tvNoComments.setVisibility(View.VISIBLE);
-            rvComments.setVisibility(View.GONE);
-        } else {
-            tvNoComments.setVisibility(View.GONE);
-            rvComments.setVisibility(View.VISIBLE);
-        }
+                if (comments.isEmpty()) {
+                    tvNoComments.setVisibility(View.VISIBLE);
+                    rvComments.setVisibility(View.GONE);
+                } else {
+                    tvNoComments.setVisibility(View.GONE);
+                    rvComments.setVisibility(View.VISIBLE);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<PagedResponse<Comment>>> call, Throwable t) {
+                // Silently fail, show no comments
+                tvNoComments.setVisibility(View.VISIBLE);
+                rvComments.setVisibility(View.GONE);
+            }
+        });
     }
 
     private String formatTime(String createdAt) {
-        if (createdAt == null) return "";
+        if (createdAt == null)
+            return "";
         return createdAt.substring(0, Math.min(10, createdAt.length()));
     }
 
-    // Comment data class
-    public static class Comment {
+    // Comment item for RecyclerView (different from API Comment model)
+    public static class CommentItem {
         public String id;
         public String userName;
         public String content;
         public String time;
 
-        public Comment(String id, String userName, String content, String time) {
+        public CommentItem(String id, String userName, String content, String time) {
             this.id = id;
             this.userName = userName;
             this.content = content;
