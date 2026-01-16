@@ -107,7 +107,7 @@ struct AdminPostsView: View {
     private func loadPosts() {
         isLoading = true
         
-        var endpoint = "/posts/search"
+        var endpoint = APIConfig.Posts.list
         if !selectedFilter.isEmpty {
             endpoint += "?status=\(selectedFilter)"
         }

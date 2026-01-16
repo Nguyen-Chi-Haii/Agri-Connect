@@ -23,7 +23,7 @@ struct APIConfig {
         static let list = "/posts"
         static let approved = "/posts/approved"
         static let myPosts = "/posts/my-posts"
-        static let search = "/posts/search"
+        static let search = "/posts"
     }
     
     struct Categories {
