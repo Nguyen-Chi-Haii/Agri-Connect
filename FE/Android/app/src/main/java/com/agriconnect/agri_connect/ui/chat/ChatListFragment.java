@@ -18,6 +18,7 @@ import com.agriconnect.agri_connect.api.ApiClient;
 import com.agriconnect.agri_connect.api.ChatApi;
 import com.agriconnect.agri_connect.api.model.ApiResponse;
 import com.agriconnect.agri_connect.api.model.Conversation;
+import com.agriconnect.agri_connect.ui.main.MainNavigationActivity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,6 +55,13 @@ public class ChatListFragment extends Fragment {
         loadChats();
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Reload to update badge when returning from ChatActivity
+        loadChats();
+    }
+
     private void initViews(View view) {
         rvChats = view.findViewById(R.id.rvChats);
         layoutEmpty = view.findViewById(R.id.layoutEmpty);
@@ -84,21 +92,31 @@ public class ChatListFragment extends Fragment {
 
                     if (conversations != null && !conversations.isEmpty()) {
                         List<ChatItem> chatItems = new ArrayList<>();
+                        int totalUnreadCount = 0;
+
                         for (Conversation conv : conversations) {
+                            int unread = conv.getUnreadCount();
                             chatItems.add(new ChatItem(
                                     conv.getId(),
                                     conv.getParticipantName() != null ? conv.getParticipantName() : "Người dùng",
                                     conv.getLastMessageText(),
                                     formatTime(conv.getLastMessageTime()),
-                                    conv.getUnreadCount()));
+                                    unread));
+                            totalUnreadCount += unread;
                         }
+
                         chatAdapter.setData(chatItems);
                         showList();
+
+                        // Update badge in MainNavigationActivity
+                        updateBadge(totalUnreadCount);
                     } else {
                         showEmpty();
+                        updateBadge(0);
                     }
                 } else {
                     showEmpty();
+                    updateBadge(0);
                 }
             }
 
@@ -130,6 +148,12 @@ public class ChatListFragment extends Fragment {
     private void showEmpty() {
         layoutEmpty.setVisibility(View.VISIBLE);
         rvChats.setVisibility(View.GONE);
+    }
+
+    private void updateBadge(int count) {
+        if (getActivity() instanceof MainNavigationActivity) {
+            ((MainNavigationActivity) getActivity()).updateChatBadge(count);
+        }
     }
 
     public static class ChatItem {

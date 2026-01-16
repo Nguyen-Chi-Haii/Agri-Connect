@@ -139,15 +139,15 @@ public class AdminPostsFragment extends Fragment implements AdminPostAdapter.OnP
                             : new ArrayList<>();
 
                     adapter.setPosts(posts);
-                    
+
                     // Update UI state
                     tvEmpty.setVisibility(posts.isEmpty() ? View.VISIBLE : View.GONE);
                     recyclerPosts.setVisibility(posts.isEmpty() ? View.GONE : View.VISIBLE);
-                    
+
                     // Update pagination control
                     if (pagedResponse != null) {
                         paginationControl.setPageData(pagedResponse.getCurrentPage(), pagedResponse.getTotalPages());
-                        paginationControl.setVisibility(posts.isEmpty() ? View.GONE : View.VISIBLE); 
+                        paginationControl.setVisibility(posts.isEmpty() ? View.GONE : View.VISIBLE);
                     }
                 } else {
                     Toast.makeText(getContext(), "Lỗi tải dữ liệu", Toast.LENGTH_SHORT).show();
@@ -160,6 +160,21 @@ public class AdminPostsFragment extends Fragment implements AdminPostAdapter.OnP
                 Toast.makeText(getContext(), "Lỗi mạng: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    @Override
+    public void onClick(Post post) {
+        // Open PostDetailActivity to view post details and comments
+        android.util.Log.d("AdminPostClick", "Post clicked: " + post.getId() + " - " + post.getTitle());
+        if (getContext() != null) {
+            android.content.Intent intent = new android.content.Intent(getContext(),
+                    com.agriconnect.agri_connect.ui.post.PostDetailActivity.class);
+            intent.putExtra("postId", post.getId());
+            android.util.Log.d("AdminPostClick", "Starting PostDetailActivity with postId: " + post.getId());
+            startActivity(intent);
+        } else {
+            android.util.Log.e("AdminPostClick", "Context is null!");
+        }
     }
 
     @Override
@@ -222,10 +237,41 @@ public class AdminPostsFragment extends Fragment implements AdminPostAdapter.OnP
     }
 
     @Override
+    public void onDelete(Post post) {
+        new AlertDialog.Builder(getContext())
+                .setTitle("Xóa bài đăng")
+                .setMessage("Bạn có chắc muốn xóa vĩnh viễn bài đăng này? Hành động này không thể hoàn tác.")
+                .setPositiveButton("Xóa", (dialog, which) -> {
+                    progressBar.setVisibility(View.VISIBLE);
+                    adminApi.deletePost(post.getId()).enqueue(new Callback<ApiResponse<Void>>() {
+                        @Override
+                        public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
+                            progressBar.setVisibility(View.GONE);
+                            if (response.isSuccessful()) {
+                                Toast.makeText(getContext(), "Đã xóa bài đăng", Toast.LENGTH_SHORT).show();
+                                loadPosts(currentFilter, 0); // Reload
+                            } else {
+                                Toast.makeText(getContext(), "Không thể xóa", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
+                            progressBar.setVisibility(View.GONE);
+                            Toast.makeText(getContext(), "Lỗi: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                })
+                .setNegativeButton("Hủy", null)
+                .show();
+    }
+
+    @Override
     public void onClose(Post post) {
         new AlertDialog.Builder(getContext())
                 .setTitle("Đóng bài đăng")
-                .setMessage("Bạn có chắc chắn muốn đóng bài đăng này? Người dùng sẽ không thể tìm thấy bài đăng này nữa.")
+                .setMessage(
+                        "Bạn có chắc chắn muốn đóng bài đăng này? Người dùng sẽ không thể tìm thấy bài đăng này nữa.")
                 .setPositiveButton("Đóng", (dialog, which) -> {
                     progressBar.setVisibility(View.VISIBLE);
                     adminApi.closePost(post.getId()).enqueue(new Callback<ApiResponse<Void>>() {

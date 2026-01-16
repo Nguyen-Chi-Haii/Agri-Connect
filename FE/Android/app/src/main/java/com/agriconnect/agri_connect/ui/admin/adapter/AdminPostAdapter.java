@@ -26,8 +26,14 @@ public class AdminPostAdapter extends RecyclerView.Adapter<AdminPostAdapter.View
     private OnPostActionListener listener;
 
     public interface OnPostActionListener {
+        void onClick(Post post);
+
         void onApprove(Post post);
+
         void onReject(Post post);
+
+        void onDelete(Post post);
+
         void onClose(Post post);
     }
 
@@ -63,7 +69,7 @@ public class AdminPostAdapter extends RecyclerView.Adapter<AdminPostAdapter.View
         TextView tvTitle, tvDescription, tvSeller, tvPrice, tvStatus;
         TextView tvLikeCount, tvCommentCount;
         LinearLayout layoutActions;
-        MaterialButton btnApprove, btnReject, btnClose;
+        MaterialButton btnApprove, btnReject, btnDelete, btnClose;
 
         ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -77,7 +83,16 @@ public class AdminPostAdapter extends RecyclerView.Adapter<AdminPostAdapter.View
             layoutActions = itemView.findViewById(R.id.layoutActions);
             btnApprove = itemView.findViewById(R.id.btnApprove);
             btnReject = itemView.findViewById(R.id.btnReject);
+            btnDelete = itemView.findViewById(R.id.btnDelete);
             btnClose = itemView.findViewById(R.id.btnClose);
+
+            // Click whole item to view details
+            itemView.setOnClickListener(v -> {
+                int position = getAdapterPosition();
+                if (position != RecyclerView.NO_POSITION && listener != null) {
+                    listener.onClick(posts.get(position));
+                }
+            });
         }
 
         void bind(Post post) {
@@ -87,7 +102,8 @@ public class AdminPostAdapter extends RecyclerView.Adapter<AdminPostAdapter.View
 
             // Format price
             if (post.getPrice() != null && post.getPrice() > 0) {
-                NumberFormat formatter = NumberFormat.getInstance(new Locale.Builder().setLanguage("vi").setRegion("VN").build());
+                NumberFormat formatter = NumberFormat
+                        .getInstance(new Locale.Builder().setLanguage("vi").setRegion("VN").build());
                 tvPrice.setText(formatter.format(post.getPrice()) + "đ");
             } else {
                 tvPrice.setText("Liên hệ");
@@ -103,26 +119,25 @@ public class AdminPostAdapter extends RecyclerView.Adapter<AdminPostAdapter.View
             String statusText;
 
             // Default visibility
-            layoutActions.setVisibility(View.GONE);
+            layoutActions.setVisibility(View.VISIBLE); // Always show actions row for Delete button
             btnApprove.setVisibility(View.GONE);
             btnReject.setVisibility(View.GONE);
             btnClose.setVisibility(View.GONE);
+            btnDelete.setVisibility(View.VISIBLE); // Always allow delete
 
             if ("PENDING".equals(status)) {
                 bgColor = R.color.warning;
                 statusText = "Chờ duyệt";
-                
-                layoutActions.setVisibility(View.VISIBLE);
+
                 btnApprove.setVisibility(View.VISIBLE);
                 btnReject.setVisibility(View.VISIBLE);
-                
+
             } else if ("APPROVED".equals(status)) {
                 bgColor = R.color.success;
                 statusText = "Đã duyệt";
-                
-                layoutActions.setVisibility(View.VISIBLE);
+
                 btnClose.setVisibility(View.VISIBLE);
-                
+
             } else if ("REJECTED".equals(status)) {
                 bgColor = R.color.error;
                 statusText = "Từ chối";
@@ -150,7 +165,12 @@ public class AdminPostAdapter extends RecyclerView.Adapter<AdminPostAdapter.View
                 if (listener != null)
                     listener.onReject(post);
             });
-            
+
+            btnDelete.setOnClickListener(v -> {
+                if (listener != null)
+                    listener.onDelete(post);
+            });
+
             btnClose.setOnClickListener(v -> {
                 if (listener != null)
                     listener.onClose(post);

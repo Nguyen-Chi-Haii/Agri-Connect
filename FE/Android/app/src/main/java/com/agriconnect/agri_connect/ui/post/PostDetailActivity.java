@@ -248,7 +248,6 @@ public class PostDetailActivity extends AppCompatActivity {
 
         String location = post.getLocation() != null ? post.getLocation().toString() : "Không xác định";
         tvLocation.setText(location);
-        tvViews.setText(post.getViewCount() + " lượt xem");
 
         if (post.isSellerVerified()) {
             ivVerified.setVisibility(View.VISIBLE);
