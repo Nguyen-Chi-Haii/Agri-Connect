@@ -2,7 +2,7 @@ import Foundation
 
 // MARK: - API Configuration
 struct APIConfig {
-    static let baseURL = "http://localhost:8080/api"
+    static let baseURL = "http://192.168.145.1:8080/api"
     
     // Endpoints
     struct Auth {
