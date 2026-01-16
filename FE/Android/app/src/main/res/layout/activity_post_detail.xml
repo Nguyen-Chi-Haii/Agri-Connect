@@ -302,14 +302,6 @@
                             android:layout_width="0dp"
                             android:layout_height="0dp"
                             android:layout_weight="1" />
-
-                        <TextView
-                            android:id="@+id/tvViews"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textColor="@color/text_hint"
-                            android:textSize="@dimen/text_sm"
-                            tools:text="120 lượt xem" />
                     </LinearLayout>
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
