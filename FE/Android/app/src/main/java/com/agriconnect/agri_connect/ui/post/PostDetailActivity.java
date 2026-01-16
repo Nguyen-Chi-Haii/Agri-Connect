@@ -13,6 +13,7 @@ import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.core.widget.NestedScrollView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -42,9 +43,10 @@ public class PostDetailActivity extends AppCompatActivity {
     private ImageView btnBack;
     private CircleImageView ivAvatar;
     private TextView tvUserName, tvPostTime, tvTitle, tvContent, tvPrice;
-    private TextView tvQuantity, tvLocation, tvLikeCount, tvViews, tvNoComments;
+    private TextView tvQuantity, tvLocation, tvLikeCount, tvViews, tvNoComments, tvCommentCountTop;
     private ImageView ivVerified, ivLike;
-    private View btnLike;
+    private View btnLike, btnChat, btnComment;
+    private NestedScrollView scrollView;
     private RecyclerView rvComments;
     private TextInputEditText etComment;
     private ImageView btnSendComment;
@@ -101,13 +103,17 @@ public class PostDetailActivity extends AppCompatActivity {
         tvLikeCount = findViewById(R.id.tvLikeCount);
         tvViews = findViewById(R.id.tvViews);
         tvNoComments = findViewById(R.id.tvNoComments);
+        tvCommentCountTop = findViewById(R.id.tvCommentCountTop);
         ivVerified = findViewById(R.id.ivVerified);
         ivLike = findViewById(R.id.ivLike);
         btnLike = findViewById(R.id.btnLike);
+        btnChat = findViewById(R.id.btnChat);
+        btnComment = findViewById(R.id.btnComment);
         rvComments = findViewById(R.id.rvComments);
         etComment = findViewById(R.id.etComment);
         btnSendComment = findViewById(R.id.btnSendComment);
         progressBar = findViewById(R.id.progressBar);
+        scrollView = findViewById(R.id.nestedScrollView);
     }
 
     private void setupRecyclerView() {
@@ -122,6 +128,71 @@ public class PostDetailActivity extends AppCompatActivity {
         btnLike.setOnClickListener(v -> toggleLike());
 
         btnSendComment.setOnClickListener(v -> sendComment());
+
+        btnChat.setOnClickListener(v -> startChat());
+
+        btnComment.setOnClickListener(v -> {
+            if (scrollView != null) {
+                scrollView.smoothScrollTo(0, rvComments.getTop());
+                etComment.requestFocus();
+            }
+        });
+    }
+
+    private void startChat() {
+        if (currentPost == null || currentPost.getSellerId() == null)
+            return;
+
+        // Disable button while creating conversation
+        btnChat.setEnabled(false);
+
+        com.agriconnect.agri_connect.api.ChatApi chatApi = ApiClient.getInstance(this).getChatApi();
+        chatApi.createConversation(currentPost.getSellerId())
+                .enqueue(new Callback<ApiResponse<com.agriconnect.agri_connect.api.model.Conversation>>() {
+                    @Override
+                    public void onResponse(Call<ApiResponse<com.agriconnect.agri_connect.api.model.Conversation>> call,
+                            Response<ApiResponse<com.agriconnect.agri_connect.api.model.Conversation>> response) {
+                        btnChat.setEnabled(true);
+                        if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                            com.agriconnect.agri_connect.api.model.Conversation conversation = response.body()
+                                    .getData();
+                            // Open ChatActivity
+                            android.util.Log.d("ChatInit",
+                                    "Starting ChatActivity with convId: " + conversation.getId());
+                            android.content.Intent intent = new android.content.Intent(PostDetailActivity.this,
+                                    com.agriconnect.agri_connect.ui.chat.ChatActivity.class);
+                            intent.putExtra(com.agriconnect.agri_connect.ui.chat.ChatActivity.EXTRA_CONVERSATION_ID,
+                                    conversation.getId());
+                            intent.putExtra(com.agriconnect.agri_connect.ui.chat.ChatActivity.EXTRA_OTHER_USER_NAME,
+                                    currentPost.getSellerName());
+                            intent.putExtra(com.agriconnect.agri_connect.ui.chat.ChatActivity.EXTRA_RECIPIENT_ID,
+                                    currentPost.getSellerId());
+                            startActivity(intent);
+                        } else {
+                            String errorMsg = "Không thể tạo cuộc trò chuyện";
+                            if (response.body() != null && response.body().getMessage() != null) {
+                                errorMsg += ": " + response.body().getMessage();
+                            } else if (response.errorBody() != null) {
+                                try {
+                                    errorMsg += " (Error Body: " + response.errorBody().string() + ")";
+                                } catch (java.io.IOException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                            android.util.Log.e("ChatInit", errorMsg);
+                            Toast.makeText(PostDetailActivity.this, errorMsg, Toast.LENGTH_LONG).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ApiResponse<com.agriconnect.agri_connect.api.model.Conversation>> call,
+                            Throwable t) {
+                        btnChat.setEnabled(true);
+                        android.util.Log.e("ChatInit", "API Failure: " + t.getMessage(), t);
+                        Toast.makeText(PostDetailActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_LONG)
+                                .show();
+                    }
+                });
     }
 
     private void loadPostDetail() {
@@ -187,6 +258,10 @@ public class PostDetailActivity extends AppCompatActivity {
         likeCount = post.getLikeCount();
         isLiked = post.isLiked();
         updateLikeUI();
+
+        if (tvCommentCountTop != null) {
+            tvCommentCountTop.setText(post.getCommentCount() + " bình luận");
+        }
     }
 
     private void toggleLike() {
