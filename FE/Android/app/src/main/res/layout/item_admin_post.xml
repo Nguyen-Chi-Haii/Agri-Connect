@@ -161,16 +161,6 @@
                 app:cornerRadius="8dp" />
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnDelete"
-                android:layout_width="wrap_content"
-                android:layout_height="40dp"
-                android:layout_marginStart="8dp"
-                android:text="Xóa"
-                android:textSize="12sp"
-                app:backgroundTint="#D32F2F"
-                app:cornerRadius="8dp" />
-
-            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnApprove"
                 android:layout_width="wrap_content"
                 android:layout_height="40dp"

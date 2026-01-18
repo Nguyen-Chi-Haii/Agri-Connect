@@ -115,6 +115,7 @@ public class LoginActivity extends AppCompatActivity {
                     // Save tokens
                     tokenManager.saveTokens(jwt.getAccessToken(), jwt.getRefreshToken());
                     tokenManager.saveUserInfo(jwt.getUserId(), jwt.getFullName(), jwt.getRole());
+                    tokenManager.saveKycStatus(jwt.getKycStatus());
 
                     Toast.makeText(LoginActivity.this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
                     navigateToMain();

@@ -230,37 +230,6 @@ public class AdminPostsActivity extends AppCompatActivity implements AdminPostAd
     }
 
     @Override
-    public void onDelete(Post post) {
-        new AlertDialog.Builder(this)
-                .setTitle("Xóa bài đăng")
-                .setMessage("Bạn có chắc muốn xóa vĩnh viễn bài đăng này? Hành động này không thể hoàn tác.")
-                .setPositiveButton("Xóa", (dialog, which) -> {
-                    progressBar.setVisibility(View.VISIBLE);
-                    adminApi.deletePost(post.getId()).enqueue(new Callback<ApiResponse<Void>>() {
-                        @Override
-                        public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
-                            progressBar.setVisibility(View.GONE);
-                            if (response.isSuccessful()) {
-                                Toast.makeText(AdminPostsActivity.this, "Đã xóa bài đăng", Toast.LENGTH_SHORT).show();
-                                loadPosts(); // Reload
-                            } else {
-                                Toast.makeText(AdminPostsActivity.this, "Không thể xóa", Toast.LENGTH_SHORT).show();
-                            }
-                        }
-
-                        @Override
-                        public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
-                            progressBar.setVisibility(View.GONE);
-                            Toast.makeText(AdminPostsActivity.this, "Lỗi: " + t.getMessage(), Toast.LENGTH_SHORT)
-                                    .show();
-                        }
-                    });
-                })
-                .setNegativeButton("Hủy", null)
-                .show();
-    }
-
-    @Override
     public void onClose(Post post) {
         new AlertDialog.Builder(this)
                 .setTitle("Đóng bài đăng")
