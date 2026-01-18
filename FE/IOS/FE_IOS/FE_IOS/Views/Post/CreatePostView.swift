@@ -233,9 +233,9 @@ struct CreatePostView: View {
             price: Double(price) ?? 0,
             unit: unit,
             quantity: Double(quantity) ?? 0,
+            images: nil,
             province: province.isEmpty ? nil : province,
-            district: district.isEmpty ? nil : district,
-            images: nil
+            district: district.isEmpty ? nil : district
         )
         
         APIClient.shared.request(
