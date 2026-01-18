@@ -112,13 +112,28 @@ struct AdminPostsView: View {
             endpoint += "?status=\(selectedFilter)"
         }
         
+        // DEBUG: Trace API call
+        print("📡 [AdminPosts] Loading from: \(endpoint)")
+        print("📡 [AdminPosts] Filter: '\(selectedFilter)')")
+        
         APIClient.shared.request(
             endpoint: endpoint,
             method: .get
         ) { (result: Result<ApiResponse<PagedResponse<Post>>, Error>) in
             isLoading = false
-            if case .success(let response) = result, let data = response.data {
-                posts = data.content
+            
+            // DEBUG: Trace response
+            switch result {
+            case .success(let response):
+                print("✅ [AdminPosts] Success: \(response.success)")
+                if let data = response.data {
+                    print("✅ [AdminPosts] Posts count: \(data.content.count)")
+                    posts = data.content
+                } else {
+                    print("⚠️ [AdminPosts] Data is nil")
+                }
+            case .failure(let error):
+                print("❌ [AdminPosts] Error: \(error)")
             }
         }
     }
