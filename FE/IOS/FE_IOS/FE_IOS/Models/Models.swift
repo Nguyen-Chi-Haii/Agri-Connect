@@ -72,9 +72,18 @@ struct UserProfile: Decodable, Identifiable {
     let address: String?
     let role: String
     let verified: Bool?
-    let kycStatus: String?
-    let createdAt: String?
+    private let _kycStatus: String? 
     let kyc: KycInfo?
+    let createdAt: String?
+    
+    var kycStatus: String? {
+        return _kycStatus ?? kyc?.status
+    }
+    
+    enum CodingKeys: String, CodingKey {
+        case id, username, fullName, phone, avatar, address, role, verified, kyc, createdAt
+        case _kycStatus = "kycStatus"
+    }
 }
 
 struct KycInfo: Decodable {
