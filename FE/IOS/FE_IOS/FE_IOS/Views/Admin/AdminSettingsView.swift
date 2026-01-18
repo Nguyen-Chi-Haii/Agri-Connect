@@ -1,55 +1,47 @@
 import SwiftUI
 
 struct AdminSettingsView: View {
-    @State private var navigateToLogin = false
+    // No state needed for navigation, Root View handles it via TokenManager observation
     
     var body: some View {
         NavigationView {
-            ZStack {
-                List {
-                    Section(header: Text("Tài khoản")) {
-                        HStack {
-                            Image(systemName: "person.circle.fill")
-                                .font(.largeTitle)
+            List {
+                Section(header: Text("Tài khoản")) {
+                    HStack {
+                        Image(systemName: "person.circle.fill")
+                        .font(.largeTitle)
+                        .foregroundColor(.gray)
+                        VStack(alignment: .leading) {
+                            Text("Admin")
+                                .font(.headline)
+                            Text("Quản trị viên hệ thống")
+                                .font(.caption)
                                 .foregroundColor(.gray)
-                            VStack(alignment: .leading) {
-                                Text("Admin")
-                                    .font(.headline)
-                                Text("Quản trị viên hệ thống")
-                                    .font(.caption)
-                                    .foregroundColor(.gray)
-                            }
-                        }
-                        .padding(.vertical, 8)
-                    }
-                    
-                    Section {
-                        Button(action: logout) {
-                            HStack {
-                                Text("Đăng xuất")
-                                    .foregroundColor(.red)
-                                Spacer()
-                                Image(systemName: "rectangle.portrait.and.arrow.right")
-                                    .foregroundColor(.red)
-                            }
                         }
                     }
+                    .padding(.vertical, 8)
                 }
-                .navigationTitle("Cài đặt")
                 
-                // Hidden navigation - OUTSIDE List to prevent showing as row
-                NavigationLink(destination: LoginView().navigationBarHidden(true), isActive: $navigateToLogin) {
-                    EmptyView()
+                Section {
+                    Button(action: logout) {
+                        HStack {
+                            Text("Đăng xuất")
+                                .foregroundColor(.red)
+                            Spacer()
+                            Image(systemName: "rectangle.portrait.and.arrow.right")
+                                .foregroundColor(.red)
+                        }
+                    }
                 }
-                .hidden()
             }
+            .navigationTitle("Cài đặt")
         }
         .navigationViewStyle(StackNavigationViewStyle())
     }
     
     private func logout() {
+        // Just clear tokens. FE_IOSApp will detect change and switch Root View to LoginView automatically.
         TokenManager.shared.clearAll()
-        navigateToLogin = true
     }
 }
 
