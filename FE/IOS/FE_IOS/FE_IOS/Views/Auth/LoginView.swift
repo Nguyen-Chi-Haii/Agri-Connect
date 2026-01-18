@@ -101,6 +101,12 @@ struct LoginView: View {
             }
         }
         .navigationViewStyle(StackNavigationViewStyle())
+        .onAppear {
+            username = ""
+            password = ""
+            errorMessage = ""
+            showError = false
+        }
     }
     
     private func login() {
