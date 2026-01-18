@@ -32,8 +32,11 @@ public class AdminPostAdapter extends RecyclerView.Adapter<AdminPostAdapter.View
 
         void onReject(Post post);
 
+<<<<<<< HEAD
         void onDelete(Post post);
 
+=======
+>>>>>>> origin/master
         void onClose(Post post);
     }
 
@@ -129,6 +132,10 @@ public class AdminPostAdapter extends RecyclerView.Adapter<AdminPostAdapter.View
                 bgColor = R.color.warning;
                 statusText = "Chờ duyệt";
 
+<<<<<<< HEAD
+=======
+                layoutActions.setVisibility(View.VISIBLE);
+>>>>>>> origin/master
                 btnApprove.setVisibility(View.VISIBLE);
                 btnReject.setVisibility(View.VISIBLE);
 
@@ -136,6 +143,10 @@ public class AdminPostAdapter extends RecyclerView.Adapter<AdminPostAdapter.View
                 bgColor = R.color.success;
                 statusText = "Đã duyệt";
 
+<<<<<<< HEAD
+=======
+                layoutActions.setVisibility(View.VISIBLE);
+>>>>>>> origin/master
                 btnClose.setVisibility(View.VISIBLE);
 
             } else if ("REJECTED".equals(status)) {
@@ -166,11 +177,14 @@ public class AdminPostAdapter extends RecyclerView.Adapter<AdminPostAdapter.View
                     listener.onReject(post);
             });
 
+<<<<<<< HEAD
             btnDelete.setOnClickListener(v -> {
                 if (listener != null)
                     listener.onDelete(post);
             });
 
+=======
+>>>>>>> origin/master
             btnClose.setOnClickListener(v -> {
                 if (listener != null)
                     listener.onClose(post);

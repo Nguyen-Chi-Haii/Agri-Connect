@@ -25,12 +25,7 @@
         <!-- Auth Activities -->
         <activity
             android:name=".ui.auth.RoleSelectionActivity"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+            android:exported="false" />
 
         <activity
             android:name=".ui.auth.CreateAccountActivity"
@@ -48,10 +43,15 @@
             android:name=".ui.auth.LoginActivity"
             android:exported="false" />
 
-        <!-- Main Navigation -->
+        <!-- Main Navigation - Now LAUNCHER for guest browsing -->
         <activity
             android:name=".ui.main.MainNavigationActivity"
-            android:exported="false" />
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
 
         <!-- Post Activities -->
         <activity
@@ -61,7 +61,8 @@
 
         <activity
             android:name=".ui.post.PostDetailActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
 
         <!-- Search Activity -->
         <activity
