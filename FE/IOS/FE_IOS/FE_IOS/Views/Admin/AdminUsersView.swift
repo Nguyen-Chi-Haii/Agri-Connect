@@ -126,7 +126,7 @@ struct AdminUsersView: View {
             } else if filteredUsers.isEmpty {
                 Spacer()
                 VStack(spacing: 12) {
-                    Image(systemName: "person.slash")
+                    Image(systemName: "person.fill.xmark")
                         .font(.system(size: 50))
                         .foregroundColor(.gray)
                     Text("Không tìm thấy người dùng")
