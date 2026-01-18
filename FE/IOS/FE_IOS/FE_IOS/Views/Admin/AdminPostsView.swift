@@ -119,7 +119,7 @@ struct AdminPostsView: View {
         APIClient.shared.request(
             endpoint: endpoint,
             method: .get
-        ) { (result: Result<ApiResponse<PagedResponse<Post>>, Error>) in
+        ) { (result: Result<ApiResponse<[Post]>, Error>) in
             isLoading = false
             
             // DEBUG: Trace response
@@ -127,8 +127,8 @@ struct AdminPostsView: View {
             case .success(let response):
                 print("✅ [AdminPosts] Success: \(response.success)")
                 if let data = response.data {
-                    print("✅ [AdminPosts] Posts count: \(data.content.count)")
-                    posts = data.content
+                    print("✅ [AdminPosts] Posts count: \(data.count)")
+                    posts = data
                 } else {
                     print("⚠️ [AdminPosts] Data is nil")
                 }
