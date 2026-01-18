@@ -141,13 +141,7 @@ struct AdminDashboardView: View {
 
 }
 
-// MARK: - Dashboard Stats Model
-struct DashboardStats: Decodable {
-    let totalUsers: Int?
-    let totalPosts: Int?
-    let pendingPosts: Int?
-    let pendingKyc: Int?
-}
+
 
 // MARK: - Stat Card
 struct StatCard: View {

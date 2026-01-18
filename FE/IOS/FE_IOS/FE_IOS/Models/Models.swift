@@ -61,6 +61,19 @@ struct TokenRefreshRequest: Encodable {
     let refreshToken: String
 }
 
+// MARK: - Dashboard Stats (Match AdminService Map)
+struct DashboardStats: Decodable {
+    let totalUsers: Int?
+    let totalPosts: Int?
+    let pendingPosts: Int?
+    let approvedPosts: Int?
+    let rejectedPosts: Int?
+    let totalMessages: Int?
+    let totalConversations: Int?
+    let totalFeedbacks: Int?
+    let pendingKyc: Int? // Not in backend yet, but required by View
+}
+
 // MARK: - User Models
 // MARK: - User Models
 struct UserProfile: Decodable, Identifiable {
@@ -71,6 +84,7 @@ struct UserProfile: Decodable, Identifiable {
     let avatar: String?
     let address: String?
     let role: String
+    let active: Bool? // iOS name
     let verified: Bool?
     private let _kycStatus: String? 
     let kyc: KycInfo?
@@ -82,6 +96,7 @@ struct UserProfile: Decodable, Identifiable {
     
     enum CodingKeys: String, CodingKey {
         case id, username, fullName, phone, avatar, address, role, verified, kyc, createdAt
+        case active = "isActive" // Map JSON isActive -> active
         case _kycStatus = "kycStatus"
     }
 }
@@ -179,26 +194,45 @@ struct Category: Decodable, Identifiable {
     let name: String
     let description: String?
     let icon: String?
+    let parentId: String?
 }
 
 // MARK: - Market Price Model
 struct MarketPrice: Decodable, Identifiable {
     let id: String
+    let categoryId: String?
     let productName: String
-    let price: Double
-    let unit: String
-    let province: String?
-    let updatedAt: String?
+    let date: String? // "yyyy-MM-dd"
+    let avgPrice: Double
+    let minPrice: Double
+    let maxPrice: Double
+    let postCount: Int?
+    let categoryName: String? // Transient
+    
+    // Compatibility accessors for old code
+    var price: Double { avgPrice }
+    var unit: String { "kg" } // Backend doesn't return unit in MarketPrice entity yet
+    var province: String? { nil } // Backend removed province from MarketPrice
+    var updatedAt: String? { date }
 }
 
 // MARK: - Chat Models
+struct LastMessage: Decodable {
+    let content: String?
+    let senderId: String?
+    let type: String?
+    let timestamp: String?
+}
+
 struct Conversation: Decodable, Identifiable {
     let id: String
-    let participantIds: [String]?
-    let participantNames: [String]?
-    let lastMessage: String?
-    let lastMessageTime: String?
-    let unreadCount: Int?
+    let participants: [String]? // List of User IDs
+    // let participantNames: [String]? // Backend doesn't send this in entity
+    let lastMessage: LastMessage?
+    let updatedAt: String?
+    
+    // Computed for UI compatibility (would need extra logic to fetch names)
+    // For now we map LastMessage object to what UI expects if possible
 }
 
 struct Message: Decodable, Identifiable {
@@ -206,8 +240,15 @@ struct Message: Decodable, Identifiable {
     let conversationId: String?
     let senderId: String
     let content: String
+    let type: String? // TEXT, IMAGE, PRODUCT_CARD
+    let images: [String]?
     let read: Bool?
     let createdAt: String?
+    
+    enum CodingKeys: String, CodingKey {
+        case id, conversationId, senderId, content, type, images, createdAt
+        case read // Backend uses "read" or "isRead" depending on Jackson. Assuming "read" for now due to Lombok @Data usually producing "read" for Boolean.
+    }
 }
 
 // MARK: - Paged Response
