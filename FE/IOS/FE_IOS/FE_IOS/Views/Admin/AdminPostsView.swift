@@ -156,6 +156,7 @@ struct AdminPostsView: View {
         endpoint += "?\(queryString)"
         
         // DEBUG: Trace API call
+        print("📡 [AdminPosts] Base URL: \(APIConfig.baseURL)")
         print("📡 [AdminPosts] Loading from: \(endpoint)")
         
         APIClient.shared.request(
