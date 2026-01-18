@@ -6,8 +6,6 @@ struct LoginView: View {
     @State private var isLoading = false
     @State private var errorMessage = ""
     @State private var showError = false
-    @State private var navigateToMain = false
-    @State private var navigateToAdmin = false
     
     var body: some View {
         NavigationView {
@@ -92,13 +90,7 @@ struct LoginView: View {
                         }
                     }
                     
-                    // Hidden navigation links
-                    NavigationLink(destination: MainTabView().navigationBarHidden(true), isActive: $navigateToMain) {
-                        EmptyView()
-                    }
-                    NavigationLink(destination: AdminDashboardView().navigationBarHidden(true), isActive: $navigateToAdmin) {
-                        EmptyView()
-                    }
+
                     
                     Spacer()
                 }
@@ -132,14 +124,11 @@ struct LoginView: View {
             switch result {
             case .success(let response):
                 if response.success, let jwt = response.data {
+                    // Save tokens. FE_IOSApp will observe this and switch Root View automatically.
                     TokenManager.shared.saveTokens(access: jwt.accessToken, refresh: jwt.refreshToken)
                     TokenManager.shared.saveUserInfo(id: jwt.userId, name: jwt.fullName, role: jwt.role)
                     
-                    if jwt.role == "ADMIN" {
-                        navigateToAdmin = true
-                    } else {
-                        navigateToMain = true
-                    }
+                    // No manual navigation needed
                 } else {
                     errorMessage = response.message ?? "Đăng nhập thất bại"
                     showError = true
