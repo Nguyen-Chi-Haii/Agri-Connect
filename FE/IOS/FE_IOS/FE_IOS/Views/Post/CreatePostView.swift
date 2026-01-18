@@ -14,6 +14,10 @@ struct CreatePostView: View {
     @State private var selectedImages: [UIImage] = []
     @State private var isLoading = false
     @State private var showError = false
+    @State private var errorMessage = ""
+    @State private var showSuccess = false
+    @State private var showImagePicker = false
+    
     @State private var titleError: String?
     @State private var descriptionError: String?
     @State private var priceError: String?
@@ -340,59 +344,4 @@ struct CreatePostView_Previews: PreviewProvider {
 }
 
 // MARK: - Multi Image Picker Helper
-import PhotosUI
 
-struct MultiImagePicker: UIViewControllerRepresentable {
-    @Binding var images: [UIImage]
-    @Environment(\.presentationMode) var presentationMode
-    var selectionLimit: Int = 5
-    
-    func makeUIViewController(context: Context) -> PHPickerViewController {
-        var configuration = PHPickerConfiguration()
-        configuration.filter = .images
-        configuration.selectionLimit = selectionLimit
-        
-        let picker = PHPickerViewController(configuration: configuration)
-        picker.delegate = context.coordinator
-        return picker
-    }
-    
-    func updateUIViewController(_ uiViewController: PHPickerViewController, context: Context) {}
-    
-    func makeCoordinator() -> Coordinator {
-        Coordinator(self)
-    }
-    
-    class Coordinator: NSObject, PHPickerViewControllerDelegate {
-        let parent: MultiImagePicker
-        
-        init(_ parent: MultiImagePicker) {
-            self.parent = parent
-        }
-        
-        func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
-            parent.presentationMode.wrappedValue.dismiss()
-            
-            var loadedImages: [UIImage] = []
-            let dispatchGroup = DispatchGroup()
-            
-            for result in results {
-                dispatchGroup.enter()
-                if result.itemProvider.canLoadObject(ofClass: UIImage.self) {
-                    result.itemProvider.loadObject(ofClass: UIImage.self) { image, _ in
-                        if let image = image as? UIImage {
-                            loadedImages.append(image)
-                        }
-                        dispatchGroup.leave()
-                    }
-                } else {
-                    dispatchGroup.leave()
-                }
-            }
-            
-            dispatchGroup.notify(queue: .main) {
-                self.parent.images.append(contentsOf: loadedImages)
-            }
-        }
-    }
-}
