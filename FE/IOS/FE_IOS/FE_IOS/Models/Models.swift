@@ -173,10 +173,19 @@ struct Message: Decodable, Identifiable {
 }
 
 // MARK: - Paged Response
+// MARK: - Paged Response
 struct PagedResponse<T: Decodable>: Decodable {
     let content: [T]
     let page: Int
     let size: Int
     let totalElements: Int
     let totalPages: Int
+    
+    enum CodingKeys: String, CodingKey {
+        case content
+        case page = "number" // Spring Data maps current page index to "number"
+        case size
+        case totalElements
+        case totalPages
+    }
 }
