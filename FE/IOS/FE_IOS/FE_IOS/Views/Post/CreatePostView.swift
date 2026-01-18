@@ -16,6 +16,7 @@ struct CreatePostView: View {
     @State private var showError = false
     @State private var errorMessage = ""
     @State private var showSuccess = false
+    @State private var showImagePicker = false
     
     let units = ["kg", "tấn", "bao", "con", "cây", "trái", "chục"]
     
@@ -30,7 +31,9 @@ struct CreatePostView: View {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 12) {
                             // Add button
-                            Button(action: {}) {
+                            Button(action: {
+                                showImagePicker = true
+                            }) {
                                 VStack {
                                     Image(systemName: "plus.circle.fill")
                                         .font(.system(size: 30))
@@ -191,6 +194,9 @@ struct CreatePostView: View {
         }
         .alert(isPresented: $showError) {
             Alert(title: Text("Lỗi"), message: Text(errorMessage), dismissButton: .default(Text("OK")))
+        }
+        .sheet(isPresented: $showImagePicker) {
+            MultiImagePicker(images: $selectedImages, selectionLimit: 5)
         }
     }
     

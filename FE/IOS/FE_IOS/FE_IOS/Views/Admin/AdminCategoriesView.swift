@@ -8,6 +8,8 @@ struct AdminCategoriesView: View {
     @State private var newCategoryName = ""
     @State private var newCategoryDescription = ""
     @State private var newCategoryIcon = "🌾"
+    @State private var errorMessage = ""
+    @State private var showError = false
     
     let icons = ["🌾", "🥬", "🍎", "🐔", "🐟", "🥩", "🌽", "🍚", "☕", "🌶️"]
     
@@ -70,6 +72,9 @@ struct AdminCategoriesView: View {
             NavigationView {
                 categoryForm
             }
+        }
+        .alert(isPresented: $showError) {
+            Alert(title: Text("Lỗi"), message: Text(errorMessage), dismissButton: .default(Text("OK")))
         }
     }
     
@@ -178,7 +183,18 @@ struct AdminCategoriesView: View {
                 method: .delete,
                 body: nil as String?
             ) { (result: Result<ApiResponse<String>, Error>) in
-                loadCategories()
+                switch result {
+                case .success(let response):
+                    if response.success {
+                        loadCategories()
+                    } else {
+                        errorMessage = response.message ?? "Xóa danh mục thất bại"
+                        showError = true
+                    }
+                case .failure(let error):
+                    errorMessage = "Lỗi: \(error.localizedDescription)"
+                    showError = true
+                }
             }
         }
     }

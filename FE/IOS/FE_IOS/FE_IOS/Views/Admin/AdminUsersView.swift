@@ -130,6 +130,9 @@ struct AdminUserRow: View {
     let onUpdate: () -> Void
     
     @State private var showActionSheet = false
+    @State private var isProcessing = false
+    @State private var errorMessage = ""
+    @State private var showError = false
     
     var body: some View {
         HStack(spacing: 12) {
@@ -185,6 +188,11 @@ struct AdminUserRow: View {
                 buttons: actionButtons()
             )
         }
+        .alert(isPresented: $showError) {
+            Alert(title: Text("Lỗi"), message: Text(errorMessage), dismissButton: .default(Text("OK")))
+        }
+        .disabled(isProcessing)
+        .opacity(isProcessing ? 0.6 : 1.0)
     }
     
     private func actionButtons() -> [ActionSheet.Button] {
@@ -211,32 +219,71 @@ struct AdminUserRow: View {
     }
     
     private func verifyKyc() {
+        isProcessing = true
         APIClient.shared.request(
             endpoint: "/users/\(user.id)/kyc/verify",
             method: .put,
             body: nil as String?
         ) { (result: Result<ApiResponse<String>, Error>) in
-            onUpdate()
+            isProcessing = false
+            switch result {
+            case .success(let response):
+                if response.success {
+                    onUpdate()
+                } else {
+                    errorMessage = response.message ?? "Xác minh thất bại"
+                    showError = true
+                }
+            case .failure(let error):
+                errorMessage = "Lỗi: \(error.localizedDescription)"
+                showError = true
+            }
         }
     }
     
     private func rejectKyc() {
+        isProcessing = true
         APIClient.shared.request(
             endpoint: "/users/\(user.id)/kyc/reject",
             method: .put,
             body: nil as String?
         ) { (result: Result<ApiResponse<String>, Error>) in
-            onUpdate()
+            isProcessing = false
+            switch result {
+            case .success(let response):
+                if response.success {
+                    onUpdate()
+                } else {
+                    errorMessage = response.message ?? "Từ chối thất bại"
+                    showError = true
+                }
+            case .failure(let error):
+                errorMessage = "Lỗi: \(error.localizedDescription)"
+                showError = true
+            }
         }
     }
     
     private func lockUser() {
+        isProcessing = true
         APIClient.shared.request(
             endpoint: "/users/\(user.id)/lock",
             method: .put,
             body: nil as String?
         ) { (result: Result<ApiResponse<String>, Error>) in
-            onUpdate()
+            isProcessing = false
+            switch result {
+            case .success(let response):
+                if response.success {
+                    onUpdate()
+                } else {
+                    errorMessage = response.message ?? "Khóa tài khoản thất bại"
+                    showError = true
+                }
+            case .failure(let error):
+                errorMessage = "Lỗi: \(error.localizedDescription)"
+                showError = true
+            }
         }
     }
 }

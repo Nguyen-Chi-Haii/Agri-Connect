@@ -105,6 +105,20 @@ struct EkycUploadView: View {
         .alert(isPresented: $showError) {
             Alert(title: Text("Lỗi"), message: Text(errorMessage), dismissButton: .default(Text("OK")))
         }
+        .sheet(isPresented: $showImagePicker) {
+            ImagePicker(image: bindingForCurrentSelection())
+        }
+    }
+    
+    private func bindingForCurrentSelection() -> Binding<UIImage?> {
+        switch currentImageSelection {
+        case .front:
+            return $idFrontImage
+        case .back:
+            return $idBackImage
+        case .license:
+            return $businessLicenseImage
+        }
     }
     
     // MARK: - Farmer Form

@@ -7,75 +7,78 @@ struct AdminDashboardView: View {
     
     var body: some View {
         NavigationView {
-            ScrollView {
-                VStack(spacing: 20) {
-                    // Welcome Header
-                    HStack {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("Xin chào, Admin")
-                                .font(.title2)
-                                .fontWeight(.bold)
-                            Text("Bảng điều khiển quản trị")
-                                .foregroundColor(.gray)
+            ZStack {
+                Color(.systemGray6)
+                    .ignoresSafeArea()
+                
+                if isLoading {
+                    ProgressView("Đang tải...")
+                } else {
+                    ScrollView {
+                        VStack(spacing: 20) {
+                            // Welcome Header
+                            HStack {
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text("Xin chào, Admin")
+                                        .font(.title2)
+                                        .fontWeight(.bold)
+                                    Text("Bảng điều khiển quản trị")
+                                        .foregroundColor(.gray)
+                                }
+                                Spacer()
+                                
+                                Image(systemName: "shield.fill")
+                                    .font(.title)
+                                    .foregroundColor(Color(hex: "#2E7D32"))
+                            }
+                            .padding()
+                            .background(Color.white)
+                            .cornerRadius(16)
+                            
+                            // Stats Cards
+                            LazyVGrid(columns: [
+                                GridItem(.flexible()),
+                                GridItem(.flexible())
+                            ], spacing: 16) {
+                                StatCard(
+                                    icon: "person.3.fill",
+                                    title: "Người dùng",
+                                    value: "\(stats?.totalUsers ?? 0)",
+                                    color: .blue
+                                )
+                                
+                                StatCard(
+                                    icon: "doc.text.fill",
+                                    title: "Bài đăng",
+                                    value: "\(stats?.totalPosts ?? 0)",
+                                    color: .green
+                                )
+                                
+                                StatCard(
+                                    icon: "clock.fill",
+                                    title: "Chờ duyệt",
+                                    value: "\(stats?.pendingPosts ?? 0)",
+                                    color: .orange
+                                )
+                                
+                                StatCard(
+                                    icon: "checkmark.seal.fill",
+                                    title: "Chờ KYC",
+                                    value: "\(stats?.pendingKyc ?? 0)",
+                                    color: .purple
+                                )
+                            }
+                            .padding(.horizontal)
+                            
+                            // Hidden navigation
+                            NavigationLink(destination: LoginView().navigationBarHidden(true), isActive: $navigateToLogin) {
+                                EmptyView()
+                            }
                         }
-                        Spacer()
-                        
-                        Image(systemName: "shield.fill")
-                            .font(.title)
-                            .foregroundColor(Color(hex: "#2E7D32"))
-                    }
-                    .padding()
-                    .background(Color.white)
-                    .cornerRadius(16)
-                    
-                    // Stats Cards
-                    LazyVGrid(columns: [
-                        GridItem(.flexible()),
-                        GridItem(.flexible())
-                    ], spacing: 16) {
-                        StatCard(
-                            icon: "person.3.fill",
-                            title: "Người dùng",
-                            value: "\(stats?.totalUsers ?? 0)",
-                            color: .blue
-                        )
-                        
-                        StatCard(
-                            icon: "doc.text.fill",
-                            title: "Bài đăng",
-                            value: "\(stats?.totalPosts ?? 0)",
-                            color: .green
-                        )
-                        
-                        StatCard(
-                            icon: "clock.fill",
-                            title: "Chờ duyệt",
-                            value: "\(stats?.pendingPosts ?? 0)",
-                            color: .orange
-                        )
-                        
-                        StatCard(
-                            icon: "checkmark.seal.fill",
-                            title: "Chờ KYC",
-                            value: "\(stats?.pendingKyc ?? 0)",
-                            color: .purple
-                        )
-                    }
-                    
-
-                    .background(Color.white)
-                    .cornerRadius(16)
-                    
-
-                    
-                    // Hidden navigation
-                    NavigationLink(destination: LoginView().navigationBarHidden(true), isActive: $navigateToLogin) {
-                        EmptyView()
+                        .padding()
                     }
                 }
-                .padding()
             }
-            .background(Color(.systemGray6))
             .navigationTitle("Quản trị")
             .navigationBarTitleDisplayMode(.inline)
             .onAppear {

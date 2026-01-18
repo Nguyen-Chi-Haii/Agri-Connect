@@ -103,10 +103,10 @@ struct HomeView: View {
         APIClient.shared.request(
             endpoint: APIConfig.Posts.approved,
             method: .get
-        ) { (result: Result<ApiResponse<[Post]>, Error>) in
+        ) { (result: Result<ApiResponse<PagedResponse<Post>>, Error>) in
             isLoading = false
             if case .success(let response) = result, let data = response.data {
-                posts = data
+                posts = data.content
             }
         }
     }

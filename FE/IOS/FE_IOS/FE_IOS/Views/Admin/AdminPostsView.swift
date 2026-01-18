@@ -129,6 +129,10 @@ struct AdminPostRow: View {
     let post: Post
     let onUpdate: () -> Void
     
+    @State private var isProcessing = false
+    @State private var errorMessage = ""
+    @State private var showError = false
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             // Header
@@ -204,6 +208,11 @@ struct AdminPostRow: View {
             }
         }
         .padding(.vertical, 8)
+        .alert(isPresented: $showError) {
+            Alert(title: Text("Lỗi"), message: Text(errorMessage), dismissButton: .default(Text("OK")))
+        }
+        .disabled(isProcessing)
+        .opacity(isProcessing ? 0.6 : 1.0)
     }
     
     private func formatPrice(_ price: Double) -> String {
@@ -214,22 +223,48 @@ struct AdminPostRow: View {
     }
     
     private func approvePost() {
+        isProcessing = true
         APIClient.shared.request(
             endpoint: "/posts/\(post.id)/approve",
             method: .put,
             body: nil as String?
         ) { (result: Result<ApiResponse<String>, Error>) in
-            onUpdate()
+            isProcessing = false
+            switch result {
+            case .success(let response):
+                if response.success {
+                    onUpdate()
+                } else {
+                    errorMessage = response.message ?? "Duyệt bài thất bại"
+                    showError = true
+                }
+            case .failure(let error):
+                errorMessage = "Lỗi: \(error.localizedDescription)"
+                showError = true
+            }
         }
     }
     
     private func rejectPost() {
+        isProcessing = true
         APIClient.shared.request(
             endpoint: "/posts/\(post.id)/reject",
             method: .put,
             body: nil as String?
         ) { (result: Result<ApiResponse<String>, Error>) in
-            onUpdate()
+            isProcessing = false
+            switch result {
+            case .success(let response):
+                if response.success {
+                    onUpdate()
+                } else {
+                    errorMessage = response.message ?? "Từ chối bài thất bại"
+                    showError = true
+                }
+            case .failure(let error):
+                errorMessage = "Lỗi: \(error.localizedDescription)"
+                showError = true
+            }
         }
     }
 }
