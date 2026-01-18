@@ -62,7 +62,8 @@ struct TokenRefreshRequest: Encodable {
 }
 
 // MARK: - User Models
-struct UserProfile: Decodable {
+// MARK: - User Models
+struct UserProfile: Decodable, Identifiable {
     let id: String
     let username: String?
     let phone: String?
@@ -73,6 +74,20 @@ struct UserProfile: Decodable {
     let verified: Bool?
     let kycStatus: String?
     let createdAt: String?
+    let kyc: KycInfo?
+}
+
+struct KycInfo: Decodable {
+    let id: String?
+    let status: String?
+    let kycType: String?
+    let idNumber: String?
+    let idFrontImage: String?
+    let idBackImage: String?
+    let taxCode: String?
+    let companyName: String?
+    let businessLicense: String?
+    let reason: String?
 }
 
 struct KycSubmissionRequest: Encodable {

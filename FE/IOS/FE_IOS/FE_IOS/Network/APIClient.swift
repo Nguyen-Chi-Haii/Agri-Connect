@@ -14,9 +14,19 @@ struct APIConfig {
         static let logout = "/auth/logout"
     }
     
+    struct Admin {
+        static let dashboardStats = "/admin/dashboard/stats"
+    }
+    
     struct Users {
+        static let list = "/users"
         static let profile = "/users/profile"
         static let kycSubmit = "/users/kyc/submit"
+        
+        static func verifyKyc(_ id: String) -> String { return "/users/\(id)/kyc/verify" }
+        static func rejectKyc(_ id: String) -> String { return "/users/\(id)/kyc/reject" }
+        static func lock(_ id: String) -> String { return "/users/\(id)/lock" }
+        static func unlock(_ id: String) -> String { return "/users/\(id)/unlock" }
     }
     
     struct Posts {
@@ -24,10 +34,17 @@ struct APIConfig {
         static let approved = "/posts/approved"
         static let myPosts = "/posts/my-posts"
         static let search = "/posts"
+        
+        static func detail(_ id: String) -> String { return "/posts/\(id)" }
+        static func approve(_ id: String) -> String { return "/posts/\(id)/approve" }
+        static func reject(_ id: String) -> String { return "/posts/\(id)/reject" }
+        static func delete(_ id: String) -> String { return "/posts/\(id)" }
+        static func close(_ id: String) -> String { return "/posts/\(id)/close" }
     }
     
     struct Categories {
         static let list = "/categories"
+        static func detail(_ id: String) -> String { return "/categories/\(id)" }
     }
     
     struct MarketPrices {
