@@ -27,9 +27,15 @@ struct AdminPostsView: View {
             }
         }
         
-        if !selectedFilter.isEmpty {
-            result = result.filter { $0.status == selectedFilter }
+        // Client-side filtering for search text only (since API handles status)
+        // If API supports search, we could remove this too, but keeping for safety.
+        if !searchText.isEmpty {
+            result = result.filter {
+                $0.title.localizedCaseInsensitiveContains(searchText)
+            }
         }
+        
+        // Removed client-side status filter as it's handled by API
         
         return result
     }
@@ -53,6 +59,7 @@ struct AdminPostsView: View {
                     ForEach(filters, id: \.0) { filter in
                         Button {
                             selectedFilter = filter.0
+                            loadPosts(page: 0) // Reset to page 0 and reload
                         } label: {
                             Text(filter.1)
                                 .font(.subheadline)
