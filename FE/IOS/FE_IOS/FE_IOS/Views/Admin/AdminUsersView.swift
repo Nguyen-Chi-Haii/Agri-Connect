@@ -29,12 +29,12 @@ struct AdminUsersView: View {
             }
         }
         
-        if selectedFilter != "all" {
-            if selectedFilter == "PENDING" {
-                result = result.filter { $0.kycStatus == "PENDING" }
-            } else {
-                result = result.filter { $0.role == selectedFilter }
-            }
+        if selectedRole != "ALL" {
+             result = result.filter { $0.role == selectedRole }
+        }
+        
+        if selectedKycStatus != "ALL" {
+            result = result.filter { $0.kycStatus == selectedKycStatus }
         }
         
         return result
@@ -133,7 +133,6 @@ struct AdminUsersView: View {
                         .foregroundColor(.gray)
                 }
                 Spacer()
-            } else {
             } else {
                 List(users) { user in
                     AdminUserRow(user: user) {
@@ -313,7 +312,7 @@ struct AdminUserRow: View {
         APIClient.shared.request(
             endpoint: APIConfig.Users.verifyKyc(user.id),
             method: .put
-        ) { (result: Result<ApiResponse<Void>, Error>) in
+        ) { (result: Result<ApiResponse<String>, Error>) in
             isProcessing = false
             handleResult(result)
         }
@@ -325,7 +324,7 @@ struct AdminUserRow: View {
         APIClient.shared.request(
             endpoint: APIConfig.Users.rejectKyc(user.id) + "?reason=\(reasonParam)",
             method: .put
-        ) { (result: Result<ApiResponse<Void>, Error>) in
+        ) { (result: Result<ApiResponse<String>, Error>) in
             isProcessing = false
             handleResult(result)
         }
@@ -336,7 +335,7 @@ struct AdminUserRow: View {
         APIClient.shared.request(
             endpoint: APIConfig.Users.lock(user.id),
             method: .put
-        ) { (result: Result<ApiResponse<Void>, Error>) in
+        ) { (result: Result<ApiResponse<String>, Error>) in
             isProcessing = false
             handleResult(result)
         }
@@ -347,13 +346,13 @@ struct AdminUserRow: View {
         APIClient.shared.request(
             endpoint: APIConfig.Users.unlock(user.id),
             method: .put
-        ) { (result: Result<ApiResponse<Void>, Error>) in
+        ) { (result: Result<ApiResponse<String>, Error>) in
             isProcessing = false
             handleResult(result)
         }
     }
     
-    private func handleResult(_ result: Result<ApiResponse<Void>, Error>) {
+    private func handleResult(_ result: Result<ApiResponse<String>, Error>) {
         switch result {
         case .success(let response):
             if response.success {
@@ -378,23 +377,23 @@ struct KycDetailView: View {
         NavigationView {
             Form {
                 Section(header: Text("Thông tin cá nhân")) {
-                    DetailRow(label: "Họ tên", value: user.fullName)
-                    DetailRow(label: "Số điện thoại", value: user.phone ?? "Chưa cập nhật")
-                    DetailRow(label: "Địa chỉ", value: user.address ?? "Chưa cập nhật")
-                    DetailRow(label: "Vai trò", value: user.role)
+                    KycDetailRow(label: "Họ tên", value: user.fullName)
+                    KycDetailRow(label: "Số điện thoại", value: user.phone ?? "Chưa cập nhật")
+                    KycDetailRow(label: "Địa chỉ", value: user.address ?? "Chưa cập nhật")
+                    KycDetailRow(label: "Vai trò", value: user.role)
                 }
                 
                 if let kyc = user.kyc {
                     Section(header: Text("Thông tin KYC")) {
-                        DetailRow(label: "Trạng thái", value: kyc.status ?? "")
-                        DetailRow(label: "Loại giấy tờ", value: kyc.kycType ?? "CCCD")
+                        KycDetailRow(label: "Trạng thái", value: kyc.status ?? "")
+                        KycDetailRow(label: "Loại giấy tờ", value: kyc.kycType ?? "CCCD")
                         
                         if let idNumber = kyc.idNumber {
-                            DetailRow(label: "Số CCCD", value: idNumber)
+                            KycDetailRow(label: "Số CCCD", value: idNumber)
                         }
                         
                         if let taxCode = kyc.taxCode {
-                            DetailRow(label: "Mã số thuế", value: taxCode)
+                            KycDetailRow(label: "Mã số thuế", value: taxCode)
                         }
                     }
                     
@@ -423,7 +422,7 @@ struct KycDetailView: View {
     }
 }
 
-struct DetailRow: View {
+struct KycDetailRow: View {
     let label: String
     let value: String
     

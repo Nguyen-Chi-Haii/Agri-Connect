@@ -363,7 +363,7 @@ struct AdminPostRow: View {
         APIClient.shared.request(
             endpoint: APIConfig.Posts.approve(post.id),
             method: .put
-        ) { (result: Result<ApiResponse<Void>, Error>) in
+        ) { (result: Result<ApiResponse<String>, Error>) in
             isProcessing = false
             handleResult(result)
         }
@@ -375,7 +375,7 @@ struct AdminPostRow: View {
         APIClient.shared.request(
             endpoint: APIConfig.Posts.reject(post.id) + "?reason=\(reasonParam)",
             method: .put
-        ) { (result: Result<ApiResponse<Void>, Error>) in
+        ) { (result: Result<ApiResponse<String>, Error>) in
             isProcessing = false
             handleResult(result)
         }
@@ -386,7 +386,7 @@ struct AdminPostRow: View {
         APIClient.shared.request(
             endpoint: APIConfig.Posts.close(post.id),
             method: .put
-        ) { (result: Result<ApiResponse<Void>, Error>) in
+        ) { (result: Result<ApiResponse<String>, Error>) in
             isProcessing = false
             handleResult(result)
         }
@@ -397,13 +397,13 @@ struct AdminPostRow: View {
         APIClient.shared.request(
             endpoint: APIConfig.Posts.delete(post.id),
             method: .delete
-        ) { (result: Result<ApiResponse<Void>, Error>) in
+        ) { (result: Result<ApiResponse<String>, Error>) in
             isProcessing = false
             handleResult(result)
         }
     }
     
-    private func handleResult(_ result: Result<ApiResponse<Void>, Error>) {
+    private func handleResult(_ result: Result<ApiResponse<String>, Error>) {
         switch result {
         case .success(let response):
             if response.success {
