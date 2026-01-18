@@ -15,6 +15,13 @@ struct CreateAccountView: View {
     @State private var showError = false
     @State private var navigateToMain = false
     
+    @State private var usernameError: String?
+    @State private var phoneError: String?
+    @State private var fullNameError: String?
+    @State private var addressError: String?
+    @State private var passwordError: String?
+    @State private var confirmPasswordError: String?
+    
     var roleTitle: String {
         role == "FARMER" ? "Nông dân" : "Thương lái"
     }
@@ -43,23 +50,26 @@ struct CreateAccountView: View {
                     
                     // Form
                     VStack(spacing: 16) {
-                        FormField(
+                        ValidatedFormField(
                             title: "Tên đăng nhập",
                             placeholder: "Nhập tên đăng nhập",
-                            text: $username
+                            text: $username,
+                            error: $usernameError
                         )
                         
-                        FormField(
+                        ValidatedFormField(
                             title: "Số điện thoại",
                             placeholder: "0912345678",
                             text: $phone,
+                            error: $phoneError,
                             keyboardType: .phonePad
                         )
                         
-                        FormField(
+                        ValidatedFormField(
                             title: "Họ và tên",
                             placeholder: "Nguyễn Văn A",
-                            text: $fullName
+                            text: $fullName,
+                            error: $fullNameError
                         )
                         
                         VStack(alignment: .leading, spacing: 4) {
@@ -70,24 +80,37 @@ struct CreateAccountView: View {
                                 Spacer()
                                 LocationFillButton { province, district in
                                     self.address = "\(district), \(province)"
+                                    self.addressError = nil // Clear error on fill
                                 }
                             }
                             TextField("Xã, Huyện, Tỉnh", text: $address)
                                 .textFieldStyle(RoundedTextFieldStyle())
                                 .autocapitalization(.words)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(addressError != nil ? Color.red : Color.clear, lineWidth: 1)
+                                )
+                            
+                            if let error = addressError {
+                                Text(error)
+                                    .font(.caption)
+                                    .foregroundColor(.red)
+                            }
                         }
                         
-                        FormField(
+                        ValidatedFormField(
                             title: "Mật khẩu",
                             placeholder: "Tối thiểu 6 ký tự",
                             text: $password,
+                            error: $passwordError,
                             isSecure: true
                         )
                         
-                        FormField(
+                        ValidatedFormField(
                             title: "Xác nhận mật khẩu",
                             placeholder: "Nhập lại mật khẩu",
                             text: $confirmPassword,
+                            error: $confirmPasswordError,
                             isSecure: true
                         )
                     }
@@ -133,24 +156,45 @@ struct CreateAccountView: View {
     }
     
     private func register() {
-        // Validation
-        guard !username.isEmpty, !fullName.isEmpty, !password.isEmpty else {
-            errorMessage = "Vui lòng điền đầy đủ thông tin"
-            showError = true
-            return
+        var isValid = true
+        
+        // Reset errors
+        usernameError = nil
+        phoneError = nil
+        fullNameError = nil
+        addressError = nil
+        passwordError = nil
+        confirmPasswordError = nil
+        
+        if username.isEmpty {
+            usernameError = "Vui lòng nhập tên đăng nhập"
+            isValid = false
         }
         
-        guard password == confirmPassword else {
-            errorMessage = "Mật khẩu xác nhận không khớp"
-            showError = true
-            return
+        if fullName.isEmpty {
+            fullNameError = "Vui lòng nhập họ tên"
+            isValid = false
         }
         
-        guard password.count >= 6 else {
-            errorMessage = "Mật khẩu phải có ít nhất 6 ký tự"
-            showError = true
-            return
+        if address.isEmpty {
+            addressError = "Vui lòng nhập địa chỉ"
+            isValid = false
         }
+        
+        if password.isEmpty {
+            passwordError = "Vui lòng nhập mật khẩu"
+            isValid = false
+        } else if password.count < 6 {
+            passwordError = "Mật khẩu phải có ít nhất 6 ký tự"
+            isValid = false
+        }
+        
+        if confirmPassword != password {
+            confirmPasswordError = "Mật khẩu xác nhận không khớp"
+            isValid = false
+        }
+        
+        guard isValid else { return }
         
         isLoading = true
         
@@ -187,33 +231,7 @@ struct CreateAccountView: View {
         }
     }
 }
-
-// MARK: - Form Field Component
-struct FormField: View {
-    let title: String
-    let placeholder: String
-    @Binding var text: String
-    var keyboardType: UIKeyboardType = .default
-    var isSecure: Bool = false
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(title)
-                .font(.caption)
-                .foregroundColor(.gray)
-            
-            if isSecure {
-                SecureField(placeholder, text: $text)
-                    .textFieldStyle(RoundedTextFieldStyle())
-            } else {
-                TextField(placeholder, text: $text)
-                    .textFieldStyle(RoundedTextFieldStyle())
-                    .keyboardType(keyboardType)
-                    .autocapitalization(.none)
-            }
-        }
-    }
-}
+// Removed generic FormField struct as it is replaced by ValidatedFormField
 
 struct CreateAccountView_Previews: PreviewProvider {
     static var previews: some View {

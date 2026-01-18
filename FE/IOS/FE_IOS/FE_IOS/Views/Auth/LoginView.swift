@@ -7,6 +7,9 @@ struct LoginView: View {
     @State private var errorMessage = ""
     @State private var showError = false
     
+    @State private var usernameError: String?
+    @State private var passwordError: String?
+    
     var body: some View {
         NavigationView {
             ZStack {
@@ -41,23 +44,21 @@ struct LoginView: View {
                     // Form
                     VStack(spacing: 16) {
                         // Username
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("Tên đăng nhập")
-                                .font(.caption)
-                                .foregroundColor(.gray)
-                            TextField("Nhập tên đăng nhập", text: $username)
-                                .textFieldStyle(RoundedTextFieldStyle())
-                                .autocapitalization(.none)
-                        }
+                        ValidatedFormField(
+                            title: "Tên đăng nhập",
+                            placeholder: "Nhập tên đăng nhập",
+                            text: $username,
+                            error: $usernameError
+                        )
                         
                         // Password
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("Mật khẩu")
-                                .font(.caption)
-                                .foregroundColor(.gray)
-                            SecureField("Nhập mật khẩu", text: $password)
-                                .textFieldStyle(RoundedTextFieldStyle())
-                        }
+                        ValidatedFormField(
+                            title: "Mật khẩu",
+                            placeholder: "Nhập mật khẩu",
+                            text: $password,
+                            error: $passwordError,
+                            isSecure: true
+                        )
                     }
                     .padding(.horizontal, 24)
                     
@@ -89,7 +90,6 @@ struct LoginView: View {
                                 .fontWeight(.semibold)
                         }
                     }
-                    
 
                     
                     Spacer()
@@ -104,17 +104,31 @@ struct LoginView: View {
         .onAppear {
             username = ""
             password = ""
+            usernameError = nil
+            passwordError = nil
             errorMessage = ""
             showError = false
         }
     }
     
     private func login() {
-        guard !username.isEmpty, !password.isEmpty else {
-            errorMessage = "Vui lòng điền đầy đủ thông tin"
-            showError = true
-            return
+        var isValid = true
+        
+        // Reset errors
+        usernameError = nil
+        passwordError = nil
+        
+        if username.isEmpty {
+            usernameError = "Vui lòng nhập tên đăng nhập"
+            isValid = false
         }
+        
+        if password.isEmpty {
+            passwordError = "Vui lòng nhập mật khẩu"
+            isValid = false
+        }
+        
+        guard isValid else { return }
         
         isLoading = true
         

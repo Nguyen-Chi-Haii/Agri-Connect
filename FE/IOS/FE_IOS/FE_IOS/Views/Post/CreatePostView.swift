@@ -14,9 +14,13 @@ struct CreatePostView: View {
     @State private var selectedImages: [UIImage] = []
     @State private var isLoading = false
     @State private var showError = false
-    @State private var errorMessage = ""
-    @State private var showSuccess = false
-    @State private var showImagePicker = false
+    @State private var titleError: String?
+    @State private var descriptionError: String?
+    @State private var priceError: String?
+    @State private var quantityError: String?
+    @State private var provinceError: String?
+    @State private var districtError: String?
+    @State private var categoryError: String?
     
     let units = ["kg", "tấn", "bao", "con", "cây", "trái", "chục"]
     
@@ -78,6 +82,7 @@ struct CreatePostView: View {
                             ForEach(categories) { category in
                                 Button {
                                     selectedCategory = category
+                                    categoryError = nil
                                 } label: {
                                     Text(category.name)
                                         .padding(.horizontal, 16)
@@ -97,13 +102,19 @@ struct CreatePostView: View {
                             }
                         }
                     }
+                    if let error = categoryError {
+                        Text(error)
+                            .font(.caption)
+                            .foregroundColor(.red)
+                    }
                 }
                 
                 // Title
-                FormField(
+                ValidatedFormField(
                     title: "Tiêu đề",
                     placeholder: "VD: Gạo ST25 hữu cơ",
-                    text: $title
+                    text: $title,
+                    error: $titleError
                 )
                 
                 // Description
@@ -127,6 +138,15 @@ struct CreatePostView: View {
                         TextField("0", text: $price)
                             .keyboardType(.numberPad)
                             .textFieldStyle(RoundedTextFieldStyle())
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(priceError != nil ? Color.red : Color.clear, lineWidth: 1)
+                            )
+                        if let error = priceError {
+                            Text(error)
+                                .font(.caption)
+                                .foregroundColor(.red)
+                        }
                     }
                     
                     VStack(alignment: .leading, spacing: 4) {
@@ -146,10 +166,11 @@ struct CreatePostView: View {
                 }
                 
                 // Quantity
-                FormField(
+                ValidatedFormField(
                     title: "Số lượng",
                     placeholder: "VD: 100",
                     text: $quantity,
+                    error: $quantityError,
                     keyboardType: .numberPad
                 )
                 
@@ -162,21 +183,25 @@ struct CreatePostView: View {
                         LocationFillButton { province, district in
                             self.province = province
                             self.district = district
+                            self.provinceError = nil
+                            self.districtError = nil
                         }
                     }
                     
                     HStack(spacing: 12) {
-                        FormField(
+                        ValidatedFormField(
                             title: "Tỉnh/Thành",
                             placeholder: "VD: An Giang",
-                            text: $province
+                            text: $province,
+                            error: $provinceError
                         )
                         .disabled(LocationManager.shared.isLoading)
                         
-                        FormField(
+                        ValidatedFormField(
                             title: "Quận/Huyện",
                             placeholder: "VD: Châu Đốc",
-                            text: $district
+                            text: $district,
+                            error: $districtError
                         )
                         .disabled(LocationManager.shared.isLoading)
                     }
@@ -226,22 +251,52 @@ struct CreatePostView: View {
     }
     
     private func submitPost() {
-        guard let category = selectedCategory else {
-            errorMessage = "Vui lòng chọn danh mục"
-            showError = true
-            return
+        var isValid = true
+        
+        // Reset errors
+        categoryError = nil
+        titleError = nil
+        priceError = nil
+        quantityError = nil
+        provinceError = nil
+        districtError = nil
+        
+        if selectedCategory == nil {
+            categoryError = "Vui lòng chọn danh mục"
+            isValid = false
         }
         
-        guard !title.isEmpty else {
-            errorMessage = "Vui lòng nhập tiêu đề"
-            showError = true
-            return
+        if title.isEmpty {
+            titleError = "Vui lòng nhập tiêu đề"
+            isValid = false
         }
+        
+        if price.isEmpty {
+            priceError = "Vui lòng nhập giá"
+            isValid = false
+        }
+        
+        if quantity.isEmpty {
+            quantityError = "Vui lòng nhập số lượng"
+            isValid = false
+        }
+        
+        if province.isEmpty {
+            provinceError = "Bắt buộc"
+            isValid = false
+        }
+        
+        if district.isEmpty {
+            districtError = "Bắt buộc"
+            isValid = false
+        }
+        
+        guard isValid else { return }
         
         isLoading = true
         
         let request = CreatePostRequest(
-            categoryId: category.id,
+            categoryId: selectedCategory!.id,
             title: title,
             description: description,
             price: Double(price) ?? 0,
