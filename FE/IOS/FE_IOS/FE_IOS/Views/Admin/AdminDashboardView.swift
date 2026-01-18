@@ -116,14 +116,24 @@ struct AdminDashboardView: View {
     
     private func loadStats() {
         isLoading = true
+        print("📡 [AdminDashboard] Loading stats from: \(APIConfig.Admin.dashboardStats)")
         
         APIClient.shared.request(
             endpoint: APIConfig.Admin.dashboardStats,
             method: .get
         ) { (result: Result<ApiResponse<DashboardStats>, Error>) in
             isLoading = false
-            if case .success(let response) = result, let data = response.data {
-                stats = data
+            switch result {
+            case .success(let response):
+                print("✅ [AdminDashboard] Success: \(response.success)")
+                if let data = response.data {
+                    print("✅ [AdminDashboard] Data: Users=\(data.totalUsers ?? -1), Posts=\(data.totalPosts ?? -1)")
+                    stats = data
+                } else {
+                    print("⚠️ [AdminDashboard] Response data is nil")
+                }
+            case .failure(let error):
+                print("❌ [AdminDashboard] Error: \(error)")
             }
         }
     }

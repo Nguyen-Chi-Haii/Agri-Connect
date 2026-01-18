@@ -15,7 +15,7 @@ struct APIConfig {
     }
     
     struct Admin {
-        static let dashboardStats = "/admin/dashboard/stats"
+        static let dashboardStats = "/admin/dashboard"
     }
     
     struct Users {
