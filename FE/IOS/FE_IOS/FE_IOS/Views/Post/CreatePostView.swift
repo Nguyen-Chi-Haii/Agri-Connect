@@ -154,18 +154,60 @@ struct CreatePostView: View {
                 )
                 
                 // Location
-                HStack(spacing: 12) {
-                    FormField(
-                        title: "Tỉnh/Thành",
-                        placeholder: "VD: An Giang",
-                        text: $province
-                    )
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack {
+                        Text("Vị trí")
+                            .font(.headline)
+                        Spacer()
+                        Button(action: {
+                            LocationManager.shared.requestLocation()
+                        }) {
+                            HStack(spacing: 4) {
+                                if LocationManager.shared.isLoading {
+                                    ProgressView()
+                                        .scaleEffect(0.7)
+                                } else {
+                                    Image(systemName: "location.fill")
+                                }
+                                Text("Lấy vị trí hiện tại")
+                                    .font(.caption)
+                                    .fontWeight(.semibold)
+                            }
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(Color(hex: "#E8F5E9"))
+                            .foregroundColor(Color(hex: "#2E7D32"))
+                            .cornerRadius(12)
+                        }
+                    }
                     
-                    FormField(
-                        title: "Quận/Huyện",
-                        placeholder: "VD: Châu Đốc",
-                        text: $district
-                    )
+                    HStack(spacing: 12) {
+                        FormField(
+                            title: "Tỉnh/Thành",
+                            placeholder: "VD: An Giang",
+                            text: $province
+                        )
+                        .disabled(LocationManager.shared.isLoading)
+                        
+                        FormField(
+                            title: "Quận/Huyện",
+                            placeholder: "VD: Châu Đốc",
+                            text: $district
+                        )
+                        .disabled(LocationManager.shared.isLoading)
+                    }
+                }
+                .onReceive(LocationManager.shared.$addressComponents) { components in
+                    if let components = components {
+                        self.province = components.province
+                        self.district = components.district
+                    }
+                }
+                .onReceive(LocationManager.shared.$locationError) { error in
+                    if let error = error {
+                        self.errorMessage = error.localizedDescription
+                        self.showError = true
+                    }
                 }
                 
                 // Submit Button
