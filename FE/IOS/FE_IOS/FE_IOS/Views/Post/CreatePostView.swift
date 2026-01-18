@@ -233,6 +233,9 @@ struct CreatePostView: View {
         .navigationTitle("Tạo bài đăng")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
+            // Clear location fields to prevent cached values
+            province = ""
+            district = ""
             loadCategories()
         }
         .alert(isPresented: $showError) {

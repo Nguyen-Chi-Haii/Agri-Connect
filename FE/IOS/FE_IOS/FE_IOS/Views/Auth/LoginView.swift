@@ -150,12 +150,18 @@ struct LoginView: View {
                     
                     // No manual navigation needed
                 } else {
-                    errorMessage = response.message ?? "Đăng nhập thất bại"
-                    showError = true
+                    // Backend returned failure - show friendly message
+                    usernameError = "Tài khoản hoặc mật khẩu không đúng"
                 }
             case .failure(let error):
-                errorMessage = "Lỗi kết nối: \(error.localizedDescription)"
-                showError = true
+                // Network or parsing error
+                let errorDesc = error.localizedDescription
+                if errorDesc.contains("400") || errorDesc.contains("Bad Request") {
+                    usernameError = "Tài khoản hoặc mật khẩu không đúng"
+                } else {
+                    errorMessage = "Lỗi kết nối: \(errorDesc)"
+                    showError = true
+                }
             }
         }
     }

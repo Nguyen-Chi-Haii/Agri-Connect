@@ -65,18 +65,37 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
                 
                 if let error = error {
                     self?.locationError = error
+                    print("❌ [LocationManager] Geocoding error: \(error.localizedDescription)")
                     return
                 }
                 
                 if let placemark = placemarks?.first {
-                    // Administrative Area = Province (Tỉnh)
-                    // Sub-Administrative Area = District (Huyện/Quận)
-                    // Locality = City/Town
+                    // Check if we're in Vietnam
+                    let isVietnam = placemark.isoCountryCode == "VN"
                     
-                    let province = placemark.administrativeArea ?? ""
-                    let district = placemark.subAdministrativeArea ?? placemark.locality ?? ""
+                    var province = ""
+                    var district = ""
                     
-                    print("📍 [LocationManager] Found: \(district), \(province)")
+                    if isVietnam {
+                        // Vietnam format:
+                        // administrativeArea = Tỉnh/Thành phố (e.g., "An Giang", "Hồ Chí Minh")
+                        // subAdministrativeArea or locality = Quận/Huyện
+                        province = placemark.administrativeArea ?? ""
+                        district = placemark.subAdministrativeArea ?? placemark.locality ?? ""
+                    } else {
+                        // Fallback for non-Vietnam (e.g., Simulator with default US location)
+                        province = placemark.administrativeArea ?? ""
+                        district = placemark.locality ?? ""
+                        print("⚠️ [LocationManager] Warning: Not in Vietnam. Country: \(placemark.isoCountryCode ?? "unknown")")
+                    }
+                    
+                    // Clean up prefixes if present
+                    province = province.replacingOccurrences(of: "Tỉnh ", with: "")
+                                       .replacingOccurrences(of: "Thành phố ", with: "")
+                    district = district.replacingOccurrences(of: "Quận ", with: "")
+                                       .replacingOccurrences(of: "Huyện ", with: "")
+                    
+                    print("📍 [LocationManager] Geocoded: \(district), \(province) (Country: \(placemark.isoCountryCode ?? "unknown"))")
                     self?.addressComponents = (province, district)
                 }
             }

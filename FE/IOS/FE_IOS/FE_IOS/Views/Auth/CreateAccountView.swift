@@ -150,6 +150,10 @@ struct CreateAccountView: View {
             }
         }
         .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+            // Clear address field to prevent cached location
+            address = ""
+        }
         .alert(isPresented: $showError) {
             Alert(title: Text("Lỗi"), message: Text(errorMessage), dismissButton: .default(Text("OK")))
         }
@@ -169,6 +173,17 @@ struct CreateAccountView: View {
         if username.isEmpty {
             usernameError = "Vui lòng nhập tên đăng nhập"
             isValid = false
+        }
+        
+        // Phone validation
+        if !phone.isEmpty {
+            if phone.count != 10 {
+                phoneError = "Số điện thoại phải có 10 chữ số"
+                isValid = false
+            } else if !phone.hasPrefix("0") {
+                phoneError = "Số điện thoại phải bắt đầu bằng số 0"
+                isValid = false
+            }
         }
         
         if fullName.isEmpty {
