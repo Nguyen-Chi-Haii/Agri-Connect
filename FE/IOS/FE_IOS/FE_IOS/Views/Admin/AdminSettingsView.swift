@@ -40,6 +40,7 @@ struct AdminSettingsView: View {
     }
     
     private func logout() {
+        print("👋 [AdminSettingsView] User tapped Logout. Calling TokenManager.clearAll()")
         // Just clear tokens. FE_IOSApp will detect change and switch Root View to LoginView automatically.
         TokenManager.shared.clearAll()
     }

@@ -20,6 +20,7 @@ class TokenManager: ObservableObject {
     // MARK: - Token Properties
     @Published var accessToken: String? {
         didSet {
+            print("🔐 [TokenManager] accessToken changed. New value: \(accessToken != nil ? "EXISTS" : "NIL")")
             if let value = accessToken {
                 KeychainHelper.save(key: accessTokenKey, value: value)
             } else {
@@ -56,11 +57,14 @@ class TokenManager: ObservableObject {
     }
     
     var isLoggedIn: Bool {
-        return accessToken != nil
+        let loggedIn = accessToken != nil
+        print("🔐 [TokenManager] isLoggedIn check: \(loggedIn)")
+        return loggedIn
     }
     
     // MARK: - Methods
     func saveTokens(access: String, refresh: String) {
+        print("🔐 [TokenManager] saveTokens called")
         accessToken = access
         refreshToken = refresh
     }
@@ -72,7 +76,8 @@ class TokenManager: ObservableObject {
     }
     
     func clearAll() {
-        objectWillChange.send()
+        print("🔐 [TokenManager] clearAll called. Clearing tokens and user info.")
+        // objectWillChange.send() // Not needed with @Published
         accessToken = nil
         refreshToken = nil
         userId = nil
