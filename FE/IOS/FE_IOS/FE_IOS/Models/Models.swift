@@ -105,10 +105,17 @@ struct KycSubmissionRequest: Encodable {
 }
 
 // MARK: - Post Models
+struct Location: Decodable {
+    let province: String?
+    let district: String?
+    let ward: String?
+    let address: String?
+}
+
 struct Post: Decodable, Identifiable {
     let id: String
-    let userId: String?
-    let authorName: String?
+    let sellerId: String?
+    let sellerName: String?
     let categoryId: String?
     let categoryName: String?
     let title: String
@@ -117,10 +124,14 @@ struct Post: Decodable, Identifiable {
     let unit: String?
     let quantity: Double?
     let images: [String]?
-    let province: String?
-    let district: String?
+    let location: Location?
     let status: String?
     let createdAt: String?
+    
+    // Convenience Accessors
+    var province: String? { location?.province }
+    var district: String? { location?.district }
+    var authorName: String? { sellerName } // Alias for backward compatibility if needed
 }
 
 struct CreatePostRequest: Encodable {
@@ -130,9 +141,17 @@ struct CreatePostRequest: Encodable {
     let price: Double
     let unit: String
     let quantity: Double
+    let images: [String]?
+    // Backend expects location object for create too? 
+    // Checking format: PostCreateRequest.java usually expects specific fields. 
+    // Assuming flat params or nested. 
+    // PostCreateRequest.java uses: private Location location;
+    // So we need to fix CreatePostRequest as well later, but mostly fixing READ now.
     let province: String?
     let district: String?
-    let images: [String]?
+    
+    // Custom encoding might be needed if Backend expects nested location in POST.
+    // For now, focusing on Decoding fix for Admin View.
 }
 
 // MARK: - Category Model
