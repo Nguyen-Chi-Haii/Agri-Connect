@@ -183,7 +183,7 @@ struct PagedResponse<T: Decodable>: Decodable {
     
     enum CodingKeys: String, CodingKey {
         case content
-        case page = "number" // Spring Data maps current page index to "number"
+        case page = "currentPage"
         case size
         case totalElements
         case totalPages
