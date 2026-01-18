@@ -87,16 +87,26 @@ struct UserProfile: Decodable, Identifiable {
 }
 
 struct KycInfo: Decodable {
-    let id: String?
+    let id: String? // Unused/nil in Backend?
     let status: String?
-    let kycType: String?
+    let kycType: String? // Backend doesn't have this?
     let idNumber: String?
     let idFrontImage: String?
     let idBackImage: String?
     let taxCode: String?
-    let companyName: String?
-    let businessLicense: String?
+    let companyName: String? // Backend missing?
+    let businessLicense: String? // Backend missing?
     let reason: String?
+    
+    enum CodingKeys: String, CodingKey {
+        case id, status, kycType
+        case idNumber = "cccd"
+        case idFrontImage = "cccdFrontImage"
+        case idBackImage = "cccdBackImage"
+        case taxCode
+        case companyName, businessLicense
+        case reason = "rejectionReason"
+    }
 }
 
 struct KycSubmissionRequest: Encodable {
