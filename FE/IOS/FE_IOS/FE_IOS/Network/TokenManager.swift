@@ -13,14 +13,14 @@ class TokenManager: ObservableObject {
     private let userNameKey = "agriconnect_user_name"
     private let userRoleKey = "agriconnect_user_role"
     
-    private init() {}
+    private init() {
+        self.accessToken = KeychainHelper.get(key: accessTokenKey)
+    }
     
     // MARK: - Token Properties
-    var accessToken: String? {
-        get { KeychainHelper.get(key: accessTokenKey) }
-        set {
-            objectWillChange.send()
-            if let value = newValue {
+    @Published var accessToken: String? {
+        didSet {
+            if let value = accessToken {
                 KeychainHelper.save(key: accessTokenKey, value: value)
             } else {
                 KeychainHelper.delete(key: accessTokenKey)
