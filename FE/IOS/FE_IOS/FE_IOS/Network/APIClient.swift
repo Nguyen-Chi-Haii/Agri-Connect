@@ -99,17 +99,39 @@ class APIClient {
         
         URLSession.shared.dataTask(with: request) { data, response, error in
             if let error = error {
-                DispatchQueue.main.async {
-                    completion(.failure(error))
-                }
+                DispatchQueue.main.async { completion(.failure(error)) }
+                return
+            }
+            
+            guard let httpResponse = response as? HTTPURLResponse else {
+                DispatchQueue.main.async { completion(.failure(APIError.serverError("Invalid response"))) }
+                return
+            }
+            
+            // Check for 401 Unauthorized
+            if httpResponse.statusCode == 401 {
+                DispatchQueue.main.async { completion(.failure(APIError.unauthorized)) }
+                return
+            }
+            
+            // Check for other error codes
+            guard (200...299).contains(httpResponse.statusCode) else {
+                DispatchQueue.main.async { completion(.failure(APIError.serverError("HTTP \(httpResponse.statusCode)"))) }
                 return
             }
             
             guard let data = data else {
-                DispatchQueue.main.async {
-                    completion(.failure(APIError.noData))
-                }
+                DispatchQueue.main.async { completion(.failure(APIError.noData)) }
                 return
+            }
+            
+            // Handle Empty Body for specific cases (like Void)
+            if data.isEmpty {
+                // If T is Void or String, maybe we can pass? But ApiResponse usually has structure.
+                // Assuming ApiResponse always sends valid JSON even for Void (success: true).
+                // If really empty, it's an error for JSONDecoder.
+                 DispatchQueue.main.async { completion(.failure(APIError.noData)) }
+                 return
             }
             
             do {
@@ -119,6 +141,10 @@ class APIClient {
                     completion(.success(apiResponse))
                 }
             } catch {
+                if let dataString = String(data: data, encoding: .utf8) {
+                    print("❌ JSON Decoding Error: \(error)")
+                    print("📄 Raw Response: \(dataString)")
+                }
                 DispatchQueue.main.async {
                     completion(.failure(error))
                 }
