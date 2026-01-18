@@ -44,7 +44,7 @@ struct AdminSettingsView: View {
                 .hidden()
             }
         }
-        .navigationViewStyle(StackNavigationViewStyle)
+        .navigationViewStyle(StackNavigationViewStyle())
     }
     
     private func logout() {
