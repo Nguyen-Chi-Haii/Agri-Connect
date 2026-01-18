@@ -9,13 +9,10 @@ struct FE_IOSApp: App {
             let _ = print("📱 [FE_IOSApp] Body Re-evaluating. isLoggedIn: \(tokenManager.isLoggedIn), Role: \(tokenManager.userRole ?? "Nil")")
             if tokenManager.isLoggedIn {
                 if tokenManager.userRole == "ADMIN" {
-                    AdminTabView() // Ensure this view is valid
+                    AdminTabView()
                 } else {
                     MainTabView()
                 }
-            } else {
-                LoginView()
-            }
             } else {
                 LoginView()
             }
