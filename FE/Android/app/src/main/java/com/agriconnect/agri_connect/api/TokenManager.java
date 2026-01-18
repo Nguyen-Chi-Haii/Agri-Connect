@@ -13,13 +13,14 @@ public class TokenManager {
     private static final String KEY_USER_ID = "user_id";
     private static final String KEY_USER_NAME = "user_name";
     private static final String KEY_USER_ROLE = "user_role";
+    private static final String KEY_KYC_STATUS = "kyc_status";
 
     private static TokenManager instance;
     private final SharedPreferences prefs;
 
     private TokenManager(Context context) {
         prefs = context.getApplicationContext()
-            .getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+                .getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
     }
 
     public static synchronized TokenManager getInstance(Context context) {
@@ -31,17 +32,32 @@ public class TokenManager {
 
     public void saveTokens(String accessToken, String refreshToken) {
         prefs.edit()
-            .putString(KEY_ACCESS_TOKEN, accessToken)
-            .putString(KEY_REFRESH_TOKEN, refreshToken)
-            .apply();
+                .putString(KEY_ACCESS_TOKEN, accessToken)
+                .putString(KEY_REFRESH_TOKEN, refreshToken)
+                .apply();
     }
 
     public void saveUserInfo(String userId, String userName, String role) {
         prefs.edit()
-            .putString(KEY_USER_ID, userId)
-            .putString(KEY_USER_NAME, userName)
-            .putString(KEY_USER_ROLE, role)
-            .apply();
+                .putString(KEY_USER_ID, userId)
+                .putString(KEY_USER_NAME, userName)
+                .putString(KEY_USER_ROLE, role)
+                .apply();
+    }
+
+    public void saveKycStatus(String kycStatus) {
+        prefs.edit()
+                .putString(KEY_KYC_STATUS, kycStatus)
+                .apply();
+    }
+
+    public String getKycStatus() {
+        return prefs.getString(KEY_KYC_STATUS, null);
+    }
+
+    public boolean isVerified() {
+        String status = getKycStatus();
+        return "VERIFIED".equals(status) || "APPROVED".equals(status);
     }
 
     public String getAccessToken() {
@@ -71,7 +87,7 @@ public class TokenManager {
     public void clearTokens() {
         prefs.edit().clear().apply();
     }
-    
+
     public String getAuthHeader() {
         String token = getAccessToken();
         return token != null ? "Bearer " + token : null;

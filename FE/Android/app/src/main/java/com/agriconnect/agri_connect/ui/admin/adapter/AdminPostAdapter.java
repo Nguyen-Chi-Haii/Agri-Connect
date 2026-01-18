@@ -32,8 +32,6 @@ public class AdminPostAdapter extends RecyclerView.Adapter<AdminPostAdapter.View
 
         void onReject(Post post);
 
-        void onDelete(Post post);
-
         void onClose(Post post);
     }
 
@@ -69,7 +67,7 @@ public class AdminPostAdapter extends RecyclerView.Adapter<AdminPostAdapter.View
         TextView tvTitle, tvDescription, tvSeller, tvPrice, tvStatus;
         TextView tvLikeCount, tvCommentCount;
         LinearLayout layoutActions;
-        MaterialButton btnApprove, btnReject, btnDelete, btnClose;
+        MaterialButton btnApprove, btnReject, btnClose;
 
         ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -83,7 +81,6 @@ public class AdminPostAdapter extends RecyclerView.Adapter<AdminPostAdapter.View
             layoutActions = itemView.findViewById(R.id.layoutActions);
             btnApprove = itemView.findViewById(R.id.btnApprove);
             btnReject = itemView.findViewById(R.id.btnReject);
-            btnDelete = itemView.findViewById(R.id.btnDelete);
             btnClose = itemView.findViewById(R.id.btnClose);
 
             // Click whole item to view details
@@ -119,16 +116,16 @@ public class AdminPostAdapter extends RecyclerView.Adapter<AdminPostAdapter.View
             String statusText;
 
             // Default visibility
-            layoutActions.setVisibility(View.VISIBLE); // Always show actions row for Delete button
+            layoutActions.setVisibility(View.GONE);
             btnApprove.setVisibility(View.GONE);
             btnReject.setVisibility(View.GONE);
             btnClose.setVisibility(View.GONE);
-            btnDelete.setVisibility(View.VISIBLE); // Always allow delete
 
             if ("PENDING".equals(status)) {
                 bgColor = R.color.warning;
                 statusText = "Chờ duyệt";
 
+                layoutActions.setVisibility(View.VISIBLE);
                 btnApprove.setVisibility(View.VISIBLE);
                 btnReject.setVisibility(View.VISIBLE);
 
@@ -136,6 +133,7 @@ public class AdminPostAdapter extends RecyclerView.Adapter<AdminPostAdapter.View
                 bgColor = R.color.success;
                 statusText = "Đã duyệt";
 
+                layoutActions.setVisibility(View.VISIBLE);
                 btnClose.setVisibility(View.VISIBLE);
 
             } else if ("REJECTED".equals(status)) {
@@ -164,11 +162,6 @@ public class AdminPostAdapter extends RecyclerView.Adapter<AdminPostAdapter.View
             btnReject.setOnClickListener(v -> {
                 if (listener != null)
                     listener.onReject(post);
-            });
-
-            btnDelete.setOnClickListener(v -> {
-                if (listener != null)
-                    listener.onDelete(post);
             });
 
             btnClose.setOnClickListener(v -> {

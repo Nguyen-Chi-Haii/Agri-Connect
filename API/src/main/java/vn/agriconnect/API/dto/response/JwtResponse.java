@@ -15,9 +15,10 @@ public class JwtResponse {
     @Builder.Default
     private String tokenType = "Bearer";
     private Long expiresIn;
-    
+
     // User info for client
     private String userId;
     private String fullName;
     private String role;
+    private String kycStatus;
 }

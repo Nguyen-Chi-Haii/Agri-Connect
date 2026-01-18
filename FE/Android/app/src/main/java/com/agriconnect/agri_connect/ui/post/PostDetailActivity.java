@@ -35,6 +35,7 @@ import de.hdodenhof.circleimageview.CircleImageView;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import com.agriconnect.agri_connect.api.TokenManager;
 
 public class PostDetailActivity extends AppCompatActivity {
 
@@ -60,6 +61,11 @@ public class PostDetailActivity extends AppCompatActivity {
 
     private CommentAdapter commentAdapter;
     private List<CommentItem> comments = new ArrayList<>();
+
+    // Realtime stats polling
+    private android.os.Handler statsHandler;
+    private Runnable statsRunnable;
+    private static final int STATS_REFRESH_INTERVAL = 10000; // 10 seconds
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,6 +94,77 @@ public class PostDetailActivity extends AppCompatActivity {
         setupRecyclerView();
         setupListeners();
         loadPostDetail();
+        startStatsPolling();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        startStatsPolling();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        stopStatsPolling();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        stopStatsPolling();
+    }
+
+    private void startStatsPolling() {
+        if (statsHandler == null) {
+            statsHandler = new android.os.Handler(android.os.Looper.getMainLooper());
+        }
+        if (statsRunnable == null) {
+            statsRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    refreshStats();
+                    statsHandler.postDelayed(this, STATS_REFRESH_INTERVAL);
+                }
+            };
+        }
+        // Start polling
+        statsHandler.postDelayed(statsRunnable, STATS_REFRESH_INTERVAL);
+    }
+
+    private void stopStatsPolling() {
+        if (statsHandler != null && statsRunnable != null) {
+            statsHandler.removeCallbacks(statsRunnable);
+        }
+    }
+
+    private void refreshStats() {
+        if (postId == null)
+            return;
+
+        postApi.getPostById(postId).enqueue(new Callback<ApiResponse<Post>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<Post>> call, Response<ApiResponse<Post>> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    Post post = response.body().getData();
+                    if (post != null) {
+                        // Update stats only (not full UI rebuild)
+                        likeCount = post.getLikeCount();
+                        isLiked = post.isLiked();
+                        updateLikeUI();
+
+                        if (tvCommentCountTop != null) {
+                            tvCommentCountTop.setText(post.getCommentCount() + " bình luận");
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<Post>> call, Throwable t) {
+                // Silently fail - this is just a background refresh
+            }
+        });
     }
 
     private void initViews() {
@@ -125,18 +202,74 @@ public class PostDetailActivity extends AppCompatActivity {
     private void setupListeners() {
         btnBack.setOnClickListener(v -> finish());
 
-        btnLike.setOnClickListener(v -> toggleLike());
-
-        btnSendComment.setOnClickListener(v -> sendComment());
-
-        btnChat.setOnClickListener(v -> startChat());
-
-        btnComment.setOnClickListener(v -> {
-            if (scrollView != null) {
-                scrollView.smoothScrollTo(0, rvComments.getTop());
-                etComment.requestFocus();
+        btnLike.setOnClickListener(v -> {
+            if (requireLogin()) {
+                toggleLike();
             }
         });
+
+        btnSendComment.setOnClickListener(v -> {
+            if (requireVerified()) {
+                sendComment();
+            }
+        });
+
+        btnChat.setOnClickListener(v -> {
+            if (requireLogin()) {
+                startChat();
+            }
+        });
+
+        btnComment.setOnClickListener(v -> {
+            if (requireVerified()) {
+                if (scrollView != null) {
+                    scrollView.smoothScrollTo(0, rvComments.getTop());
+                    etComment.requestFocus();
+                }
+            }
+        });
+    }
+
+    /**
+     * Check if user is logged in. If not, show login prompt and return false.
+     */
+    private boolean requireLogin() {
+        TokenManager tokenManager = TokenManager.getInstance(this);
+        if (!tokenManager.isLoggedIn()) {
+            // Show dialog asking user to login
+            new android.app.AlertDialog.Builder(this)
+                    .setTitle("Yêu cầu đăng nhập")
+                    .setMessage("Để thực hiện chức năng này, bạn cần đăng nhập vào hệ thống.")
+                    .setPositiveButton("Đăng nhập", (dialog, which) -> {
+                        startActivity(new android.content.Intent(this,
+                                com.agriconnect.agri_connect.ui.auth.LoginActivity.class));
+                    })
+                    .setNegativeButton("Hủy", null)
+                    .show();
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Check if user is verified (KYC approved). Required for commenting and
+     * posting.
+     */
+    private boolean requireVerified() {
+        if (!requireLogin()) {
+            return false;
+        }
+        TokenManager tokenManager = TokenManager.getInstance(this);
+        if (!tokenManager.isVerified()) {
+            new android.app.AlertDialog.Builder(this)
+                    .setTitle("Yêu cầu xác thực")
+                    .setMessage(
+                            "Để bình luận, bạn cần hoàn thành xác thực danh tính (eKYC). Vui lòng vào Hồ sơ > Xác thực để thực hiện.")
+                    .setPositiveButton("Đã hiểu", null)
+                    .show();
+            return false;
+        }
+        return true;
     }
 
     private void startChat() {
