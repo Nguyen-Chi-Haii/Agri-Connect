@@ -5,43 +5,46 @@ struct AdminSettingsView: View {
     
     var body: some View {
         NavigationView {
-            List {
-                Section(header: Text("Tài khoản")) {
-                    HStack {
-                        Image(systemName: "person.circle.fill")
-                            .font(.largeTitle)
-                            .foregroundColor(.gray)
-                        VStack(alignment: .leading) {
-                            Text("Admin")
-                                .font(.headline)
-                            Text("Quản trị viên hệ thống")
-                                .font(.caption)
-                                .foregroundColor(.gray)
-                        }
-                    }
-                    .padding(.vertical, 8)
-                }
-                
-                Section {
-                    Button(action: logout) {
+            ZStack {
+                List {
+                    Section(header: Text("Tài khoản")) {
                         HStack {
-                            Text("Đăng xuất")
-                                .foregroundColor(.red)
-                            Spacer()
-                            Image(systemName: "rectangle.portrait.and.arrow.right")
-                                .foregroundColor(.red)
+                            Image(systemName: "person.circle.fill")
+                                .font(.largeTitle)
+                                .foregroundColor(.gray)
+                            VStack(alignment: .leading) {
+                                Text("Admin")
+                                    .font(.headline)
+                                Text("Quản trị viên hệ thống")
+                                    .font(.caption)
+                                    .foregroundColor(.gray)
+                            }
+                        }
+                        .padding(.vertical, 8)
+                    }
+                    
+                    Section {
+                        Button(action: logout) {
+                            HStack {
+                                Text("Đăng xuất")
+                                    .foregroundColor(.red)
+                                Spacer()
+                                Image(systemName: "rectangle.portrait.and.arrow.right")
+                                    .foregroundColor(.red)
+                            }
                         }
                     }
                 }
+                .navigationTitle("Cài đặt")
                 
-                // Hidden navigation
+                // Hidden navigation - OUTSIDE List to prevent showing as row
                 NavigationLink(destination: LoginView().navigationBarHidden(true), isActive: $navigateToLogin) {
                     EmptyView()
                 }
+                .hidden()
             }
-            .navigationTitle("Cài đặt")
         }
-        .navigationViewStyle(StackNavigationViewStyle())
+        .navigationViewStyle(StackNavigationViewStyle)
     }
     
     private func logout() {
