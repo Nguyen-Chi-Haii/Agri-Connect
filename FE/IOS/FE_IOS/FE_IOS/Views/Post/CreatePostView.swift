@@ -159,25 +159,9 @@ struct CreatePostView: View {
                         Text("Vị trí")
                             .font(.headline)
                         Spacer()
-                        Button(action: {
-                            LocationManager.shared.requestLocation()
-                        }) {
-                            HStack(spacing: 4) {
-                                if LocationManager.shared.isLoading {
-                                    ProgressView()
-                                        .scaleEffect(0.7)
-                                } else {
-                                    Image(systemName: "location.fill")
-                                }
-                                Text("Lấy vị trí hiện tại")
-                                    .font(.caption)
-                                    .fontWeight(.semibold)
-                            }
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(Color(hex: "#E8F5E9"))
-                            .foregroundColor(Color(hex: "#2E7D32"))
-                            .cornerRadius(12)
+                        LocationFillButton { province, district in
+                            self.province = province
+                            self.district = district
                         }
                     }
                     
@@ -195,18 +179,6 @@ struct CreatePostView: View {
                             text: $district
                         )
                         .disabled(LocationManager.shared.isLoading)
-                    }
-                }
-                .onReceive(LocationManager.shared.$addressComponents) { components in
-                    if let components = components {
-                        self.province = components.province
-                        self.district = components.district
-                    }
-                }
-                .onReceive(LocationManager.shared.$locationError) { error in
-                    if let error = error {
-                        self.errorMessage = error.localizedDescription
-                        self.showError = true
                     }
                 }
                 

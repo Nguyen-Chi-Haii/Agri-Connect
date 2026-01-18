@@ -62,11 +62,20 @@ struct CreateAccountView: View {
                             text: $fullName
                         )
                         
-                        FormField(
-                            title: "Địa chỉ",
-                            placeholder: "Xã, Huyện, Tỉnh",
-                            text: $address
-                        )
+                        VStack(alignment: .leading, spacing: 4) {
+                            HStack {
+                                Text("Địa chỉ")
+                                    .font(.caption)
+                                    .foregroundColor(.gray)
+                                Spacer()
+                                LocationFillButton { province, district in
+                                    self.address = "\(district), \(province)"
+                                }
+                            }
+                            TextField("Xã, Huyện, Tỉnh", text: $address)
+                                .textFieldStyle(RoundedTextFieldStyle())
+                                .autocapitalization(.words)
+                        }
                         
                         FormField(
                             title: "Mật khẩu",
