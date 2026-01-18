@@ -19,10 +19,11 @@ struct AdminDashboardView: View {
                             // Welcome Header
                             HStack {
                                 VStack(alignment: .leading, spacing: 4) {
-                                    Text("Xin chào, Admin")
+                                    Text(greetingMessage)
                                         .font(.title2)
                                         .fontWeight(.bold)
-                                    Text("Bảng điều khiển quản trị")
+                                    Text(formattedDate)
+                                        .font(.subheadline)
                                         .foregroundColor(.gray)
                                 }
                                 Spacer()
@@ -34,6 +35,31 @@ struct AdminDashboardView: View {
                             .padding()
                             .background(Color.white)
                             .cornerRadius(16)
+                            
+                            // Quick Actions
+                            if let stats = stats {
+                                VStack(spacing: 12) {
+                                    if (stats.pendingPosts ?? 0) > 0 {
+                                        NavigationLink(destination: AdminPostsView()) { // Navigation to pending filter handled in view? Or pass init param
+                                           QuickActionRow(
+                                                icon: "doc.text.badge.plus",
+                                                text: "Có \(stats.pendingPosts ?? 0) bài đăng cần duyệt",
+                                                color: .orange
+                                           )
+                                        }
+                                    }
+                                    
+                                    if (stats.pendingKyc ?? 0) > 0 {
+                                        NavigationLink(destination: AdminUsersView()) {
+                                            QuickActionRow(
+                                                icon: "person.crop.circle.badge.exclamationmark",
+                                                text: "Có \(stats.pendingKyc ?? 0) yêu cầu KYC",
+                                                color: .purple
+                                            )
+                                        }
+                                    }
+                                }
+                            }
                             
                             // Stats Cards
                             LazyVGrid(columns: [
@@ -92,7 +118,7 @@ struct AdminDashboardView: View {
         isLoading = true
         
         APIClient.shared.request(
-            endpoint: "/admin/dashboard",
+            endpoint: APIConfig.Admin.dashboardStats,
             method: .get
         ) { (result: Result<ApiResponse<DashboardStats>, Error>) in
             isLoading = false
@@ -138,6 +164,44 @@ struct StatCard: View {
         .padding()
         .background(Color.white)
         .cornerRadius(16)
+    }
+}
+
+struct QuickActionRow: View {
+    let icon: String
+    let text: String
+    let color: Color
+    
+    var body: some View {
+        HStack {
+            Image(systemName: icon)
+                .foregroundColor(color)
+            Text(text)
+                .foregroundColor(.black) // or primary
+            Spacer()
+            Image(systemName: "chevron.right")
+                .foregroundColor(.gray)
+                .font(.caption)
+        }
+        .padding()
+        .background(color.opacity(0.1))
+        .cornerRadius(12)
+    }
+}
+
+extension AdminDashboardView {
+    var greetingMessage: String {
+        let hour = Calendar.current.component(.hour, from: Date())
+        if hour < 12 { return "Chào buổi sáng" }
+        else if hour < 18 { return "Chào buổi chiều" }
+        else { return "Chào buổi tối" }
+    }
+    
+    var formattedDate: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "EEEE, dd/MM/yyyy"
+        formatter.locale = Locale(identifier: "vi_VN")
+        return formatter.string(from: Date()).capitalized
     }
 }
 
