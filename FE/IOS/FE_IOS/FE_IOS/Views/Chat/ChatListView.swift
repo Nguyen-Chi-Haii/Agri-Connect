@@ -66,7 +66,7 @@ struct ConversationRow: View {
                     .fill(Color(hex: "#E8F5E9"))
                     .frame(width: 50, height: 50)
                 
-                Text(String((conversation.participantName ?? "?").prefix(1)))
+                Text(avatarLetter)
                     .font(.title2)
                     .fontWeight(.bold)
                     .foregroundColor(Color(hex: "#2E7D32"))
@@ -107,6 +107,10 @@ struct ConversationRow: View {
             }
         }
         .padding(.vertical, 4)
+    }
+    
+    private var avatarLetter: String {
+        String((conversation.participantName ?? "?").prefix(1))
     }
     
     private func formatTime(_ isoDate: String?) -> String {
