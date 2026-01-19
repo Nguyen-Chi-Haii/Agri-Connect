@@ -38,6 +38,8 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
+import com.agriconnect.agri_connect.utils.FormValidator;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -53,6 +55,7 @@ public class CreatePostActivity extends AppCompatActivity {
     private ImageView btnBack;
     private MaterialButton btnPost, btnGetLocation;
     private TextInputEditText etTitle, etContent, etPrice, etUnit, etQuantity, etLocation;
+    private TextInputLayout tilTitle, tilContent, tilPrice, tilQuantity;
     private AutoCompleteTextView actvCategory;
     private LinearLayout layoutImages;
     private View btnAddImage;
@@ -127,6 +130,10 @@ public class CreatePostActivity extends AppCompatActivity {
         btnBack = findViewById(R.id.btnBack);
         btnPost = findViewById(R.id.btnPost);
         btnGetLocation = findViewById(R.id.btnGetLocation);
+        tilTitle = findViewById(R.id.tilTitle);
+        tilContent = findViewById(R.id.tilContent);
+        tilPrice = findViewById(R.id.tilPrice);
+        tilQuantity = findViewById(R.id.tilQuantity);
         etTitle = findViewById(R.id.etTitle);
         etContent = findViewById(R.id.etContent);
         etPrice = findViewById(R.id.etPrice);
@@ -178,6 +185,12 @@ public class CreatePostActivity extends AppCompatActivity {
     }
 
     private void setupListeners() {
+        // Real-time form validation
+        FormValidator.addRequiredValidation(etTitle, tilTitle, "Tiêu đề");
+        FormValidator.addRequiredValidation(etContent, tilContent, "Nội dung");
+        FormValidator.addNumberValidation(etPrice, tilPrice, 1000, 10000000000.0, "Giá");
+        FormValidator.addNumberValidation(etQuantity, tilQuantity, 0.1, 1000000, "Số lượng");
+
         btnBack.setOnClickListener(v -> finish());
 
         btnAddImage.setOnClickListener(v -> {
