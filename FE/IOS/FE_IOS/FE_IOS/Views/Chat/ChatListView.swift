@@ -133,7 +133,7 @@ struct ConversationRow: View {
 
 // MARK: - Chat Room View
 struct ChatRoomView: View {
-    let conversation: ChatConversation
+    let conversation: Conversation
     
     @State private var messages: [ChatMessage] = []
     @State private var newMessage = ""
