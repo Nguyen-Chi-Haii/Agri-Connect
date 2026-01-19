@@ -255,7 +255,7 @@ struct MyPostsListView: View {
     private func loadMyPosts() {
         isLoading = true
         APIClient.shared.request(
-            endpoint: "/posts/my",
+            endpoint: APIConfig.Posts.myPosts,
             method: .get
         ) { (result: Result<ApiResponse<[Post]>, Error>) in
             isLoading = false
