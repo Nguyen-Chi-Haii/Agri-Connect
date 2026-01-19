@@ -440,10 +440,10 @@ struct StatisticsDetailView: View {
                 VStack(spacing: 20) {
                     // Overview Cards
                     VStack(spacing: 16) {
-                        StatCard(icon: "doc.text.fill", color: .blue, title: "Tổng bài đăng", value: "\(stats.totalPosts)")
-                        StatCard(icon: "checkmark.circle.fill", color: .green, title: "Đã duyệt", value: "\(stats.approvedPosts)")
-                        StatCard(icon: "clock.fill", color: .orange, title: "Chờ duyệt", value: "\(stats.pendingPosts)")
-                        StatCard(icon: "hand.thumbsup.fill", color: .purple, title: "Tương tác", value: "\(stats.totalInteractions)")
+                        StatCard(icon: "doc.text.fill", title: "Tổng bài đăng", value: "\(stats.totalPosts)", color: .blue)
+                        StatCard(icon: "checkmark.circle.fill", title: "Đã duyệt", value: "\(stats.approvedPosts)", color: .green)
+                        StatCard(icon: "clock.fill", title: "Chờ duyệt", value: "\(stats.pendingPosts)", color: .orange)
+                        StatCard(icon: "hand.thumbsup.fill", title: "Tương tác", value: "\(stats.totalInteractions)", color: .purple)
                     }
                     .padding()
                 }

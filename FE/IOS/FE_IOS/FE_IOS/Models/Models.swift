@@ -163,6 +163,7 @@ struct Post: Decodable, Identifiable {
     let createdAt: String?
     let likeCount: Int?
     let commentCount: Int?
+    let viewCount: Int?
     let isLiked: Bool?
     
     // Convenience Accessors

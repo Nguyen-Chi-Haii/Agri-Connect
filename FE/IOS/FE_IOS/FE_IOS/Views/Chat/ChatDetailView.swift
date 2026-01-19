@@ -17,10 +17,23 @@ struct ChatDetailView: View {
                 ScrollView {
                     LazyVStack(spacing: 12) {
                         ForEach(messages) { message in
-                            MessageBubble(
-                                message: message,
-                                isCurrentUser: message.senderId == TokenManager.shared.userId
-                            )
+                            HStack {
+                                if message.senderId == (TokenManager.shared.userId ?? "") {
+                                    Spacer()
+                                    Text(message.content)
+                                        .padding(12)
+                                        .background(Color(hex: "#2E7D32"))
+                                        .foregroundColor(.white)
+                                        .cornerRadius(16)
+                                } else {
+                                    Text(message.content)
+                                        .padding(12)
+                                        .background(Color(.systemGray5))
+                                        .foregroundColor(.primary)
+                                        .cornerRadius(16)
+                                    Spacer()
+                                }
+                            }
                             .id(message.id)
                         }
                     }
@@ -118,45 +131,5 @@ struct ChatDetailView: View {
                 messageText = content
             }
         }
-    }
-}
-
-// MARK: - Message Bubble Component
-struct MessageBubble: View {
-    let message: Message
-    let isCurrentUser: Bool
-    
-    var body: some View {
-        HStack {
-            if isCurrentUser {
-                Spacer()
-            }
-            
-            VStack(alignment: isCurrentUser ? .trailing : .leading, spacing: 4) {
-                Text(message.content)
-                    .padding(12)
-                    .background(isCurrentUser ? Color(hex: "#2E7D32") : Color(.systemGray5))
-                    .foregroundColor(isCurrentUser ? .white : .primary)
-                    .cornerRadius(16)
-                
-                Text(formatTime(message.createdAt))
-                    .font(.caption2)
-                    .foregroundColor(.gray)
-            }
-            .frame(maxWidth: 250, alignment: isCurrentUser ? .trailing : .leading)
-            
-            if !isCurrentUser {
-                Spacer()
-            }
-        }
-    }
-    
-    private func formatTime(_ dateString: String) -> String {
-        let components = dateString.split(separator: "T")
-        if components.count >= 2 {
-            let time = components[1].prefix(5)
-            return String(time)
-        }
-        return dateString
     }
 }
