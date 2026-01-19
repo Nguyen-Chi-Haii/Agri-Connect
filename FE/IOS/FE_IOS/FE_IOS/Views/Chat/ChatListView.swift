@@ -66,7 +66,7 @@ struct ConversationRow: View {
                     .fill(Color(hex: "#E8F5E9"))
                     .frame(width: 50, height: 50)
                 
-                Text(String(conversation.participantName.prefix(1)))
+                Text(String((conversation.participantName ?? "?").prefix(1)))
                     .font(.title2)
                     .fontWeight(.bold)
                     .foregroundColor(Color(hex: "#2E7D32"))
@@ -75,26 +75,26 @@ struct ConversationRow: View {
             // Content
             VStack(alignment: .leading, spacing: 4) {
                 HStack {
-                    Text(conversation.participantName)
+                    Text(conversation.participantName ?? "Unknown")
                         .font(.headline)
                     
                     Spacer()
                     
-                    Text(conversation.lastMessageTime)
+                    Text(formatTime(conversation.updatedAt))
                         .font(.caption)
                         .foregroundColor(.gray)
                 }
                 
                 HStack {
-                    Text(conversation.lastMessage)
+                    Text(conversation.lastMessage ?? "")
                         .font(.subheadline)
                         .foregroundColor(.gray)
                         .lineLimit(1)
                     
                     Spacer()
                     
-                    if conversation.unreadCount > 0 {
-                        Text("\(conversation.unreadCount)")
+                    if let unread = conversation.unreadCount, unread > 0 {
+                        Text("\(unread)")
                             .font(.caption2)
                             .fontWeight(.bold)
                             .foregroundColor(.white)
@@ -107,6 +107,27 @@ struct ConversationRow: View {
             }
         }
         .padding(.vertical, 4)
+    }
+    
+    private func formatTime(_ isoDate: String?) -> String {
+        guard let dateString = isoDate else { return "" }
+        
+        let formatter = ISO8601DateFormatter()
+        guard let date = formatter.date(from: dateString) else { return "" }
+        
+        let now = Date()
+        let calendar = Calendar.current
+        let components = calendar.dateComponents([.day, .hour, .minute], from: date, to: now)
+        
+        if let days = components.day, days > 0 {
+            return "\(days) ngày"
+        } else if let hours = components.hour, hours > 0 {
+            return "\(hours)h"
+        } else if let minutes = components.minute, minutes > 0 {
+            return "\(minutes)m"
+        } else {
+            return "Vừa xong"
+        }
     }
 }
 
