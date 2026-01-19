@@ -267,9 +267,8 @@ struct PostDetailView: View {
         ) { (result: Result<ApiResponse<PagedResponse<Comment>>, Error>) in
             isLoadingComments = false
             if case .success(let response) = result,
-               let pagedData = response.data,
-               let commentList = pagedData.content {
-                comments = commentList
+               let pagedData = response.data {
+                comments = pagedData.content
             }
         }
     }
