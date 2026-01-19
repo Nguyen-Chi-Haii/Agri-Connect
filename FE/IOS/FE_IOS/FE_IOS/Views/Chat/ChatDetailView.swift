@@ -5,6 +5,12 @@ struct ChatDetailView: View {
     let otherUserName: String
     let recipientId: String
     
+    init(conversationId: String, otherUserName: String, recipientId: String) {
+        self.conversationId = conversationId
+        self.otherUserName = otherUserName
+        self.recipientId = recipientId
+    }
+    
     @State private var messages: [Message] = []
     @State private var messageText = ""
     @State private var isLoading = false
