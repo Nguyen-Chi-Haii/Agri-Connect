@@ -85,6 +85,75 @@ struct APIConfig {
         static func delete(_ id: String) -> String { return "/posts/\(id)" }
         static func close(_ id: String) -> String { return "/posts/\(id)/close" }
     }
+    
+    struct Upload {
+        static let single = "/upload"
+        static let multiple = "/upload/multiple"
+    }
+}
+
+// MARK: - APIClient Extension for Image Upload
+extension APIClient {
+    func uploadImage(
+        _ image: UIImage,
+        completion: @escaping (Result<String, Error>) -> Void
+    ) {
+        guard let imageData = image.jpegData(compressionQuality: 0.7) else {
+            completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Cannot convert image"])))
+            return
+        }
+        
+        let boundary = "Boundary-\(UUID().uuidString)"
+        let url = URL(string: "\(Configuration.shared.baseURL)\(APIConfig.Upload.single)")!
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+        
+        // Add token if available
+        if let token = TokenManager.shared.accessToken {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+        
+        var body = Data()
+        
+        // Add file part
+        body.append("--\(boundary)\r\n".data(using: .utf8)!)
+        body.append("Content-Disposition: form-data; name=\"file\"; filename=\"image.jpg\"\r\n".data(using: .utf8)!)
+        body.append("Content-Type: image/jpeg\r\n\r\n".data(using: .utf8)!)
+        body.append(imageData)
+        body.append("\r\n".data(using: .utf8)!)
+        body.append("--\(boundary)--\r\n".data(using: .utf8)!)
+        
+        request.httpBody = body
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    completion(.failure(error))
+                    return
+                }
+                
+                guard let data = data else {
+                    completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "No data"])))
+                    return
+                }
+                
+                do {
+                    let decoder = JSONDecoder()
+                    let apiResponse = try decoder.decode(ApiResponse<String>.self, from: data)
+                    
+                    if let imageUrl = apiResponse.data {
+                        completion(.success(imageUrl))
+                    } else {
+                        completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "No URL in response"])))
+                    }
+                } catch {
+                    completion(.failure(error))
+                }
+            }
+        }.resume()
+    }
 }
 
 // MARK: - Private Helpers
