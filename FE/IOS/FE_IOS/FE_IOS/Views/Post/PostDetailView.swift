@@ -12,6 +12,7 @@ struct PostDetailView: View {
     @State private var commentText = ""
     @State private var isLoadingComments = false
     @State private var showCommentSection = false
+    @State private var statsTimer: Timer?
     
     var body: some View {
         ScrollView {
@@ -194,6 +195,34 @@ struct PostDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             loadPost()
+            startStatsPolling()
+        }
+        .onDisappear {
+            stopStatsPolling()
+        }
+    }
+    
+    private func startStatsPolling() {
+        statsTimer = Timer.scheduledTimer(withTimeInterval: 10.0, repeats: true) { _ in
+            refreshStats()
+        }
+    }
+    
+    private func stopStatsPolling() {
+        statsTimer?.invalidate()
+        statsTimer = nil
+    }
+    
+    private func refreshStats() {
+        APIClient.shared.request(
+            endpoint: "\(APIConfig.Posts.list)/\(postId)",
+            method: .get
+        ) { (result: Result<ApiResponse<Post>, Error>) in
+            if case .success(let response) = result, let data = response.data {
+                likeCount = data.likeCount ?? 0
+                commentCount = data.commentCount ?? 0
+                isLiked = data.isLiked ?? false
+            }
         }
     }
     
