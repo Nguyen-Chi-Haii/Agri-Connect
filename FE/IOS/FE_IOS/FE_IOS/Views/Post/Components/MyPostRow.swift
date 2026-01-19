@@ -3,6 +3,7 @@ import SwiftUI
 struct MyPostRow: View {
     let post: Post
     let onDelete: () -> Void
+    @State private var showEditSheet = false
     
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
@@ -50,13 +51,27 @@ struct MyPostRow: View {
             
             Spacer()
             
-            Button(action: onDelete) {
-                Image(systemName: "trash")
-                    .foregroundColor(.red)
+            // Actions
+            HStack(spacing: 12) {
+                Button(action: { showEditSheet = true }) {
+                    Image(systemName: "pencil")
+                        .foregroundColor(.blue)
+                }
+                .buttonStyle(BorderlessButtonStyle())
+                
+                Button(action: onDelete) {
+                    Image(systemName: "trash")
+                        .foregroundColor(.red)
+                }
+                .buttonStyle(BorderlessButtonStyle())
             }
-            .buttonStyle(BorderlessButtonStyle())
         }
         .padding(.vertical, 8)
+        .sheet(isPresented: $showEditSheet) {
+            EditPostView(post: post, onUpdate: {
+                showEditSheet = false
+            })
+        }
     }
     
     private func formatPrice(_ price: Double) -> String {
