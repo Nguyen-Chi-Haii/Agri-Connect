@@ -111,6 +111,34 @@ public class MainNavigationActivity extends AppCompatActivity {
                 .commit();
     }
 
+    // Exit confirmation
+    private long backPressedTime = 0;
+    private android.widget.Toast backToast;
+
+    @Override
+    public void onBackPressed() {
+        // Check if we're on home fragment
+        Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.fragmentContainer);
+
+        if (currentFragment instanceof HomeFragment) {
+            // On home - confirm exit
+            if (backPressedTime + 2000 > System.currentTimeMillis()) {
+                if (backToast != null)
+                    backToast.cancel();
+                super.onBackPressed();
+                return;
+            } else {
+                backToast = android.widget.Toast.makeText(this,
+                        "Nhấn lần nữa để thoát ứng dụng", android.widget.Toast.LENGTH_SHORT);
+                backToast.show();
+            }
+            backPressedTime = System.currentTimeMillis();
+        } else {
+            // Not on home - navigate to home
+            bottomNavigation.setSelectedItemId(R.id.nav_home);
+        }
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
