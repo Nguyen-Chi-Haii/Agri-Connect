@@ -230,13 +230,15 @@ struct LastMessage: Decodable {
 
 struct Conversation: Decodable, Identifiable {
     let id: String
-    let participants: [String]? // List of User IDs
-    // let participantNames: [String]? // Backend doesn't send this in entity
+    let participants: [String]?
+    let participantName: String?
+    let participantAvatar: String?
     let lastMessage: LastMessage?
     let updatedAt: String?
+    let unreadCount: Int?
     
-    // Computed for UI compatibility (would need extra logic to fetch names)
-    // For now we map LastMessage object to what UI expects if possible
+    // Convenience for UI
+    var lastMessageContent: String? { lastMessage?.content }
 }
 
 struct Message: Decodable, Identifiable {
