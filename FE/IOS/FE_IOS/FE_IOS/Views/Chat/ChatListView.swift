@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ChatListView: View {
-    @State private var conversations: [ChatConversation] = []
+    @State private var conversations: [Conversation] = []
     @State private var isLoading = false
     
     var body: some View {
@@ -56,7 +56,7 @@ struct ChatListView: View {
 
 // MARK: - Conversation Row
 struct ConversationRow: View {
-    let conversation: ChatConversation
+    let conversation: Conversation
     
     var body: some View {
         HStack(spacing: 12) {
