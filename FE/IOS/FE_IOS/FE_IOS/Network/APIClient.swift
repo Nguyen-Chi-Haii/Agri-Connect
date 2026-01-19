@@ -36,6 +36,7 @@ struct APIConfig {
         static let search = "/posts"
         
         static func detail(_ id: String) -> String { return "/posts/\(id)" }
+        static func update(_ id: String) -> String { return "/posts/\(id)" }
         static func approve(_ id: String) -> String { return "/posts/\(id)/approve" }
         static func reject(_ id: String) -> String { return "/posts/\(id)/reject" }
         static func delete(_ id: String) -> String { return "/posts/\(id)" }
@@ -70,20 +71,6 @@ struct APIConfig {
         static func markRead(_ conversationId: String) -> String {
             return "/chat/conversations/\(conversationId)/read"
         }
-    }
-    
-    struct Posts {
-        static let list = "/posts"
-        static let approved = "/posts/approved"
-        static let myPosts = "/posts/my-posts"
-        static let search = "/posts"
-        
-        static func detail(_ id: String) -> String { return "/posts/\(id)" }
-        static func update(_ id: String) -> String { return "/posts/\(id)" }
-        static func approve(_ id: String) -> String { return "/posts/\(id)/approve" }
-        static func reject(_ id: String) -> String { return "/posts/\(id)/reject" }
-        static func delete(_ id: String) -> String { return "/posts/\(id)" }
-        static func close(_ id: String) -> String { return "/posts/\(id)/close" }
     }
     
     struct Upload {
