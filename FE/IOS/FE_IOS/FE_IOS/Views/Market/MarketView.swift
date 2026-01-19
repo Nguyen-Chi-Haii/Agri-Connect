@@ -128,6 +128,26 @@ struct MarketPriceRow: View {
     }
 }
 
+// MARK: - Category Filter Chip
+struct CategoryFilterChip: View {
+    let title: String
+    let isSelected: Bool
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            Text(title)
+                .font(.subheadline)
+                .fontWeight(isSelected ? .semibold : .regular)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .background(isSelected ? Color(hex: "#2E7D32") : Color(.systemGray6))
+                .foregroundColor(isSelected ? .white : .primary)
+                .cornerRadius(20)
+        }
+    }
+}
+
 struct MarketView_Previews: PreviewProvider {
     static var previews: some View {
         NavigationView {

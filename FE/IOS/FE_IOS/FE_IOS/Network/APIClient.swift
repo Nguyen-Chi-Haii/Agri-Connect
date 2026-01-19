@@ -45,10 +45,14 @@ struct APIConfig {
     struct Categories {
         static let list = "/categories"
         static func detail(_ id: String) -> String { return "/categories/\(id)" }
+        static func update(_ id: String) -> String { return "/categories/\(id)" }
     }
     
     struct MarketPrices {
         static let list = "/market-prices"
+        static func byCategory(_ categoryId: String) -> String {
+            return "/market-prices/category/\(categoryId)"
+        }
     }
     
     struct Statistics {
@@ -62,6 +66,24 @@ struct APIConfig {
         static func createConversation(_ userId: String) -> String {
             return "/chat/conversations/\(userId)"
         }
+        
+        static func markRead(_ conversationId: String) -> String {
+            return "/chat/conversations/\(conversationId)/read"
+        }
+    }
+    
+    struct Posts {
+        static let list = "/posts"
+        static let approved = "/posts/approved"
+        static let myPosts = "/posts/my-posts"
+        static let search = "/posts"
+        
+        static func detail(_ id: String) -> String { return "/posts/\(id)" }
+        static func update(_ id: String) -> String { return "/posts/\(id)" }
+        static func approve(_ id: String) -> String { return "/posts/\(id)/approve" }
+        static func reject(_ id: String) -> String { return "/posts/\(id)/reject" }
+        static func delete(_ id: String) -> String { return "/posts/\(id)" }
+        static func close(_ id: String) -> String { return "/posts/\(id)/close" }
     }
 }
 

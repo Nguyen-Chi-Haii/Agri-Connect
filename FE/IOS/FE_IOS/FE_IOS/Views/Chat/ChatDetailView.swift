@@ -73,6 +73,7 @@ struct ChatDetailView: View {
         .onAppear {
             loadMessages()
             startPolling()
+            markConversationAsRead()
         }
         .onDisappear {
             stopPolling()
@@ -130,6 +131,16 @@ struct ChatDetailView: View {
                 // Restore message on failure
                 messageText = content
             }
+        }
+    }
+    
+    private func markConversationAsRead() {
+        APIClient.shared.request(
+            endpoint: APIConfig.Chat.markRead(conversationId),
+            method: .put
+        ) { (result: Result<ApiResponse<EmptyResponse>, Error>) in
+            // Successfully marked as read
+            // ChatListView will update badge count on next load
         }
     }
 }
