@@ -294,12 +294,9 @@ struct PostDetailView: View {
     private func startChat() {
         guard let sellerId = post?.sellerId else { return }
         
-        let body: [String: String] = ["recipientId": sellerId]
-        
         APIClient.shared.request(
-            endpoint: "/chat/conversations",
-            method: .post,
-            body: body
+            endpoint: "/chat/conversations/\(sellerId)",
+            method: .post
         ) { (result: Result<ApiResponse<Conversation>, Error>) in
             if case .success(let response) = result, let conversation = response.data {
                 // TODO: Navigate to ChatDetailView

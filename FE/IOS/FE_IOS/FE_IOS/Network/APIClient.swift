@@ -51,9 +51,17 @@ struct APIConfig {
         static let list = "/market-prices"
     }
     
+    struct Statistics {
+        static let summary = "/statistics/summary"
+    }
+    
     struct Chat {
         static let conversations = "/chat/conversations"
         static let messages = "/chat/messages"
+        
+        static func createConversation(_ userId: String) -> String {
+            return "/chat/conversations/\(userId)"
+        }
     }
 }
 

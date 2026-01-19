@@ -460,7 +460,7 @@ struct StatisticsDetailView: View {
     private func loadStatistics() {
         isLoading = true
         APIClient.shared.request(
-            endpoint: "/users/statistics",
+            endpoint: "/statistics/summary",
             method: .get
         ) { (result: Result<ApiResponse<StatisticsData>, Error>) in
             isLoading = false
