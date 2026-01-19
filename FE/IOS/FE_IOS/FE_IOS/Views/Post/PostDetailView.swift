@@ -250,7 +250,7 @@ struct PostDetailView: View {
         APIClient.shared.request(
             endpoint: "\(APIConfig.Posts.list)/\(postId)/like",
             method: .post
-        ) { (result: Result<ApiResponse<Void>, Error>) in
+        ) { (result: Result<ApiResponse<EmptyResponse>, Error>) in
             if case .failure = result {
                 // Revert on failure
                 isLiked.toggle()

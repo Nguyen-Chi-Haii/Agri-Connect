@@ -161,6 +161,9 @@ struct Post: Decodable, Identifiable {
     let location: Location?
     let status: String?
     let createdAt: String?
+    let likeCount: Int?
+    let commentCount: Int?
+    let isLiked: Bool?
     
     // Convenience Accessors
     var province: String? { location?.province }
@@ -279,23 +282,5 @@ struct Comment: Codable, Identifiable {
     let createdAt: String
 }
 
-// MARK: - Conversation Model
-struct Conversation: Codable, Identifiable {
-    let id: String
-    let otherUserId: String
-    let otherUserName: String
-    let lastMessage: String?
-    let lastMessageAt: String?
-    let unreadCount: Int?
-}
-
-// MARK: - Message Model
-struct Message: Codable, Identifiable {
-    let id: String
-    let conversationId: String
-    let senderId: String
-    let recipientId: String
-    let content: String
-    let createdAt: String
-    let isRead: Bool?
-}
+// MARK: - Empty Response (for DELETE, etc.)
+struct EmptyResponse: Codable {}

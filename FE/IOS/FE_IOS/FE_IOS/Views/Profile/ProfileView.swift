@@ -269,7 +269,7 @@ struct MyPostsListView: View {
         APIClient.shared.request(
             endpoint: "\(APIConfig.Posts.list)/\(post.id)",
             method: .delete
-        ) { (result: Result<ApiResponse<Void>, Error>) in
+        ) { (result: Result<ApiResponse<EmptyResponse>, Error>) in
             if case .success = result {
                 posts.removeAll { $0.id == post.id }
             }
@@ -340,8 +340,9 @@ struct EditProfileFormView: View {
                             .foregroundColor(.gray)
                         Spacer()
                         LocationFillButton(
-                            onLocationFetched: { province, district in
-                                address = "\(district), \(province)"
+                            locationManager: LocationManager(),
+                            onAddressReceived: { fullAddress in
+                                address = fullAddress
                             }
                         )
                     }
@@ -439,10 +440,10 @@ struct StatisticsDetailView: View {
                 VStack(spacing: 20) {
                     // Overview Cards
                     VStack(spacing: 16) {
-                        StatCard(title: "Tổng bài đăng", value: "\(stats.totalPosts)", icon: "doc.text.fill", color: .blue)
-                        StatCard(title: "Đã duyệt", value: "\(stats.approvedPosts)", icon: "checkmark.circle.fill", color: .green)
-                        StatCard(title: "Chờ duyệt", value: "\(stats.pendingPosts)", icon: "clock.fill", color: .orange)
-                        StatCard(title: "Tương tác", value: "\(stats.totalInteractions)", icon: "hand.thumbsup.fill", color: .purple)
+                        StatCard(icon: "doc.text.fill", color: .blue, title: "Tổng bài đăng", value: "\(stats.totalPosts)")
+                        StatCard(icon: "checkmark.circle.fill", color: .green, title: "Đã duyệt", value: "\(stats.approvedPosts)")
+                        StatCard(icon: "clock.fill", color: .orange, title: "Chờ duyệt", value: "\(stats.pendingPosts)")
+                        StatCard(icon: "hand.thumbsup.fill", color: .purple, title: "Tương tác", value: "\(stats.totalInteractions)")
                     }
                     .padding()
                 }
@@ -467,36 +468,6 @@ struct StatisticsDetailView: View {
                 stats = data
             }
         }
-    }
-}
-
-struct StatCard: View {
-    let title: String
-    let value: String
-    let icon: String
-    let color: Color
-    
-    var body: some View {
-        HStack {
-            Image(systemName: icon)
-                .font(.system(size: 30))
-                .foregroundColor(color)
-                .frame(width: 50)
-            
-            VStack(alignment: .leading, spacing: 4) {
-                Text(title)
-                    .font(.caption)
-                    .foregroundColor(.gray)
-                Text(value)
-                    .font(.title2)
-                    .fontWeight(.bold)
-            }
-            
-            Spacer()
-        }
-        .padding()
-        .background(Color(.systemGray6))
-        .cornerRadius(12)
     }
 }
 
