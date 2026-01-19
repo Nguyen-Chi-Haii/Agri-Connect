@@ -268,3 +268,34 @@ struct PagedResponse<T: Decodable>: Decodable {
         case totalPages
     }
 }
+
+// MARK: - Comment Model
+struct Comment: Codable, Identifiable {
+    let id: String
+    let postId: String
+    let userId: String
+    let userName: String?
+    let content: String
+    let createdAt: String
+}
+
+// MARK: - Conversation Model
+struct Conversation: Codable, Identifiable {
+    let id: String
+    let otherUserId: String
+    let otherUserName: String
+    let lastMessage: String?
+    let lastMessageAt: String?
+    let unreadCount: Int?
+}
+
+// MARK: - Message Model
+struct Message: Codable, Identifiable {
+    let id: String
+    let conversationId: String
+    let senderId: String
+    let recipientId: String
+    let content: String
+    let createdAt: String
+    let isRead: Bool?
+}

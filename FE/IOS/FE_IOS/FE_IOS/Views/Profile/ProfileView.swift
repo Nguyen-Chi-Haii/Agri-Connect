@@ -196,16 +196,233 @@ struct ProfileMenuRow: View {
 
 // Placeholder views
 struct MyPostsListView: View {
+    @State private var posts: [Post] = []
+    @State private var isLoading = false
+    @State private var showDeleteAlert = false
+    @State private var postToDelete: Post?
+    
     var body: some View {
-        Text("My Posts")
-            .navigationTitle("Bài đăng của tôi")
+        Group {
+            if isLoading {
+                ProgressView()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else if posts.isEmpty {
+                VStack(spacing: 16) {
+                    Image(systemName: "doc.text")
+                        .font(.system(size: 60))
+                        .foregroundColor(.gray)
+                    Text("Chưa có bài đăng nào")
+                        .font(.headline)
+                        .foregroundColor(.gray)
+                    NavigationLink(destination: CreatePostView()) {
+                        Text("Tạo bài đăng mới")
+                            .foregroundColor(.white)
+                            .padding()
+                            .background(Color(hex: "#2E7D32"))
+                            .cornerRadius(12)
+                    }
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else {
+                List {
+                    ForEach(posts) { post in
+                        NavigationLink(destination: PostDetailView(postId: post.id)) {
+                            MyPostRow(post: post, onDelete: {
+                                postToDelete = post
+                                showDeleteAlert = true
+                            })
+                        }
+                    }
+                }
+            }
+        }
+        .navigationTitle("Bài đăng của tôi")
+        .onAppear { loadMyPosts() }
+        .alert(isPresented: $showDeleteAlert) {
+            Alert(
+                title: Text("Xác nhận xóa"),
+                message: Text("Bạn có chắc muốn xóa bài đăng này?"),
+                primaryButton: .destructive(Text("Xóa")) {
+                    if let post = postToDelete {
+                        deletePost(post)
+                    }
+                },
+                secondaryButton: .cancel(Text("Hủy"))
+            )
+        }
+    }
+    
+    private func loadMyPosts() {
+        isLoading = true
+        APIClient.shared.request(
+            endpoint: "/posts/my",
+            method: .get
+        ) { (result: Result<ApiResponse<[Post]>, Error>) in
+            isLoading = false
+            if case .success(let response) = result, let postList = response.data {
+                posts = postList
+            }
+        }
+    }
+    
+    private func deletePost(_ post: Post) {
+        APIClient.shared.request(
+            endpoint: "\(APIConfig.Posts.list)/\(post.id)",
+            method: .delete
+        ) { (result: Result<ApiResponse<Void>, Error>) in
+            if case .success = result {
+                posts.removeAll { $0.id == post.id }
+            }
+        }
     }
 }
 
 struct EditProfileFormView: View {
+    @State private var fullName = ""
+    @State private var phone = ""
+    @State private var address = ""
+    @State  private var selectedImage: UIImage?
+    @State private var showImagePicker = false
+    @State private var isLoading = false
+    @State private var showSuccess = false
+    @State private var errorMessage = ""
+    @State private var showError = false
+    
+    @Environment(\.presentationMode) var presentationMode
+    
     var body: some View {
-        Text("Edit Profile")
-            .navigationTitle("Chỉnh sửa")
+        Form {
+            Section("Ảnh đại diện") {
+                HStack {
+                    Spacer()
+                    Button(action: { showImagePicker = true }) {
+                        if let image = selectedImage {
+                            Image(uiImage: image)
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: 100, height: 100)
+                                .clipShape(Circle())
+                        } else {
+                            ZStack {
+                                Circle()
+                                    .fill(Color(hex: "#E8F5E9"))
+                                    .frame(width: 100, height: 100)
+                                Image(systemName: "person.fill")
+                                    .font(.system(size: 40))
+                                    .foregroundColor(Color(hex: "#2E7D32"))
+                            }
+                        }
+                    }
+                    Spacer()
+                }
+            }
+            
+            Section("Thông tin cá nhân") {
+                ValidatedFormField(
+                    title: "Họ tên",
+                    placeholder: "Nguyễn Văn A",
+                    text: $fullName,
+                    error: .constant(nil)
+                )
+                
+                ValidatedFormField(
+                    title: "Số điện thoại",
+                    placeholder: "0912345678",
+                    text: $phone,
+                    error: .constant(nil),
+                    keyboardType: .phonePad
+                )
+                
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack {
+                        Text("Địa chỉ")
+                            .font(.caption)
+                            .foregroundColor(.gray)
+                        Spacer()
+                        LocationFillButton(
+                            onLocationFetched: { province, district in
+                                address = "\(district), \(province)"
+                            }
+                        )
+                    }
+                    
+                    TextField("Nhập địa chỉ", text: $address)
+                        .padding()
+                        .background(Color(.systemGray6))
+                        .cornerRadius(12)
+                }
+            }
+            
+            Section {
+                Button(action: saveProfile) {
+                    if isLoading {
+                        ProgressView()
+                            .frame(maxWidth: .infinity)
+                    } else {
+                        Text("Lưu thay đổi")
+                            .frame(maxWidth: .infinity)
+                            .foregroundColor(.white)
+                    }
+                }
+                .listRowBackground(Color(hex: "#2E7D32"))
+                .disabled(isLoading)
+            }
+        }
+        .navigationTitle("Chỉnh sửa hồ sơ")
+        .onAppear { loadCurrentProfile() }
+        .sheet(isPresented: $showImagePicker) {
+            ImagePicker(image: $selectedImage)
+        }
+        .alert("Thành công", isPresented: $showSuccess) {
+            Button("OK") {
+                presentationMode.wrappedValue.dismiss()
+            }
+        } message: {
+            Text("Đã cập nhật thông tin")
+        }
+        .alert("Lỗi", isPresented: $showError) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(errorMessage)
+        }
+    }
+    
+    private func loadCurrentProfile() {
+        APIClient.shared.request(
+            endpoint: "/users/profile",
+            method: .get
+        ) { (result: Result<ApiResponse<UserProfile>, Error>) in
+            if case .success(let response) = result, let profile = response.data {
+                fullName = profile.fullName
+                phone = profile.phone ?? ""
+                address = profile.address ?? ""
+            }
+        }
+    }
+    
+    private func saveProfile() {
+        isLoading = true
+        
+        let body: [String: String] = [
+            "fullName": fullName,
+            "phone": phone,
+            "address": address
+        ]
+        
+        APIClient.shared.request(
+            endpoint: "/users/profile",
+            method: .put,
+            body: body
+        ) { (result: Result<ApiResponse<UserProfile>, Error>) in
+            isLoading = false
+            
+            if case .success = result {
+                showSuccess = true
+            } else if case .failure(let error) = result {
+                errorMessage = error.localizedDescription
+                showError = true
+            }
+        }
     }
 }
 
