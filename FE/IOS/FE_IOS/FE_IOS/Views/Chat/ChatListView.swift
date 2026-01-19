@@ -60,53 +60,62 @@ struct ConversationRow: View {
     
     var body: some View {
         HStack(spacing: 12) {
-            // Avatar
-            ZStack {
-                Circle()
-                    .fill(Color(hex: "#E8F5E9"))
-                    .frame(width: 50, height: 50)
+            avatarView
+            contentView
+        }
+        .padding(.vertical, 4)
+    }
+    
+    private var avatarView: some View {
+        ZStack {
+            Circle()
+                .fill(Color(hex: "#E8F5E9"))
+                .frame(width: 50, height: 50)
+            
+            Text(avatarLetter)
+                .font(.title2)
+                .fontWeight(.bold)
+                .foregroundColor(Color(hex: "#2E7D32"))
+        }
+    }
+    
+    private var contentView: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack {
+                Text(conversation.participantName ?? "Unknown")
+                    .font(.headline)
                 
-                Text(avatarLetter)
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .foregroundColor(Color(hex: "#2E7D32"))
+                Spacer()
+                
+                Text(formatTime(conversation.updatedAt))
+                    .font(.caption)
+                    .foregroundColor(.gray)
             }
             
-            // Content
-            VStack(alignment: .leading, spacing: 4) {
-                HStack {
-                    Text(conversation.participantName ?? "Unknown")
-                        .font(.headline)
-                    
-                    Spacer()
-                    
-                    Text(formatTime(conversation.updatedAt))
-                        .font(.caption)
-                        .foregroundColor(.gray)
-                }
+            HStack {
+                Text(conversation.lastMessage ?? "")
+                    .font(.subheadline)
+                    .foregroundColor(.gray)
+                    .lineLimit(1)
                 
-                HStack {
-                    Text(conversation.lastMessage ?? "")
-                        .font(.subheadline)
-                        .foregroundColor(.gray)
-                        .lineLimit(1)
-                    
-                    Spacer()
-                    
-                    if let unread = conversation.unreadCount, unread > 0 {
-                        Text("\(unread)")
-                            .font(.caption2)
-                            .fontWeight(.bold)
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(Color(hex: "#2E7D32"))
-                            .clipShape(Capsule())
-                    }
+                Spacer()
+                
+                if let unread = conversation.unreadCount, unread > 0 {
+                    unreadBadge(count: unread)
                 }
             }
         }
-        .padding(.vertical, 4)
+    }
+    
+    private func unreadBadge(count: Int) -> some View {
+        Text("\(count)")
+            .font(.caption2)
+            .fontWeight(.bold)
+            .foregroundColor(.white)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(Color(hex: "#2E7D32"))
+            .clipShape(Capsule())
     }
     
     private var avatarLetter: String {
