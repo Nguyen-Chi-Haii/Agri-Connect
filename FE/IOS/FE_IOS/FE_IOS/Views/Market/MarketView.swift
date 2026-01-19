@@ -2,6 +2,8 @@ import SwiftUI
 
 struct MarketView: View {
     @State private var prices: [MarketPrice] = []
+    @State private var categories: [Category] = []
+    @State private var selectedCategory: String? = nil
     @State private var isLoading = false
     @State private var searchText = ""
     
@@ -14,15 +16,43 @@ struct MarketView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            // Search
-            HStack {
-                Image(systemName: "magnifyingglass")
-                    .foregroundColor(.gray)
-                TextField("Tìm kiếm giá...", text: $searchText)
+            // Search & Filter Bar
+            VStack(spacing: 12) {
+                // Search
+                HStack {
+                    Image(systemName: "magnifyingglass")
+                        .foregroundColor(.gray)
+                    TextField("Tìm kiếm giá...", text: $searchText)
+                }
+                .padding()
+                .background(Color(.systemGray6))
+                .cornerRadius(12)
+                
+                // Category filter
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        CategoryFilterChip(
+                            title: "Tất cả",
+                            isSelected: selectedCategory == nil,
+                            action: {
+                                selectedCategory = nil
+                                loadPrices()
+                            }
+                        )
+                        
+                        ForEach(categories) { category in
+                            CategoryFilterChip(
+                                title: category.name,
+                                isSelected: selectedCategory == category.id,
+                                action: {
+                                    selectedCategory = category.id
+                                    loadPrices()
+                                }
+                            )
+                        }
+                    }
+                }
             }
-            .padding()
-            .background(Color(.systemGray6))
-            .cornerRadius(12)
             .padding()
             
             // List
@@ -57,8 +87,12 @@ struct MarketView: View {
     private func loadPrices() {
         isLoading = true
         
+        let endpoint = selectedCategory == nil
+            ? APIConfig.MarketPrices.list
+            : APIConfig.MarketPrices.byCategory(selectedCategory!)
+        
         APIClient.shared.request(
-            endpoint: "/market-prices",
+            endpoint: endpoint,
             method: .get
         ) { (result: Result<ApiResponse<[MarketPrice]>, Error>) in
             isLoading = false
