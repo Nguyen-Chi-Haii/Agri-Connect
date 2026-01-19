@@ -98,13 +98,6 @@ struct MarketView: View {
             isLoading = false
             if case .success(let response) = result, let data = response.data {
                 prices = data
-            } else {
-                // Mock data if API fails
-                prices = [
-                    MarketPrice(id: "1", categoryId: nil, productName: "Gạo ST25", date: nil, avgPrice: 25000, minPrice: 24000, maxPrice: 26000, postCount: 10, categoryName: "Lúa gạo"),
-                    MarketPrice(id: "2", categoryId: nil, productName: "Cà phê robusta", date: nil, avgPrice: 65000, minPrice: 60000, maxPrice: 70000, postCount: 5, categoryName: "Cà phê"),
-                    MarketPrice(id: "3", categoryId: nil, productName: "Hồ tiêu", date: nil, avgPrice: 85000, minPrice: 80000, maxPrice: 90000, postCount: 8, categoryName: "Hồ tiêu"),
-                ]
             }
         }
     }
