@@ -427,9 +427,88 @@ struct EditProfileFormView: View {
 }
 
 struct StatisticsDetailView: View {
+    @State private var stats: StatisticsData?
+    @State private var isLoading = false
+    
     var body: some View {
-        Text("Statistics")
-            .navigationTitle("Thống kê")
+        ScrollView {
+            if isLoading {
+                ProgressView()
+                    .frame(maxWidth: .infinity, minHeight: 300)
+            } else if let stats = stats {
+                VStack(spacing: 20) {
+                    // Overview Cards
+                    VStack(spacing: 16) {
+                        StatCard(title: "Tổng bài đăng", value: "\(stats.totalPosts)", icon: "doc.text.fill", color: .blue)
+                        StatCard(title: "Đã duyệt", value: "\(stats.approvedPosts)", icon: "checkmark.circle.fill", color: .green)
+                        StatCard(title: "Chờ duyệt", value: "\(stats.pendingPosts)", icon: "clock.fill", color: .orange)
+                        StatCard(title: "Tương tác", value: "\(stats.totalInteractions)", icon: "hand.thumbsup.fill", color: .purple)
+                    }
+                    .padding()
+                }
+            } else {
+                Text("Không có dữ liệu thống kê")
+                    .foregroundColor(.gray)
+                    .frame(maxWidth: .infinity, minHeight: 300)
+            }
+        }
+        .navigationTitle("Thống kê")
+        .onAppear { loadStatistics() }
+    }
+    
+    private func loadStatistics() {
+        isLoading = true
+        APIClient.shared.request(
+            endpoint: "/users/statistics",
+            method: .get
+        ) { (result: Result<ApiResponse<StatisticsData>, Error>) in
+            isLoading = false
+            if case .success(let response) = result, let data = response.data {
+                stats = data
+            }
+        }
+    }
+}
+
+struct StatCard: View {
+    let title: String
+    let value: String
+    let icon: String
+    let color: Color
+    
+    var body: some View {
+        HStack {
+            Image(systemName: icon)
+                .font(.system(size: 30))
+                .foregroundColor(color)
+                .frame(width: 50)
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .font(.caption)
+                    .foregroundColor(.gray)
+                Text(value)
+                    .font(.title2)
+                    .fontWeight(.bold)
+            }
+            
+            Spacer()
+        }
+        .padding()
+        .background(Color(.systemGray6))
+        .cornerRadius(12)
+    }
+}
+
+// MARK: - Statistics Data Model
+struct StatisticsData: Codable {
+    let totalPosts: Int
+    let approvedPosts: Int
+    let pendingPosts: Int
+    let totalInteractions: Int
+    
+    enum CodingKeys: String, CodingKey {
+        case totalPosts, approvedPosts, pendingPosts, totalInteractions
     }
 }
 

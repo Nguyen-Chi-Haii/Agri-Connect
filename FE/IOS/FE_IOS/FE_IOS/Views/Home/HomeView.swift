@@ -5,6 +5,14 @@ struct HomeView: View {
     @State private var categories: [Category] = []
     @State private var isLoading = false
     @State private var searchText = ""
+    @State private var selectedCategoryId: String? = nil
+    
+    var filteredPosts: [Post] {
+        if let categoryId = selectedCategoryId {
+            return posts.filter { $0.categoryId == categoryId }
+        }
+        return posts
+    }
     
     var body: some View {
         ScrollView {
@@ -28,8 +36,23 @@ struct HomeView: View {
                     
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 12) {
+                            // All Categories
+                            CategoryChip(
+                                name: "Tất cả",
+                                isSelected: selectedCategoryId == nil,
+                                onTap: {
+                                    selectedCategoryId = nil
+                                }
+                            )
+                            
                             ForEach(categories) { category in
-                                CategoryCard(category: category)
+                                CategoryChip(
+                                    name: category.name,
+                                    isSelected: selectedCategoryId == category.id,
+                                    onTap: {
+                                        selectedCategoryId = category.id
+                                    }
+                                )
                             }
                         }
                         .padding(.horizontal)
@@ -61,7 +84,7 @@ struct HomeView: View {
                             .padding()
                     } else {
                         LazyVStack(spacing: 12) {
-                            ForEach(posts) { post in
+                            ForEach(filteredPosts) { post in
                                 NavigationLink(destination: PostDetailView(postId: post.id)) {
                                     PostCard(post: post)
                                 }

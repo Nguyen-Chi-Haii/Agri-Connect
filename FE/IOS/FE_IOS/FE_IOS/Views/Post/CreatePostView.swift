@@ -25,6 +25,9 @@ struct CreatePostView: View {
     @State private var provinceError: String?
     @State private var districtError: String?
     @State private var categoryError: String?
+    @State private var showKYCAlert = false
+    @State private var kycAlertTitle = ""
+    @State private var kycAlertMessage = ""
     
     let units = ["kg", "tấn", "bao", "con", "cây", "trái", "chục"]
     
@@ -336,7 +339,21 @@ struct CreatePostView: View {
             }
         }
     }
+    
+    private func checkKYCStatus() {
+        KYCHelper.shared.requireVerified(
+            onSuccess: {
+                // User is verified, can proceed
+            },
+            onFailure: { title, message in
+                kycAlertTitle = title
+                kycAlertMessage = message ?? "Cần xác thực"
+                showKYCAlert = true
+            }
+        )
+    }
 }
+
 
 struct CreatePostView_Previews: PreviewProvider {
     static var previews: some View {
