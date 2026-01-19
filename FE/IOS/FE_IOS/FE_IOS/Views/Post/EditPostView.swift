@@ -146,16 +146,27 @@ struct EditPostView: View {
         isLoading = true
         errorMessage = nil
         
-        let body: [String: Any] = [
-            "title": title,
-            "description": description,
-            "price": Double(price) ?? 0,
-            "quantity": Double(quantity) ?? 0,
-            "unit": unit,
-            "categoryId": selectedCategory ?? "",
-            "province": province,
-            "district": district
-        ]
+        struct UpdatePostRequest: Encodable {
+            let title: String
+            let description: String
+            let price: Double
+            let quantity: Double
+            let unit: String
+            let categoryId: String
+            let province: String
+            let district: String
+        }
+        
+        let body = UpdatePostRequest(
+            title: title,
+            description: description,
+            price: Double(price) ?? 0,
+            quantity: Double(quantity) ?? 0,
+            unit: unit,
+            categoryId: selectedCategory ?? "",
+            province: province,
+            district: district
+        )
         
         APIClient.shared.request(
             endpoint: APIConfig.Posts.update(post.id),

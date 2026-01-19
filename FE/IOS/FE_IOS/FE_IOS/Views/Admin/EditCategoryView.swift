@@ -69,11 +69,17 @@ struct EditCategoryView: View {
         isLoading = true
         errorMessage = nil
         
-        let body: [String: Any] = [
-            "name": name,
-            "description": description,
-            "icon": icon
-        ]
+        struct UpdateCategoryRequest: Encodable {
+            let name: String
+            let description: String
+            let icon: String
+        }
+        
+        let body = UpdateCategoryRequest(
+            name: name,
+            description: description,
+            icon: icon
+        )
         
         APIClient.shared.request(
             endpoint: APIConfig.Categories.update(category.id),
