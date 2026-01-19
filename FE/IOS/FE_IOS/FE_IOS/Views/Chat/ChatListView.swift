@@ -42,26 +42,16 @@ struct ChatListView: View {
     private func loadConversations() {
         isLoading = true
         
-        // Mock data with renamed struct to avoid conflict
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+        APIClient.shared.request(
+            endpoint: APIConfig.Chat.conversations,
+            method: .get
+        ) { (result: Result<ApiResponse<[Conversation]>, Error>) in
             isLoading = false
-            conversations = [
-                ChatConversation(id: "1", participantName: "Nguyễn Văn A", participantAvatar: nil, lastMessage: "Còn hàng không bạn?", lastMessageTime: "10:30", unreadCount: 2),
-                ChatConversation(id: "2", participantName: "Trần Thị B", participantAvatar: nil, lastMessage: "OK, mai tôi qua lấy", lastMessageTime: "Hôm qua", unreadCount: 0),
-                ChatConversation(id: "3", participantName: "Lê Văn C", participantAvatar: nil, lastMessage: "Giá nông sản đợt này thế nào?", lastMessageTime: "2 ngày", unreadCount: 0),
-            ]
+            if case .success(let response) = result, let data = response.data {
+                conversations = data
+            }
         }
     }
-}
-
-// MARK: - Chat Conversation Model (renamed to avoid conflict with Models.swift)
-struct ChatConversation: Identifiable {
-    let id: String
-    let participantName: String
-    let participantAvatar: String?
-    let lastMessage: String
-    let lastMessageTime: String
-    let unreadCount: Int
 }
 
 // MARK: - Conversation Row
