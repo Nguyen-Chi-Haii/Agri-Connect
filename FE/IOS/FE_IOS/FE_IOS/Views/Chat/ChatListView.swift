@@ -25,7 +25,11 @@ struct ChatListView: View {
                 Spacer()
             } else {
                 List(conversations) { conversation in
-                    NavigationLink(destination: ChatRoomView(conversation: conversation)) {
+                    NavigationLink(destination: ChatDetailView(
+                        conversationId: conversation.id,
+                        otherUserName: conversation.participantName ?? "Người dùng",
+                        recipientId: getRecipientId(from: conversation)
+                    )) {
                         ConversationRow(conversation: conversation)
                     }
                 }
@@ -51,6 +55,14 @@ struct ChatListView: View {
                 conversations = data
             }
         }
+    }
+    
+    private func getRecipientId(from conversation: Conversation) -> String {
+        guard let currentUserId = TokenManager.shared.userId,
+              let participants = conversation.participants else {
+            return ""
+        }
+        return participants.first { $0 != currentUserId } ?? ""
     }
 }
 
