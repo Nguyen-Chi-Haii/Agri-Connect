@@ -283,6 +283,12 @@ struct PostCard: View {
         .background(Color.white)
         .cornerRadius(16)
         .shadow(color: .gray.opacity(0.15), radius: 6, x: 0, y: 2)
+        .onChange(of: post.isLiked) { newValue in
+            isLiked = newValue ?? false
+        }
+        .onChange(of: post.likeCount) { newValue in
+            likeCount = newValue ?? 0
+        }
     }
     
     private func formatPrice(_ price: Double) -> String {
