@@ -206,6 +206,22 @@ struct MyPostsListView: View {
     @State private var isLoading = false
     @State private var showDeleteAlert = false
     @State private var postToDelete: Post?
+    @State private var selectedFilter = ""
+    
+    let filters = [
+        ("", "Tất cả"),
+        ("PENDING", "Chờ duyệt"),
+        ("APPROVED", "Đã duyệt"),
+        ("REJECTED", "Từ chối"),
+        ("CLOSED", "Đã đóng")
+    ]
+    
+    var filteredPosts: [Post] {
+        if selectedFilter.isEmpty {
+            return posts
+        }
+        return posts.filter { $0.status == selectedFilter }
+    }
     
     var body: some View {
         Group {
@@ -220,7 +236,7 @@ struct MyPostsListView: View {
                     Text("Chưa có bài đăng nào")
                         .font(.headline)
                         .foregroundColor(.gray)
-                    NavigationLink(destination: CreatePostView()) {
+                    NavigationLink(destination: CreatePostView(tabSelection: .constant(4))) {
                         Text("Tạo bài đăng mới")
                             .foregroundColor(.white)
                             .padding()
@@ -230,20 +246,57 @@ struct MyPostsListView: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
-                List {
-                    ForEach(posts) { post in
-                        NavigationLink(destination: PostDetailView(postId: post.id)) {
-                            MyPostRow(post: post, onDelete: {
-                                postToDelete = post
-                                showDeleteAlert = true
-                            })
+                VStack(spacing: 0) {
+                    // Filters
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 8) {
+                            ForEach(filters, id: \.0) { filter in
+                                Button {
+                                    selectedFilter = filter.0
+                                } label: {
+                                    Text(filter.1)
+                                        .font(.subheadline)
+                                        .padding(.horizontal, 16)
+                                        .padding(.vertical, 8)
+                                        .background(
+                                            selectedFilter == filter.0
+                                            ? Color(hex: "#2E7D32")
+                                            : Color(.systemGray6)
+                                        )
+                                        .foregroundColor(
+                                            selectedFilter == filter.0
+                                            ? .white
+                                            : .primary
+                                        )
+                                        .cornerRadius(20)
+                                }
+                            }
+                        }
+                        .padding(.horizontal)
+                        .padding(.vertical, 8)
+                    }
+                    
+                    Divider()
+                    
+                    List {
+                        ForEach(filteredPosts) { post in
+                            NavigationLink(destination: PostDetailView(postId: post.id)) {
+                                MyPostRow(post: post, onDelete: {
+                                    postToDelete = post
+                                    showDeleteAlert = true
+                                })
+                            }
                         }
                     }
+                    .listStyle(PlainListStyle())
                 }
             }
         }
         .navigationTitle("Bài đăng của tôi")
         .onAppear { loadMyPosts() }
+        .onChange(of: selectedFilter) { _ in
+            loadMyPosts()
+        }
         .alert(isPresented: $showDeleteAlert) {
             Alert(
                 title: Text("Xác nhận xóa"),
@@ -260,8 +313,13 @@ struct MyPostsListView: View {
     
     private func loadMyPosts() {
         isLoading = true
+        var endpoint = APIConfig.Posts.myPosts
+        if !selectedFilter.isEmpty {
+            endpoint = "\(endpoint)?status=\(selectedFilter)"
+        }
+        
         APIClient.shared.request(
-            endpoint: APIConfig.Posts.myPosts,
+            endpoint: endpoint,
             method: .get
         ) { (result: Result<ApiResponse<[Post]>, Error>) in
             isLoading = false

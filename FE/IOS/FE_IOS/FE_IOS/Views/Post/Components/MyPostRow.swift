@@ -28,6 +28,9 @@ struct MyPostRow: View {
                     .font(.headline)
                     .lineLimit(2)
                 
+                PostStatusBadge(status: post.status ?? "PENDING")
+                    .padding(.bottom, 2)
+                
                 if let price = post.price, let unit = post.unit {
                     Text("\(formatPrice(price)) / \(unit)")
                         .font(.subheadline)

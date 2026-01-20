@@ -13,7 +13,7 @@ public interface PostService {
     PostDetailResponse update(String postId, PostCreateRequest request);
     void delete(String postId);
     PagedResponse<PostDetailResponse> search(PostFilterRequest filter);
-    List<PostDetailResponse> getBySeller(String sellerId);
+    List<PostDetailResponse> getBySeller(String sellerId, vn.agriconnect.API.model.enums.PostStatus status);
     List<PostDetailResponse> getApproved();
     void approve(String postId);
     void reject(String postId, String reason);

@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct CreatePostView: View {
-    @Environment(\.presentationMode) var presentationMode
+    @Binding var tabSelection: Int
     @State private var title = ""
     @State private var description = ""
     @State private var price = ""
@@ -244,6 +244,17 @@ struct CreatePostView: View {
         .alert(isPresented: $showError) {
             Alert(title: Text("Lỗi"), message: Text(errorMessage), dismissButton: .default(Text("OK")))
         }
+        .alert("Thành công", isPresented: $showSuccess) {
+            Button("Xem bài đăng") {
+                clearForm()
+                tabSelection = 4 // Go to Profile
+            }
+            Button("Tiếp tục đăng") {
+                clearForm()
+            }
+        } message: {
+            Text("Bài đăng của bạn đã được khởi tạo và đang chờ duyệt.")
+        }
         .sheet(isPresented: $showImagePicker) {
             MultiImagePicker(images: $selectedImages, selectionLimit: 5)
         }
@@ -307,15 +318,17 @@ struct CreatePostView: View {
         
         // 1. Upload images first if any
         if !selectedImages.isEmpty {
-            APIClient.shared.uploadImages(selectedImages, folder: "posts") { [self] result in
-                switch result {
-                case .success(let urls):
-                    // 2. Proceed to create post with URLs
-                    self.createPost(imageUrls: urls)
-                case .failure(let error):
-                    self.isLoading = false
-                    self.errorMessage = "Lỗi upload ảnh: \(error.localizedDescription)"
-                    self.showError = true
+            APIClient.shared.uploadImages(selectedImages, folder: "posts") { result in
+                DispatchQueue.main.async {
+                    switch result {
+                    case .success(let urls):
+                        // 2. Proceed to create post with URLs
+                        self.createPost(imageUrls: urls)
+                    case .failure(let error):
+                        self.isLoading = false
+                        self.errorMessage = "Lỗi upload ảnh: \(error.localizedDescription)"
+                        self.showError = true
+                    }
                 }
             }
         } else {
@@ -341,22 +354,42 @@ struct CreatePostView: View {
             method: .post,
             body: request
         ) { (result: Result<ApiResponse<Post>, Error>) in
-            self.isLoading = false
-            
-            switch result {
-            case .success(let response):
-                if response.success {
-                    self.showSuccess = true
-                    self.presentationMode.wrappedValue.dismiss()
-                } else {
-                    self.errorMessage = response.message ?? "Đăng bài thất bại"
+            DispatchQueue.main.async {
+                self.isLoading = false
+                
+                switch result {
+                case .success(let response):
+                    if response.success {
+                        self.showSuccess = true
+                    } else {
+                        self.errorMessage = response.message ?? "Đăng bài thất bại"
+                        self.showError = true
+                    }
+                case .failure(let error):
+                    self.errorMessage = "Lỗi: \(error.localizedDescription)"
                     self.showError = true
                 }
-            case .failure(let error):
-                self.errorMessage = "Lỗi: \(error.localizedDescription)"
-                self.showError = true
             }
         }
+    }
+    
+    private func clearForm() {
+        title = ""
+        description = ""
+        price = ""
+        quantity = ""
+        province = ""
+        district = ""
+        selectedCategory = nil
+        selectedImages = []
+        
+        // Reset validation errors
+        categoryError = nil
+        titleError = nil
+        priceError = nil
+        quantityError = nil
+        provinceError = nil
+        districtError = nil
     }
     
     private func checkKYCStatus() {
@@ -377,7 +410,7 @@ struct CreatePostView: View {
 struct CreatePostView_Previews: PreviewProvider {
     static var previews: some View {
         NavigationView {
-            CreatePostView()
+            CreatePostView(tabSelection: .constant(2))
         }
     }
 }

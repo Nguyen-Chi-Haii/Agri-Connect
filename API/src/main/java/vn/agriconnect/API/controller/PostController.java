@@ -62,16 +62,19 @@ public class PostController {
         return ResponseEntity.ok(ApiResponse.success(posts));
     }
 
-    @GetMapping("/seller/{sellerId}")
-    public ResponseEntity<ApiResponse<List<PostDetailResponse>>> getBySeller(@PathVariable String sellerId) {
-        List<PostDetailResponse> posts = postService.getBySeller(sellerId);
+    @GetMapping("/my-posts")
+    public ResponseEntity<ApiResponse<List<PostDetailResponse>>> getMyPosts(
+            @RequestParam(required = false) vn.agriconnect.API.model.enums.PostStatus status) {
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        List<PostDetailResponse> posts = postService.getBySeller(userId, status);
         return ResponseEntity.ok(ApiResponse.success(posts));
     }
 
-    @GetMapping("/my-posts")
-    public ResponseEntity<ApiResponse<List<PostDetailResponse>>> getMyPosts() {
-        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
-        List<PostDetailResponse> posts = postService.getBySeller(userId);
+    @GetMapping("/seller/{sellerId}")
+    public ResponseEntity<ApiResponse<List<PostDetailResponse>>> getBySeller(
+            @PathVariable String sellerId,
+            @RequestParam(required = false) vn.agriconnect.API.model.enums.PostStatus status) {
+        List<PostDetailResponse> posts = postService.getBySeller(sellerId, status);
         return ResponseEntity.ok(ApiResponse.success(posts));
     }
 

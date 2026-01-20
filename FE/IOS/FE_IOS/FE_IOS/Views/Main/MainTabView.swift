@@ -29,7 +29,7 @@ struct MainTabView: View {
             
             // Create Post Tab
             NavigationView {
-                CreatePostView()
+                CreatePostView(tabSelection: $selectedTab)
             }
             .navigationViewStyle(StackNavigationViewStyle())
             .tabItem {

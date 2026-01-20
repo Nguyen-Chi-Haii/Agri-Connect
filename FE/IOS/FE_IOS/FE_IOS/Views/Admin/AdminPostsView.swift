@@ -101,20 +101,24 @@ struct AdminPostsView: View {
                 }
                 Spacer()
             } else {
-                List(filteredPosts) { post in
-                    ZStack {
-                        NavigationLink(destination: PostDetailView(postId: post.id)) {
-                            EmptyView()
+                List {
+                    ForEach(filteredPosts) { post in
+                        ZStack {
+                            NavigationLink(destination: PostDetailView(postId: post.id)) {
+                                EmptyView()
+                            }
+                            .opacity(0)
+                            
+                            AdminPostRow(post: post) {
+                                loadPosts(page: currentPage)
+                            }
                         }
-                        .opacity(0)
-                        
-                        AdminPostRow(post: post) {
-                            loadPosts(page: currentPage)
-                        }
+                        .listRowInsets(EdgeInsets())
+                        .padding(.horizontal)
+                        .padding(.vertical, 8)
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.clear)
                     }
-                    .listRowInsets(EdgeInsets())
-                    .padding(.horizontal)
-                    .padding(.vertical, 8)
                 }
                 .listStyle(PlainListStyle())
                     
@@ -297,27 +301,30 @@ struct AdminPostRow: View {
             // Actions
             // Actions
             if post.status == "PENDING" {
-                HStack(spacing: 12) {
-                    Button(action: approvePost) {
-                        Label("Duyệt", systemImage: "checkmark")
-                            .font(.caption)
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 8)
-                            .background(Color.green.opacity(0.2))
-                            .foregroundColor(.green)
-                            .cornerRadius(8)
+                HStack(spacing: 16) {
+                    Button(action: showApproveAlert) {
+                        Label("Duyệt", systemImage: "checkmark.circle.fill")
+                            .font(.subheadline.bold())
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 10)
+                            .background(Color.green)
+                            .foregroundColor(.white)
+                            .cornerRadius(10)
                     }
+                    .buttonStyle(BorderlessButtonStyle())
                     
                     Button(action: showRejectAlert) {
-                        Label("Từ chối", systemImage: "xmark")
-                            .font(.caption)
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 8)
-                            .background(Color.red.opacity(0.2))
+                        Label("Từ chối", systemImage: "xmark.circle.fill")
+                            .font(.subheadline.bold())
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 10)
+                            .background(Color.red.opacity(0.1))
                             .foregroundColor(.red)
-                            .cornerRadius(8)
+                            .cornerRadius(10)
                     }
+                    .buttonStyle(BorderlessButtonStyle())
                 }
+                .padding(.top, 4)
             } else {
                 // Actions for other statuses
                 HStack {
@@ -326,15 +333,16 @@ struct AdminPostRow: View {
                             HStack {
                                 Image(systemName: "lock.fill")
                                 Text("Đóng bài")
-                                    .fontWeight(.medium)
+                                    .fontWeight(.bold)
                             }
                             .font(.caption)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(Color.orange.opacity(0.1))
-                            .foregroundColor(Color.orange)
-                            .cornerRadius(8)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                            .background(Color.orange)
+                            .foregroundColor(.white)
+                            .cornerRadius(10)
                         }
+                        .buttonStyle(BorderlessButtonStyle())
                     }
                 }
             }
@@ -382,6 +390,13 @@ struct AdminPostRow: View {
     }
     
     // MARK: - Actions
+    private func showApproveAlert() {
+        confirmationMessage = "Bạn có chắc chắn muốn duyệt bài đăng này?"
+        confirmationActionTitle = "Duyệt"
+        confirmationAction = approvePost
+        showConfirmation = true
+    }
+    
     private func showRejectAlert() {
         rejectionReason = ""
         showReasonInput = true
@@ -505,40 +520,6 @@ struct TextFieldAlert: UIViewControllerRepresentable {
     }
 }
 
-// MARK: - Post Status Badge
-struct PostStatusBadge: View {
-    let status: String
-    
-    var color: Color {
-        switch status {
-        case "APPROVED": return .green
-        case "PENDING": return .orange
-        case "REJECTED": return .red
-        case "CLOSED": return .gray
-        default: return .gray
-        }
-    }
-    
-    var text: String {
-        switch status {
-        case "APPROVED": return "Đã duyệt"
-        case "PENDING": return "Chờ duyệt"
-        case "REJECTED": return "Từ chối"
-        case "CLOSED": return "Đã đóng"
-        default: return status
-        }
-    }
-    
-    var body: some View {
-        Text(text)
-            .font(.caption2)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .background(color.opacity(0.2))
-            .foregroundColor(color)
-            .cornerRadius(6)
-    }
-}
 
 struct AdminPostsView_Previews: PreviewProvider {
     static var previews: some View {

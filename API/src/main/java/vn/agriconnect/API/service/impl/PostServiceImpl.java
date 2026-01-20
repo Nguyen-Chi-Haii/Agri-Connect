@@ -173,9 +173,14 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public List<PostDetailResponse> getBySeller(String sellerId) {
-        return postRepository.findBySellerId(sellerId)
-                .stream()
+    public List<PostDetailResponse> getBySeller(String sellerId, PostStatus status) {
+        List<Post> posts;
+        if (status != null) {
+            posts = postRepository.findBySellerIdAndStatus(sellerId, status);
+        } else {
+            posts = postRepository.findBySellerId(sellerId);
+        }
+        return posts.stream()
                 .map(this::toDetailResponse)
                 .collect(Collectors.toList());
     }
