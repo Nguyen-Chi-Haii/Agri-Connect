@@ -7,6 +7,7 @@ struct ValidatedFormField: View {
     @Binding var error: String?
     var keyboardType: UIKeyboardType = .default
     var isSecure: Bool = false
+    var textContentType: UITextContentType? = nil
     
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -17,9 +18,13 @@ struct ValidatedFormField: View {
             Group {
                 if isSecure {
                     SecureField(placeholder, text: $text)
+                        .textContentType(textContentType)
+                        .autocorrectionDisabled()
+                        .autocapitalization(.none)
                 } else {
                     TextField(placeholder, text: $text)
                         .keyboardType(keyboardType)
+                        .textContentType(textContentType)
                         .autocapitalization(.none)
                 }
             }
@@ -44,6 +49,6 @@ struct ValidatedFormField: View {
                     .transition(.opacity)
             }
         }
-        .animation(.easeInOut, value: error)
+        .animation(.easeInOut, value: error != nil)
     }
 }

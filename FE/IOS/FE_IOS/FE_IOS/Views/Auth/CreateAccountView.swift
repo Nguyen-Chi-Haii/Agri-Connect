@@ -72,38 +72,31 @@ struct CreateAccountView: View {
                             error: $fullNameError
                         )
                         
-                        VStack(alignment: .leading, spacing: 4) {
+                        ValidatedFormField(
+                            title: "Địa chỉ",
+                            placeholder: "Xã, Huyện, Tỉnh",
+                            text: $address,
+                            error: $addressError
+                        )
+                        .overlay(
                             HStack {
-                                Text("Địa chỉ")
-                                    .font(.caption)
-                                    .foregroundColor(.gray)
                                 Spacer()
                                 LocationFillButton { province, district in
                                     self.address = "\(district), \(province)"
-                                    self.addressError = nil // Clear error on fill
+                                    self.addressError = nil
                                 }
+                                .padding(.trailing, 12)
                             }
-                            TextField("Xã, Huyện, Tỉnh", text: $address)
-                                .textFieldStyle(RoundedTextFieldStyle())
-                                .autocapitalization(.words)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .stroke(addressError != nil ? Color.red : Color.clear, lineWidth: 1)
-                                )
-                            
-                            if let error = addressError {
-                                Text(error)
-                                    .font(.caption)
-                                    .foregroundColor(.red)
-                            }
-                        }
+                            .padding(.top, 24)
+                        )
                         
                         ValidatedFormField(
                             title: "Mật khẩu",
                             placeholder: "Tối thiểu 6 ký tự",
                             text: $password,
                             error: $passwordError,
-                            isSecure: true
+                            isSecure: true,
+                            textContentType: .newPassword
                         )
                         
                         ValidatedFormField(
@@ -111,7 +104,8 @@ struct CreateAccountView: View {
                             placeholder: "Nhập lại mật khẩu",
                             text: $confirmPassword,
                             error: $confirmPasswordError,
-                            isSecure: true
+                            isSecure: true,
+                            textContentType: .newPassword
                         )
                     }
                     .padding(.horizontal, 24)
