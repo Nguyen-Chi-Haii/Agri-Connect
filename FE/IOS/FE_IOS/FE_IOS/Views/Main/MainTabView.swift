@@ -4,20 +4,7 @@ struct MainTabView: View {
     @State private var selectedTab = 0
     
     var body: some View {
-        let binding = Binding<Int>(
-            get: { self.selectedTab },
-            set: { newValue in
-                if newValue == 2 {
-                    if let user = TokenManager.shared.userProfile, !user.isVerified {
-                        self.selectedTab = 4
-                        return
-                    }
-                }
-                self.selectedTab = newValue
-            }
-        )
-        
-        TabView(selection: binding) {
+        TabView(selection: $selectedTab) {
             // Home Tab
             NavigationView {
                 HomeView()
@@ -74,16 +61,20 @@ struct MainTabView: View {
             .tag(4)
         }
         .accentColor(Color(hex: "#2E7D32"))
-        .onChange(of: selectedTab) { tag in
-            if tag == 2 {
-                // Check Verification
-                if let user = TokenManager.shared.userProfile {
-                    if !user.isVerified {
-                        selectedTab = 4
-                    }
+        .onChange(of: selectedTab) { (tag: Int) in
+            checkRedirect(tag)
+        }
+    }
+    
+    private func checkRedirect(_ tag: Int) {
+        if tag == 2 {
+            if let user = TokenManager.shared.userProfile {
+                if !user.isVerified {
+                    self.selectedTab = 4
                 }
             }
         }
+    }
     }
 }
 
