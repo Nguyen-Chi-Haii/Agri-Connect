@@ -29,7 +29,7 @@ struct MainTabView: View {
             
             // Create Post Tab
             NavigationView {
-                CreatePostView()
+                CreatePostView(tabSelection: $selectedTab)
             }
             .navigationViewStyle(StackNavigationViewStyle())
             .tabItem {
@@ -51,7 +51,7 @@ struct MainTabView: View {
             
             // Profile Tab
             NavigationView {
-                ProfileView()
+                ProfileView(tabSelection: $selectedTab)
             }
             .navigationViewStyle(StackNavigationViewStyle())
             .tabItem {
@@ -61,6 +61,20 @@ struct MainTabView: View {
             .tag(4)
         }
         .accentColor(Color(hex: "#2E7D32"))
+        .onChange(of: selectedTab) { (tag: Int) in
+            checkRedirect(tag)
+        }
+    }
+    
+    private func checkRedirect(_ tag: Int) {
+        guard tag == 2 else { return }
+        guard let user = TokenManager.shared.userProfile else { return }
+        
+        if !user.isVerified {
+            DispatchQueue.main.async {
+                self.selectedTab = 4
+            }
+        }
     }
 }
 

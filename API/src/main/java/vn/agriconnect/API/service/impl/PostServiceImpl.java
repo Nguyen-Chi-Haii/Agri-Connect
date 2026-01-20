@@ -173,9 +173,14 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public List<PostDetailResponse> getBySeller(String sellerId) {
-        return postRepository.findBySellerId(sellerId)
-                .stream()
+    public List<PostDetailResponse> getBySeller(String sellerId, PostStatus status) {
+        List<Post> posts;
+        if (status != null) {
+            posts = postRepository.findBySellerIdAndStatus(sellerId, status);
+        } else {
+            posts = postRepository.findBySellerId(sellerId);
+        }
+        return posts.stream()
                 .map(this::toDetailResponse)
                 .collect(Collectors.toList());
     }
@@ -215,22 +220,34 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public void toggleLike(String postId) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new ResourceNotFoundException("Post", "id", postId));
-        
+    public vn.agriconnect.API.dto.response.PostInteractionResponse toggleLike(String postId) {
         String currentUserId = authService.getCurrentUserId();
         if (currentUserId == null) {
             throw new vn.agriconnect.API.exception.BadRequestException("Authentication required to like post");
         }
 
-        if (post.getLikedUserIds().contains(currentUserId)) {
-            post.getLikedUserIds().remove(currentUserId);
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new ResourceNotFoundException("Post", "id", postId));
+
+        Query query = new Query(Criteria.where("id").is(postId));
+        boolean alreadyLiked = post.getLikedUserIds().contains(currentUserId);
+        
+        org.springframework.data.mongodb.core.query.Update update = new org.springframework.data.mongodb.core.query.Update();
+        if (alreadyLiked) {
+            update.pull("likedUserIds", currentUserId);
         } else {
-            post.getLikedUserIds().add(currentUserId);
+            update.addToSet("likedUserIds", currentUserId);
         }
         
-        postRepository.save(post);
+        mongoTemplate.updateFirst(query, update, Post.class);
+        
+        // Fetch updated state for response
+        Post updatedPost = postRepository.findById(postId).get();
+        return vn.agriconnect.API.dto.response.PostInteractionResponse.builder()
+                .likeCount(updatedPost.getLikedUserIds().size())
+                .commentCount(updatedPost.getCommentCount())
+                .isLiked(updatedPost.getLikedUserIds().contains(currentUserId))
+                .build();
     }
 
     @Override

@@ -1,0 +1,382 @@
+import SwiftUI
+import Combine
+
+struct UpdateKycView: View {
+    @Environment(\.presentationMode) var presentationMode
+    @State private var idNumber = ""
+    @State private var frontImage: UIImage?
+    @State private var backImage: UIImage?
+    @State private var showFrontImagePicker = false
+    @State private var showBackImagePicker = false
+    @State private var isLoading = false
+    @State private var errorMessage = ""
+    @State private var showError = false
+    @State private var showSuccess = false
+    
+    // User profile to pre-fill/display current status
+    let userProfile: UserProfile?
+    
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 24) {
+                // Info Card
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Thông tin định danh")
+                        .font(.headline)
+                    
+                    Text("Vui lòng cung cấp CCCD/CMND để xác thực tài khoản. Thông tin của bạn sẽ được bảo mật.")
+                        .font(.caption)
+                        .foregroundColor(.gray)
+                    
+                    if let status = userProfile?.kycStatus {
+                         HStack {
+                             Text("Trạng thái hiện tại:")
+                                 .font(.subheadline)
+                                 .foregroundColor(.gray)
+                             Spacer()
+                             KycStatusBadge(status: status)
+                         }
+                         .padding(.top, 8)
+                    }
+                }
+                .padding()
+                .background(Color.white)
+                .cornerRadius(12)
+                .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
+                
+                // Form
+                VStack(spacing: 20) {
+                    if userProfile?.role == "TRADER" {
+                        // TRADER Form: Tax Code Only
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Mã số thuế")
+                                .font(.subheadline)
+                                .foregroundColor(.gray)
+                            
+                            TextField("Nhập mã số thuế doanh nghiệp", text: $idNumber) // Reuse idNumber state for taxCode
+                                .padding()
+                                .background(Color(.systemGray6))
+                                .cornerRadius(12)
+                                .keyboardType(.numberPad)
+                        }
+                    } else {
+                        // FARMER Form: CCCD + Images
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Số CCCD/CMND")
+                                .font(.subheadline)
+                                .foregroundColor(.gray)
+                            
+                            TextField("Nhập số giấy tờ tùy thân", text: $idNumber)
+                                .padding()
+                                .background(Color(.systemGray6))
+                                .cornerRadius(12)
+                                .keyboardType(.numberPad)
+                        }
+                        
+                        // Front Image
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Mặt trước CCCD")
+                                .font(.subheadline)
+                                .foregroundColor(.gray)
+                            
+                            Button {
+                                showFrontImagePicker = true
+                            } label: {
+                                if let image = frontImage {
+                                    Image(uiImage: image)
+                                        .resizable()
+                                        .scaledToFill()
+                                        .frame(height: 200)
+                                        .frame(maxWidth: .infinity)
+                                        .cornerRadius(12)
+                                        .clipped()
+                                } else {
+                                    ZStack {
+                                        RoundedRectangle(cornerRadius: 12)
+                                            .stroke(style: StrokeStyle(lineWidth: 1, dash: [5]))
+                                            .foregroundColor(.gray)
+                                            .frame(height: 150)
+                                        
+                                        VStack(spacing: 8) {
+                                            Image(systemName: "camera.fill")
+                                                .font(.system(size: 30))
+                                                .foregroundColor(.gray)
+                                            Text("Chụp ảnh mặt trước")
+                                                .font(.caption)
+                                                .foregroundColor(.gray)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        
+                        // Back Image
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Mặt sau CCCD")
+                                .font(.subheadline)
+                                .foregroundColor(.gray)
+                            
+                            Button {
+                                showBackImagePicker = true
+                            } label: {
+                                if let image = backImage {
+                                    Image(uiImage: image)
+                                        .resizable()
+                                        .scaledToFill()
+                                        .frame(height: 200)
+                                        .frame(maxWidth: .infinity)
+                                        .cornerRadius(12)
+                                        .clipped()
+                                } else {
+                                    ZStack {
+                                        RoundedRectangle(cornerRadius: 12)
+                                            .stroke(style: StrokeStyle(lineWidth: 1, dash: [5]))
+                                            .foregroundColor(.gray)
+                                            .frame(height: 150)
+                                        
+                                        VStack(spacing: 8) {
+                                            Image(systemName: "camera.fill")
+                                                .font(.system(size: 30))
+                                                .foregroundColor(.gray)
+                                            Text("Chụp ảnh mặt sau")
+                                                .font(.caption)
+                                                .foregroundColor(.gray)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                .padding()
+                .background(Color.white)
+                .cornerRadius(12)
+                .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
+                
+                // Submit Button
+                Button(action: submitKyc) {
+                    if isLoading {
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                    } else {
+                        Text("Gửi yêu cầu xác thực")
+                            .fontWeight(.semibold)
+                    }
+                }
+                .frame(maxWidth: .infinity)
+                .frame(height: 50)
+                .background(isValid ? Color(hex: "#2E7D32") : Color.gray)
+                .foregroundColor(.white)
+                .cornerRadius(12)
+                .disabled(!isValid || isLoading)
+            }
+            .padding()
+        }
+        .background(Color(.systemGray6).ignoresSafeArea())
+        .navigationTitle("Cập nhật định danh")
+        .sheet(isPresented: $showFrontImagePicker) {
+            ImagePicker(image: $frontImage)
+        }
+        .sheet(isPresented: $showBackImagePicker) {
+            ImagePicker(image: $backImage)
+        }
+        .alert(isPresented: $showError) {
+            Alert(title: Text("Lỗi"), message: Text(errorMessage), dismissButton: .default(Text("OK")))
+        }
+        .overlay(
+            ZStack {
+                if showSuccess {
+                    Color.black.opacity(0.4).ignoresSafeArea()
+                    VStack(spacing: 20) {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 60))
+                            .foregroundColor(.white)
+                        Text("Đã gửi yêu cầu thành công!")
+                            .font(.headline)
+                            .foregroundColor(.white)
+                        Text("Chúng tôi sẽ xem xét thông tin của bạn sớm nhất có thể.")
+                            .font(.caption)
+                            .foregroundColor(.white.opacity(0.9))
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
+                        
+                        Button("Đóng") {
+                           presentationMode.wrappedValue.dismiss()
+                        }
+                        .padding(.horizontal, 30)
+                        .padding(.vertical, 12)
+                        .background(Color.white)
+                        .foregroundColor(Color(hex: "#2E7D32"))
+                        .cornerRadius(20)
+                    }
+                    .padding(40)
+                    .background(Color(hex: "#2E7D32"))
+                    .cornerRadius(20)
+                    .padding(40)
+                    .shadow(radius: 10)
+                }
+            }
+        )
+    }
+    
+    var isValid: Bool {
+        if userProfile?.role == "TRADER" {
+            // Trader: Only Tax Code required
+            return !idNumber.isEmpty
+        } else {
+            // Farmer: ID + Images required
+            return !idNumber.isEmpty && frontImage != nil && backImage != nil
+        }
+    }
+    
+    func submitKyc() {
+        if userProfile?.role == "TRADER" {
+            submitTraderKyc()
+        } else {
+            submitFarmerKyc()
+        }
+    }
+    
+    // Separate submission functions for clarity
+    func submitTraderKyc() {
+        isLoading = true
+        
+        let kycData = KycSubmissionRequest(
+            kycType: "TAX_CODE",
+            idNumber: nil,
+            idFrontImage: nil,
+            idBackImage: nil,
+            taxCode: idNumber, // Using idNumber field for Tax Code input
+            companyName: nil,
+            businessLicense: nil
+        )
+        
+        APIClient.shared.request(
+            endpoint: "/users/kyc-info",
+            method: .post,
+            body: kycData
+        ) { (result: Result<ApiResponse<UserProfile>, Error>) in
+            isLoading = false
+            handleSubmissionResult(result)
+        }
+    }
+
+    func submitFarmerKyc() {
+        guard let front = frontImage, let back = backImage else { return }
+        
+        isLoading = true
+        
+        // 1. Upload Images
+        let dispatchGroup = DispatchGroup()
+        var frontUrl: String?
+        var backUrl: String?
+        var uploadError: Error?
+        
+        dispatchGroup.enter()
+        APIClient.shared.uploadImage(front) { result in
+            switch result {
+            case .success(let url):
+                frontUrl = url
+            case .failure(let error):
+                uploadError = error
+            }
+            dispatchGroup.leave()
+        }
+        
+        dispatchGroup.enter()
+        APIClient.shared.uploadImage(back) { result in
+            switch result {
+            case .success(let url):
+                backUrl = url
+            case .failure(let error):
+                uploadError = error
+            }
+            dispatchGroup.leave()
+        }
+        
+        dispatchGroup.notify(queue: .main) {
+            if let error = uploadError {
+                isLoading = false
+                errorMessage = "Lỗi upload ảnh: \(error.localizedDescription)"
+                showError = true
+                return
+            }
+            
+            guard let fUrl = frontUrl, let bUrl = backUrl else {
+                isLoading = false
+                errorMessage = "Không thể lấy link ảnh"
+                showError = true
+                return
+            }
+            
+            // 2. Submit KYC Data
+            let kycData = KycSubmissionRequest(
+                kycType: "CCCD",
+                idNumber: idNumber,
+                idFrontImage: fUrl,
+                idBackImage: bUrl,
+                taxCode: nil,
+                companyName: nil,
+                businessLicense: nil
+            )
+            
+            APIClient.shared.request(
+                endpoint: "/users/kyc-info", 
+                method: .post,
+                body: kycData
+            ) { (result: Result<ApiResponse<UserProfile>, Error>) in
+                isLoading = false
+                handleSubmissionResult(result)
+            }
+        }
+    }
+    
+    private func handleSubmissionResult(_ result: Result<ApiResponse<UserProfile>, Error>) {
+        switch result {
+        case .success(let response):
+            if response.success {
+                showSuccess = true
+            } else {
+                errorMessage = response.message ?? "Gửi yêu cầu thất bại"
+                showError = true
+            }
+        case .failure(let error):
+            errorMessage = "Lỗi kết nối: \(error.localizedDescription)"
+            showError = true
+        }
+    }
+}
+
+
+struct KycStatusBadge: View {
+    let status: String
+    
+    var body: some View {
+        Text(statusText)
+            .font(.caption)
+            .fontWeight(.bold)
+            .foregroundColor(.white)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(statusColor)
+            .cornerRadius(8)
+    }
+    
+    var statusText: String {
+        switch status {
+        case "APPROVED", "VERIFIED": return "Đã xác minh"
+        case "PENDING": return "Chờ duyệt"
+        case "REJECTED": return "Bị từ chối"
+        default: return "Chưa xác minh"
+        }
+    }
+    
+    var statusColor: Color {
+        switch status {
+        case "APPROVED", "VERIFIED": return .green
+        case "PENDING": return .orange
+        case "REJECTED": return .red
+        default: return .gray
+        }
+    }
+}

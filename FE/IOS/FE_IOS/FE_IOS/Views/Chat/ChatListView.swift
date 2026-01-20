@@ -1,7 +1,8 @@
 import SwiftUI
 
 struct ChatListView: View {
-    @State private var conversations: [ChatConversation] = []
+    @State private var conversations: [Conversation] = []
+    @State private var participantNames: [String: String] = [:]
     @State private var isLoading = false
     
     var body: some View {
@@ -25,8 +26,15 @@ struct ChatListView: View {
                 Spacer()
             } else {
                 List(conversations) { conversation in
-                    NavigationLink(destination: ChatRoomView(conversation: conversation)) {
-                        ConversationRow(conversation: conversation)
+                    NavigationLink(destination: ChatDetailView(
+                        conversationId: conversation.id,
+                        otherUserName: participantNames[getRecipientId(from: conversation)] ?? conversation.participantName ?? "Người dùng",
+                        recipientId: getRecipientId(from: conversation)
+                    )) {
+                        ConversationRow(
+                            conversation: conversation,
+                            customName: participantNames[getRecipientId(from: conversation)]
+                        )
                     }
                 }
                 .listStyle(PlainListStyle())
@@ -42,184 +50,136 @@ struct ChatListView: View {
     private func loadConversations() {
         isLoading = true
         
-        // Mock data with renamed struct to avoid conflict
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+        APIClient.shared.request(
+            endpoint: APIConfig.Chat.conversations,
+            method: .get
+        ) { (result: Result<ApiResponse<[Conversation]>, Error>) in
             isLoading = false
-            conversations = [
-                ChatConversation(id: "1", participantName: "Nguyễn Văn A", participantAvatar: nil, lastMessage: "Còn hàng không bạn?", lastMessageTime: "10:30", unreadCount: 2),
-                ChatConversation(id: "2", participantName: "Trần Thị B", participantAvatar: nil, lastMessage: "OK, mai tôi qua lấy", lastMessageTime: "Hôm qua", unreadCount: 0),
-                ChatConversation(id: "3", participantName: "Lê Văn C", participantAvatar: nil, lastMessage: "Giá nông sản đợt này thế nào?", lastMessageTime: "2 ngày", unreadCount: 0),
-            ]
+            if case .success(let response) = result, let data = response.data {
+                conversations = data
+                fetchParticipantNames(for: data)
+            }
         }
     }
-}
-
-// MARK: - Chat Conversation Model (renamed to avoid conflict with Models.swift)
-struct ChatConversation: Identifiable {
-    let id: String
-    let participantName: String
-    let participantAvatar: String?
-    let lastMessage: String
-    let lastMessageTime: String
-    let unreadCount: Int
+    
+    private func fetchParticipantNames(for conversations: [Conversation]) {
+        for conversation in conversations {
+            let recipientId = getRecipientId(from: conversation)
+            guard !recipientId.isEmpty && participantNames[recipientId] == nil else { continue }
+            
+            // If the conversation already has a name, use it, otherwise fetch
+            if let name = conversation.participantName {
+                participantNames[recipientId] = name
+                continue
+            }
+            
+            APIClient.shared.request(
+                endpoint: "/users/\(recipientId)",
+                method: .get
+            ) { (result: Result<ApiResponse<UserProfile>, Error>) in
+                if case .success(let response) = result, let profile = response.data {
+                    participantNames[recipientId] = profile.fullName
+                }
+            }
+        }
+    }
+    
+    private func getRecipientId(from conversation: Conversation) -> String {
+        guard let currentUserId = TokenManager.shared.userId,
+              let participants = conversation.participants else {
+            return ""
+        }
+        return participants.first { $0 != currentUserId } ?? ""
+    }
 }
 
 // MARK: - Conversation Row
 struct ConversationRow: View {
-    let conversation: ChatConversation
+    let conversation: Conversation
+    var customName: String?
     
     var body: some View {
         HStack(spacing: 12) {
-            // Avatar
-            ZStack {
-                Circle()
-                    .fill(Color(hex: "#E8F5E9"))
-                    .frame(width: 50, height: 50)
-                
-                Text(String(conversation.participantName.prefix(1)))
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .foregroundColor(Color(hex: "#2E7D32"))
-            }
-            
-            // Content
-            VStack(alignment: .leading, spacing: 4) {
-                HStack {
-                    Text(conversation.participantName)
-                        .font(.headline)
-                    
-                    Spacer()
-                    
-                    Text(conversation.lastMessageTime)
-                        .font(.caption)
-                        .foregroundColor(.gray)
-                }
-                
-                HStack {
-                    Text(conversation.lastMessage)
-                        .font(.subheadline)
-                        .foregroundColor(.gray)
-                        .lineLimit(1)
-                    
-                    Spacer()
-                    
-                    if conversation.unreadCount > 0 {
-                        Text("\(conversation.unreadCount)")
-                            .font(.caption2)
-                            .fontWeight(.bold)
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(Color(hex: "#2E7D32"))
-                            .clipShape(Capsule())
-                    }
-                }
-            }
+            avatarView
+            contentView
         }
         .padding(.vertical, 4)
     }
-}
-
-// MARK: - Chat Room View
-struct ChatRoomView: View {
-    let conversation: ChatConversation
     
-    @State private var messages: [ChatMessage] = []
-    @State private var newMessage = ""
-    
-    var body: some View {
-        VStack(spacing: 0) {
-            // Messages
-            ScrollView {
-                LazyVStack(spacing: 8) {
-                    ForEach(messages) { message in
-                        MessageBubble(message: message)
-                    }
-                }
-                .padding()
-            }
+    private var avatarView: some View {
+        ZStack {
+            Circle()
+                .fill(Color(hex: "#E8F5E9"))
+                .frame(width: 50, height: 50)
             
-            Divider()
-            
-            // Input
-            HStack(spacing: 12) {
-                TextField("Nhập tin nhắn...", text: $newMessage)
-                    .padding(12)
-                    .background(Color(.systemGray6))
-                    .cornerRadius(20)
-                
-                Button {
-                    sendMessage()
-                } label: {
-                    Image(systemName: "arrow.up.circle.fill")
-                        .font(.system(size: 35))
-                        .foregroundColor(Color(hex: "#2E7D32"))
-                }
-                .disabled(newMessage.isEmpty)
-            }
-            .padding()
-        }
-        .navigationTitle(conversation.participantName)
-        .navigationBarTitleDisplayMode(.inline)
-        .onAppear {
-            loadMessages()
+            Text(avatarLetter)
+                .font(.title2)
+                .fontWeight(.bold)
+                .foregroundColor(Color(hex: "#2E7D32"))
         }
     }
     
-    private func loadMessages() {
-        messages = [
-            ChatMessage(id: "1", content: "Xin chào, tôi muốn hỏi về sản phẩm", isMine: false, time: "10:00"),
-            ChatMessage(id: "2", content: "Vâng, bạn cần hỏi gì ạ?", isMine: true, time: "10:05"),
-            ChatMessage(id: "3", content: "Còn hàng không bạn?", isMine: false, time: "10:30"),
-        ]
-    }
-    
-    private func sendMessage() {
-        let message = ChatMessage(
-            id: UUID().uuidString,
-            content: newMessage,
-            isMine: true,
-            time: "Now"
-        )
-        messages.append(message)
-        newMessage = ""
-    }
-}
-
-// MARK: - Chat Message Model
-struct ChatMessage: Identifiable {
-    let id: String
-    let content: String
-    let isMine: Bool
-    let time: String
-}
-
-// MARK: - Message Bubble
-struct MessageBubble: View {
-    let message: ChatMessage
-    
-    var body: some View {
-        HStack {
-            if message.isMine { Spacer() }
-            
-            VStack(alignment: message.isMine ? .trailing : .leading, spacing: 4) {
-                Text(message.content)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 10)
-                    .background(
-                        message.isMine
-                        ? Color(hex: "#2E7D32")
-                        : Color(.systemGray5)
-                    )
-                    .foregroundColor(message.isMine ? .white : .primary)
-                    .cornerRadius(16)
+    private var contentView: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack {
+                Text(customName ?? conversation.participantName ?? "Unknown")
+                    .font(.headline)
                 
-                Text(message.time)
-                    .font(.caption2)
+                Spacer()
+                
+                Text(formatTime(conversation.updatedAt))
+                    .font(.caption)
                     .foregroundColor(.gray)
             }
             
-            if !message.isMine { Spacer() }
+            HStack {
+                Text(conversation.lastMessageContent ?? "")
+                    .font(.subheadline)
+                    .foregroundColor(.gray)
+                    .lineLimit(1)
+                
+                Spacer()
+                
+                if let unread = conversation.unreadCount, unread > 0 {
+                    unreadBadge(count: unread)
+                }
+            }
+        }
+    }
+    
+    private func unreadBadge(count: Int) -> some View {
+        Text("\(count)")
+            .font(.caption2)
+            .fontWeight(.bold)
+            .foregroundColor(.white)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(Color(hex: "#2E7D32"))
+            .clipShape(Capsule())
+    }
+    
+    private var avatarLetter: String {
+        String((customName ?? conversation.participantName ?? "?").prefix(1))
+    }
+    
+    private func formatTime(_ isoDate: String?) -> String {
+        guard let dateString = isoDate else { return "" }
+        
+        let formatter = ISO8601DateFormatter()
+        guard let date = formatter.date(from: dateString) else { return "" }
+        
+        let now = Date()
+        let calendar = Calendar.current
+        let components = calendar.dateComponents([.day, .hour, .minute], from: date, to: now)
+        
+        if let days = components.day, days > 0 {
+            return "\(days) ngày"
+        } else if let hours = components.hour, hours > 0 {
+            return "\(hours)h"
+        } else if let minutes = components.minute, minutes > 0 {
+            return "\(minutes)m"
+        } else {
+            return "Vừa xong"
         }
     }
 }

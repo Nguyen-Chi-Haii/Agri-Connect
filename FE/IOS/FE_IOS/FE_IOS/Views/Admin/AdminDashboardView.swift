@@ -7,129 +7,104 @@ struct AdminDashboardView: View {
     
     var body: some View {
         NavigationView {
-            ScrollView {
-                VStack(spacing: 20) {
-                    // Welcome Header
-                    HStack {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("Xin chào, Admin")
-                                .font(.title2)
-                                .fontWeight(.bold)
-                            Text("Bảng điều khiển quản trị")
-                                .foregroundColor(.gray)
+            ZStack {
+                Color(.systemGray6)
+                    .ignoresSafeArea()
+                
+                if isLoading {
+                    ProgressView("Đang tải...")
+                } else {
+                    ScrollView {
+                        VStack(spacing: 20) {
+                            // Welcome Header
+                            HStack {
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(greetingMessage)
+                                        .font(.title2)
+                                        .fontWeight(.bold)
+                                    Text(formattedDate)
+                                        .font(.subheadline)
+                                        .foregroundColor(.gray)
+                                }
+                                Spacer()
+                                
+                                Image(systemName: "shield.fill")
+                                    .font(.title)
+                                    .foregroundColor(Color(hex: "#2E7D32"))
+                            }
+                            .padding()
+                            .background(Color.white)
+                            .cornerRadius(16)
+                            
+                            // Quick Actions
+                            if let stats = stats {
+                                VStack(spacing: 12) {
+                                    if (stats.pendingPosts ?? 0) > 0 {
+                                        NavigationLink(destination: AdminPostsView()) { // Navigation to pending filter handled in view? Or pass init param
+                                           QuickActionRow(
+                                                icon: "doc.text.badge.plus",
+                                                text: "Có \(stats.pendingPosts ?? 0) bài đăng cần duyệt",
+                                                color: .orange
+                                           )
+                                        }
+                                    }
+                                    
+                                    if (stats.pendingKyc ?? 0) > 0 {
+                                        NavigationLink(destination: AdminUsersView()) {
+                                            QuickActionRow(
+                                                icon: "person.crop.circle.badge.exclamationmark",
+                                                text: "Có \(stats.pendingKyc ?? 0) yêu cầu KYC",
+                                                color: .purple
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                            
+                            // Stats Cards
+                            LazyVGrid(columns: [
+                                GridItem(.flexible()),
+                                GridItem(.flexible())
+                            ], spacing: 16) {
+                                StatCard(
+                                    icon: "person.3.fill",
+                                    title: "Người dùng",
+                                    value: "\(stats?.totalUsers ?? 0)",
+                                    color: .blue
+                                )
+                                
+                                StatCard(
+                                    icon: "doc.text.fill",
+                                    title: "Bài đăng",
+                                    value: "\(stats?.totalPosts ?? 0)",
+                                    color: .green
+                                )
+                                
+                                StatCard(
+                                    icon: "clock.fill",
+                                    title: "Chờ duyệt",
+                                    value: "\(stats?.pendingPosts ?? 0)",
+                                    color: .orange
+                                )
+                                
+                                StatCard(
+                                    icon: "checkmark.seal.fill",
+                                    title: "Chờ KYC",
+                                    value: "\(stats?.pendingKyc ?? 0)",
+                                    color: .purple
+                                )
+                            }
+                            .padding(.horizontal)
+                            
+                            // Hidden navigation
+                            NavigationLink(destination: LoginView().navigationBarHidden(true), isActive: $navigateToLogin) {
+                                EmptyView()
+                            }
                         }
-                        Spacer()
-                        
-                        Image(systemName: "shield.fill")
-                            .font(.title)
-                            .foregroundColor(Color(hex: "#2E7D32"))
-                    }
-                    .padding()
-                    .background(Color.white)
-                    .cornerRadius(16)
-                    
-                    // Stats Cards
-                    LazyVGrid(columns: [
-                        GridItem(.flexible()),
-                        GridItem(.flexible())
-                    ], spacing: 16) {
-                        StatCard(
-                            icon: "person.3.fill",
-                            title: "Người dùng",
-                            value: "\(stats?.totalUsers ?? 0)",
-                            color: .blue
-                        )
-                        
-                        StatCard(
-                            icon: "doc.text.fill",
-                            title: "Bài đăng",
-                            value: "\(stats?.totalPosts ?? 0)",
-                            color: .green
-                        )
-                        
-                        StatCard(
-                            icon: "clock.fill",
-                            title: "Chờ duyệt",
-                            value: "\(stats?.pendingPosts ?? 0)",
-                            color: .orange
-                        )
-                        
-                        StatCard(
-                            icon: "checkmark.seal.fill",
-                            title: "Chờ KYC",
-                            value: "\(stats?.pendingKyc ?? 0)",
-                            color: .purple
-                        )
-                    }
-                    
-                    // Menu Items
-                    VStack(spacing: 0) {
-                        NavigationLink(destination: AdminUsersView()) {
-                            AdminMenuRow(
-                                icon: "person.2.fill",
-                                title: "Quản lý người dùng",
-                                subtitle: "Xem, khóa, xác minh KYC",
-                                color: .blue
-                            )
-                        }
-                        
-                        Divider().padding(.horizontal)
-                        
-                        NavigationLink(destination: AdminPostsView()) {
-                            AdminMenuRow(
-                                icon: "doc.richtext.fill",
-                                title: "Quản lý bài đăng",
-                                subtitle: "Duyệt, từ chối, xóa bài",
-                                color: .green
-                            )
-                        }
-                        
-                        Divider().padding(.horizontal)
-                        
-                        NavigationLink(destination: AdminCategoriesView()) {
-                            AdminMenuRow(
-                                icon: "folder.fill",
-                                title: "Quản lý danh mục",
-                                subtitle: "Thêm, sửa, xóa danh mục",
-                                color: .orange
-                            )
-                        }
-                        
-                        Divider().padding(.horizontal)
-                        
-                        NavigationLink(destination: AdminStatsView()) {
-                            AdminMenuRow(
-                                icon: "chart.bar.fill",
-                                title: "Thống kê hệ thống",
-                                subtitle: "Xem báo cáo, biểu đồ",
-                                color: .purple
-                            )
-                        }
-                    }
-                    .background(Color.white)
-                    .cornerRadius(16)
-                    
-                    // Logout
-                    Button(action: logout) {
-                        HStack {
-                            Image(systemName: "rectangle.portrait.and.arrow.right")
-                            Text("Đăng xuất")
-                        }
-                        .foregroundColor(.red)
-                        .frame(maxWidth: .infinity)
                         .padding()
-                        .background(Color.white)
-                        .cornerRadius(12)
-                    }
-                    
-                    // Hidden navigation
-                    NavigationLink(destination: LoginView().navigationBarHidden(true), isActive: $navigateToLogin) {
-                        EmptyView()
                     }
                 }
-                .padding()
             }
-            .background(Color(.systemGray6))
             .navigationTitle("Quản trị")
             .navigationBarTitleDisplayMode(.inline)
             .onAppear {
@@ -141,31 +116,32 @@ struct AdminDashboardView: View {
     
     private func loadStats() {
         isLoading = true
+        print("📡 [AdminDashboard] Loading stats from: \(APIConfig.Admin.dashboardStats)")
         
         APIClient.shared.request(
-            endpoint: "/admin/dashboard",
+            endpoint: APIConfig.Admin.dashboardStats,
             method: .get
         ) { (result: Result<ApiResponse<DashboardStats>, Error>) in
             isLoading = false
-            if case .success(let response) = result, let data = response.data {
-                stats = data
+            switch result {
+            case .success(let response):
+                print("✅ [AdminDashboard] Success: \(response.success)")
+                if let data = response.data {
+                    print("✅ [AdminDashboard] Data: Users=\(data.totalUsers ?? -1), Posts=\(data.totalPosts ?? -1)")
+                    stats = data
+                } else {
+                    print("⚠️ [AdminDashboard] Response data is nil")
+                }
+            case .failure(let error):
+                print("❌ [AdminDashboard] Error: \(error)")
             }
         }
     }
     
-    private func logout() {
-        TokenManager.shared.clearAll()
-        navigateToLogin = true
-    }
+
 }
 
-// MARK: - Dashboard Stats Model
-struct DashboardStats: Decodable {
-    let totalUsers: Int?
-    let totalPosts: Int?
-    let pendingPosts: Int?
-    let pendingKyc: Int?
-}
+
 
 // MARK: - Stat Card
 struct StatCard: View {
@@ -192,6 +168,44 @@ struct StatCard: View {
         .padding()
         .background(Color.white)
         .cornerRadius(16)
+    }
+}
+
+struct QuickActionRow: View {
+    let icon: String
+    let text: String
+    let color: Color
+    
+    var body: some View {
+        HStack {
+            Image(systemName: icon)
+                .foregroundColor(color)
+            Text(text)
+                .foregroundColor(.black) // or primary
+            Spacer()
+            Image(systemName: "chevron.right")
+                .foregroundColor(.gray)
+                .font(.caption)
+        }
+        .padding()
+        .background(color.opacity(0.1))
+        .cornerRadius(12)
+    }
+}
+
+extension AdminDashboardView {
+    var greetingMessage: String {
+        let hour = Calendar.current.component(.hour, from: Date())
+        if hour < 12 { return "Chào buổi sáng" }
+        else if hour < 18 { return "Chào buổi chiều" }
+        else { return "Chào buổi tối" }
+    }
+    
+    var formattedDate: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "EEEE, dd/MM/yyyy"
+        formatter.locale = Locale(identifier: "vi_VN")
+        return formatter.string(from: Date()).capitalized
     }
 }
 

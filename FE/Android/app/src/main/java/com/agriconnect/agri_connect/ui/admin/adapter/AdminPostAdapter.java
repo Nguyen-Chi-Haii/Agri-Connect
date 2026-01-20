@@ -1,5 +1,4 @@
 package com.agriconnect.agri_connect.ui.admin.adapter;
-
 import android.graphics.drawable.GradientDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -31,6 +30,8 @@ public class AdminPostAdapter extends RecyclerView.Adapter<AdminPostAdapter.View
         void onApprove(Post post);
 
         void onReject(Post post);
+
+        void onDelete(Post post);
 
         void onClose(Post post);
     }
@@ -67,7 +68,7 @@ public class AdminPostAdapter extends RecyclerView.Adapter<AdminPostAdapter.View
         TextView tvTitle, tvDescription, tvSeller, tvPrice, tvStatus;
         TextView tvLikeCount, tvCommentCount;
         LinearLayout layoutActions;
-        MaterialButton btnApprove, btnReject, btnClose;
+        MaterialButton btnApprove, btnReject, btnDelete, btnClose;
 
         ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -81,6 +82,7 @@ public class AdminPostAdapter extends RecyclerView.Adapter<AdminPostAdapter.View
             layoutActions = itemView.findViewById(R.id.layoutActions);
             btnApprove = itemView.findViewById(R.id.btnApprove);
             btnReject = itemView.findViewById(R.id.btnReject);
+            btnDelete = itemView.findViewById(R.id.btnDelete);
             btnClose = itemView.findViewById(R.id.btnClose);
 
             // Click whole item to view details
@@ -116,10 +118,11 @@ public class AdminPostAdapter extends RecyclerView.Adapter<AdminPostAdapter.View
             String statusText;
 
             // Default visibility
-            layoutActions.setVisibility(View.GONE);
+            layoutActions.setVisibility(View.VISIBLE); // Always show actions row for Delete button
             btnApprove.setVisibility(View.GONE);
             btnReject.setVisibility(View.GONE);
             btnClose.setVisibility(View.GONE);
+            btnDelete.setVisibility(View.VISIBLE); // Always allow delete
 
             if ("PENDING".equals(status)) {
                 bgColor = R.color.warning;

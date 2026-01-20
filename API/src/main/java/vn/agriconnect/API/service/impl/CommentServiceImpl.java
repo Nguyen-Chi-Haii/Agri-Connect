@@ -12,6 +12,7 @@ import vn.agriconnect.API.model.Comment;
 import vn.agriconnect.API.model.Post;
 import vn.agriconnect.API.repository.CommentRepository;
 import vn.agriconnect.API.repository.PostRepository;
+import vn.agriconnect.API.repository.UserRepository;
 import vn.agriconnect.API.service.AuthService;
 import vn.agriconnect.API.service.CommentService;
 
@@ -24,6 +25,7 @@ public class CommentServiceImpl implements CommentService {
 
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
+    private final UserRepository userRepository;
     private final AuthService authService;
 
     @Override
@@ -35,6 +37,11 @@ public class CommentServiceImpl implements CommentService {
         Comment comment = new Comment();
         comment.setPostId(postId);
         comment.setUserId(userId);
+        
+        userRepository.findById(userId).ifPresent(user -> {
+            comment.setUserName(user.getFullName());
+        });
+        
         comment.setContent(content);
         comment.setCreatedAt(Instant.now());
         
@@ -51,6 +58,14 @@ public class CommentServiceImpl implements CommentService {
     public PagedResponse<Comment> getCommentsByPost(String postId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         Page<Comment> comments = commentRepository.findByPostId(postId, pageable);
+        
+        comments.getContent().forEach(c -> {
+            if (c.getUserName() == null) {
+                userRepository.findById(c.getUserId()).ifPresent(user -> {
+                    c.setUserName(user.getFullName());
+                });
+            }
+        });
         
         return PagedResponse.<Comment>builder()
                 .content(comments.getContent())

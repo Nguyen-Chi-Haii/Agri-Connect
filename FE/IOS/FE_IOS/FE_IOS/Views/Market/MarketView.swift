@@ -2,27 +2,56 @@ import SwiftUI
 
 struct MarketView: View {
     @State private var prices: [MarketPrice] = []
+    @State private var categories: [Category] = []
+    @State private var selectedCategory: String? = nil
     @State private var isLoading = false
     @State private var searchText = ""
     
     var filteredPrices: [MarketPrice] {
-        if searchText.isEmpty {
-            return prices
-        }
-        return prices.filter { $0.productName.localizedCaseInsensitiveContains(searchText) }
+        return prices
     }
     
     var body: some View {
         VStack(spacing: 0) {
-            // Search
-            HStack {
-                Image(systemName: "magnifyingglass")
-                    .foregroundColor(.gray)
-                TextField("Tìm kiếm giá...", text: $searchText)
+            // Search & Filter Bar
+            VStack(spacing: 12) {
+                // Search
+                HStack {
+                    Image(systemName: "magnifyingglass")
+                        .foregroundColor(.gray)
+                    TextField("Tìm kiếm giá...", text: $searchText)
+                        .onSubmit {
+                            loadPrices()
+                        }
+                }
+                .padding()
+                .background(Color(.systemGray6))
+                .cornerRadius(12)
+                
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        CategoryFilterChip(
+                            title: "Tất cả",
+                            isSelected: selectedCategory == nil,
+                            action: {
+                                selectedCategory = nil
+                                loadPrices()
+                            }
+                        )
+                        
+                        ForEach(categories) { category in
+                            CategoryFilterChip(
+                                title: category.name,
+                                isSelected: selectedCategory == category.id,
+                                action: {
+                                    selectedCategory = category.id
+                                    loadPrices()
+                                }
+                            )
+                        }
+                    }
+                }
             }
-            .padding()
-            .background(Color(.systemGray6))
-            .cornerRadius(12)
             .padding()
             
             // List
@@ -50,29 +79,40 @@ struct MarketView: View {
         .navigationTitle("Giá thị trường")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
+            loadCategories()
             loadPrices()
+        }
+    }
+    
+    private func loadCategories() {
+        APIClient.shared.request(
+            endpoint: APIConfig.Categories.list,
+            method: .get
+        ) { (result: Result<ApiResponse<[Category]>, Error>) in
+            if case .success(let response) = result, let data = response.data {
+                categories = data
+            }
         }
     }
     
     private func loadPrices() {
         isLoading = true
         
+        var endpoint = selectedCategory == nil
+            ? APIConfig.MarketPrices.list
+            : APIConfig.MarketPrices.byCategory(selectedCategory!)
+        
+        if !searchText.isEmpty {
+            endpoint = "/market-prices?search=\(searchText.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "")"
+        }
+        
         APIClient.shared.request(
-            endpoint: "/market-prices",
+            endpoint: endpoint,
             method: .get
         ) { (result: Result<ApiResponse<[MarketPrice]>, Error>) in
             isLoading = false
             if case .success(let response) = result, let data = response.data {
                 prices = data
-            } else {
-                // Mock data if API fails
-                prices = [
-                    MarketPrice(id: "1", productName: "Gạo ST25", price: 25000, unit: "kg", province: "An Giang", updatedAt: nil),
-                    MarketPrice(id: "2", productName: "Cà phê robusta", price: 65000, unit: "kg", province: "Đắk Lắk", updatedAt: nil),
-                    MarketPrice(id: "3", productName: "Hồ tiêu", price: 85000, unit: "kg", province: "Bình Phước", updatedAt: nil),
-                    MarketPrice(id: "4", productName: "Điều thô", price: 45000, unit: "kg", province: "Bình Phước", updatedAt: nil),
-                    MarketPrice(id: "5", productName: "Thanh long", price: 15000, unit: "kg", province: "Bình Thuận", updatedAt: nil),
-                ]
             }
         }
     }
@@ -127,6 +167,26 @@ struct MarketPriceRow: View {
         formatter.numberStyle = .decimal
         formatter.groupingSeparator = "."
         return (formatter.string(from: NSNumber(value: price)) ?? "\(price)") + "đ"
+    }
+}
+
+// MARK: - Category Filter Chip
+struct CategoryFilterChip: View {
+    let title: String
+    let isSelected: Bool
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            Text(title)
+                .font(.subheadline)
+                .fontWeight(isSelected ? .semibold : .regular)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .background(isSelected ? Color(hex: "#2E7D32") : Color(.systemGray6))
+                .foregroundColor(isSelected ? .white : .primary)
+                .cornerRadius(20)
+        }
     }
 }
 

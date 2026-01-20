@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct CreatePostView: View {
-    @Environment(\.presentationMode) var presentationMode
+    @Binding var tabSelection: Int
     @State private var title = ""
     @State private var description = ""
     @State private var price = ""
@@ -16,6 +16,18 @@ struct CreatePostView: View {
     @State private var showError = false
     @State private var errorMessage = ""
     @State private var showSuccess = false
+    @State private var showImagePicker = false
+    
+    @State private var titleError: String?
+    @State private var descriptionError: String?
+    @State private var priceError: String?
+    @State private var quantityError: String?
+    @State private var provinceError: String?
+    @State private var districtError: String?
+    @State private var categoryError: String?
+    @State private var showKYCAlert = false
+    @State private var kycAlertTitle = ""
+    @State private var kycAlertMessage = ""
     
     let units = ["kg", "tấn", "bao", "con", "cây", "trái", "chục"]
     
@@ -30,7 +42,9 @@ struct CreatePostView: View {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 12) {
                             // Add button
-                            Button(action: {}) {
+                            Button(action: {
+                                showImagePicker = true
+                            }) {
                                 VStack {
                                     Image(systemName: "plus.circle.fill")
                                         .font(.system(size: 30))
@@ -75,6 +89,7 @@ struct CreatePostView: View {
                             ForEach(categories) { category in
                                 Button {
                                     selectedCategory = category
+                                    categoryError = nil
                                 } label: {
                                     Text(category.name)
                                         .padding(.horizontal, 16)
@@ -94,13 +109,19 @@ struct CreatePostView: View {
                             }
                         }
                     }
+                    if let error = categoryError {
+                        Text(error)
+                            .font(.caption)
+                            .foregroundColor(.red)
+                    }
                 }
                 
                 // Title
-                FormField(
+                ValidatedFormField(
                     title: "Tiêu đề",
                     placeholder: "VD: Gạo ST25 hữu cơ",
-                    text: $title
+                    text: $title,
+                    error: $titleError
                 )
                 
                 // Description
@@ -124,6 +145,15 @@ struct CreatePostView: View {
                         TextField("0", text: $price)
                             .keyboardType(.numberPad)
                             .textFieldStyle(RoundedTextFieldStyle())
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(priceError != nil ? Color.red : Color.clear, lineWidth: 1)
+                            )
+                        if let error = priceError {
+                            Text(error)
+                                .font(.caption)
+                                .foregroundColor(.red)
+                        }
                     }
                     
                     VStack(alignment: .leading, spacing: 4) {
@@ -143,26 +173,45 @@ struct CreatePostView: View {
                 }
                 
                 // Quantity
-                FormField(
+                ValidatedFormField(
                     title: "Số lượng",
                     placeholder: "VD: 100",
                     text: $quantity,
+                    error: $quantityError,
                     keyboardType: .numberPad
                 )
                 
                 // Location
-                HStack(spacing: 12) {
-                    FormField(
-                        title: "Tỉnh/Thành",
-                        placeholder: "VD: An Giang",
-                        text: $province
-                    )
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack {
+                        Text("Vị trí")
+                            .font(.headline)
+                        Spacer()
+                        LocationFillButton { province, district in
+                            self.province = province
+                            self.district = district
+                            self.provinceError = nil
+                            self.districtError = nil
+                        }
+                    }
                     
-                    FormField(
-                        title: "Quận/Huyện",
-                        placeholder: "VD: Châu Đốc",
-                        text: $district
-                    )
+                    HStack(spacing: 12) {
+                        ValidatedFormField(
+                            title: "Tỉnh/Thành",
+                            placeholder: "VD: An Giang",
+                            text: $province,
+                            error: $provinceError
+                        )
+                        .disabled(LocationManager.shared.isLoading)
+                        
+                        ValidatedFormField(
+                            title: "Quận/Huyện",
+                            placeholder: "VD: Châu Đốc",
+                            text: $district,
+                            error: $districtError
+                        )
+                        .disabled(LocationManager.shared.isLoading)
+                    }
                 }
                 
                 // Submit Button
@@ -187,10 +236,46 @@ struct CreatePostView: View {
         .navigationTitle("Tạo bài đăng")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
+            // Clear location fields to prevent cached values
+            province = ""
+            district = ""
             loadCategories()
+            checkKYCStatus()
         }
         .alert(isPresented: $showError) {
             Alert(title: Text("Lỗi"), message: Text(errorMessage), dismissButton: .default(Text("OK")))
+        }
+        .alert(isPresented: $showKYCAlert) {
+            KYCHelper.showKYCAlert(
+                title: kycAlertTitle,
+                message: kycAlertMessage,
+                navigateToProfile: Binding(
+                    get: { false },
+                    set: { shouldNavigate in
+                        if shouldNavigate {
+                            // User clicked "Verify Now" -> Go to Profile (4)
+                            self.tabSelection = 4
+                        } else {
+                            // User clicked "Later" -> Go to Home (0) to block access
+                            self.tabSelection = 0
+                        }
+                    }
+                )
+            )
+        }
+        .alert("Thành công", isPresented: $showSuccess) {
+            Button("Xem bài đăng") {
+                clearForm()
+                tabSelection = 4 // Go to Profile
+            }
+            Button("Tiếp tục đăng") {
+                clearForm()
+            }
+        } message: {
+            Text("Bài đăng của bạn đã được khởi tạo và đang chờ duyệt.")
+        }
+        .sheet(isPresented: $showImagePicker) {
+            UnifiedMultiImagePicker(images: $selectedImages, selectionLimit: 5)
         }
     }
     
@@ -206,30 +291,95 @@ struct CreatePostView: View {
     }
     
     private func submitPost() {
-        guard let category = selectedCategory else {
-            errorMessage = "Vui lòng chọn danh mục"
-            showError = true
-            return
+        // Double check KYC before submitting
+        KYCHelper.shared.requireVerified(
+            onSuccess: {
+                proceedSubmission()
+            },
+            onFailure: { title, message in
+                kycAlertTitle = title
+                kycAlertMessage = message ?? "Cần xác thực"
+                showKYCAlert = true
+            }
+        )
+    }
+    
+    private func proceedSubmission() {
+        var isValid = true
+        
+        // Reset errors
+        categoryError = nil
+        titleError = nil
+        priceError = nil
+        quantityError = nil
+        provinceError = nil
+        districtError = nil
+        
+        if selectedCategory == nil {
+            categoryError = "Vui lòng chọn danh mục"
+            isValid = false
         }
         
-        guard !title.isEmpty else {
-            errorMessage = "Vui lòng nhập tiêu đề"
-            showError = true
-            return
+        if title.isEmpty {
+            titleError = "Vui lòng nhập tiêu đề"
+            isValid = false
         }
+        
+        if price.isEmpty {
+            priceError = "Vui lòng nhập giá"
+            isValid = false
+        }
+        
+        if quantity.isEmpty {
+            quantityError = "Vui lòng nhập số lượng"
+            isValid = false
+        }
+        
+        if province.isEmpty {
+            provinceError = "Bắt buộc"
+            isValid = false
+        }
+        
+        if district.isEmpty {
+            districtError = "Bắt buộc"
+            isValid = false
+        }
+        
+        guard isValid else { return }
         
         isLoading = true
         
+        // 1. Upload images first if any
+        if !selectedImages.isEmpty {
+            APIClient.shared.uploadImages(selectedImages, folder: "posts") { result in
+                DispatchQueue.main.async {
+                    switch result {
+                    case .success(let urls):
+                        // 2. Proceed to create post with URLs
+                        self.createPost(imageUrls: urls)
+                    case .failure(let error):
+                        self.isLoading = false
+                        self.errorMessage = "Lỗi upload ảnh: \(error.localizedDescription)"
+                        self.showError = true
+                    }
+                }
+            }
+        } else {
+            // No images, just create post
+            createPost(imageUrls: nil)
+        }
+    }
+    
+    private func createPost(imageUrls: [String]?) {
         let request = CreatePostRequest(
-            categoryId: category.id,
+            categoryId: selectedCategory!.id,
             title: title,
             description: description,
             price: Double(price) ?? 0,
             unit: unit,
             quantity: Double(quantity) ?? 0,
-            province: province.isEmpty ? nil : province,
-            district: district.isEmpty ? nil : district,
-            images: nil
+            images: imageUrls,
+            location: CreateLocationRequest(province: province, district: district)
         )
         
         APIClient.shared.request(
@@ -237,29 +387,66 @@ struct CreatePostView: View {
             method: .post,
             body: request
         ) { (result: Result<ApiResponse<Post>, Error>) in
-            isLoading = false
-            
-            switch result {
-            case .success(let response):
-                if response.success {
-                    showSuccess = true
-                    presentationMode.wrappedValue.dismiss()
-                } else {
-                    errorMessage = response.message ?? "Đăng bài thất bại"
-                    showError = true
+            DispatchQueue.main.async {
+                self.isLoading = false
+                
+                switch result {
+                case .success(let response):
+                    if response.success {
+                        self.showSuccess = true
+                    } else {
+                        self.errorMessage = response.message ?? "Đăng bài thất bại"
+                        self.showError = true
+                    }
+                case .failure(let error):
+                    self.errorMessage = "Lỗi: \(error.localizedDescription)"
+                    self.showError = true
                 }
-            case .failure(let error):
-                errorMessage = "Lỗi: \(error.localizedDescription)"
-                showError = true
             }
         }
     }
+    
+    private func clearForm() {
+        title = ""
+        description = ""
+        price = ""
+        quantity = ""
+        province = ""
+        district = ""
+        selectedCategory = nil
+        selectedImages = []
+        
+        // Reset validation errors
+        categoryError = nil
+        titleError = nil
+        priceError = nil
+        quantityError = nil
+        provinceError = nil
+        districtError = nil
+    }
+    
+    private func checkKYCStatus() {
+        KYCHelper.shared.requireVerified(
+            onSuccess: {
+                // User is verified, can proceed
+            },
+            onFailure: { title, message in
+                kycAlertTitle = title
+                kycAlertMessage = message ?? "Cần xác thực"
+                showKYCAlert = true
+            }
+        )
+    }
 }
+
 
 struct CreatePostView_Previews: PreviewProvider {
     static var previews: some View {
         NavigationView {
-            CreatePostView()
+            CreatePostView(tabSelection: .constant(2))
         }
     }
 }
+
+// MARK: - Multi Image Picker Helper
+

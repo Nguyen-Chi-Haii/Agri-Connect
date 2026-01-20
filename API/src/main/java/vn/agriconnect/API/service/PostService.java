@@ -13,11 +13,11 @@ public interface PostService {
     PostDetailResponse update(String postId, PostCreateRequest request);
     void delete(String postId);
     PagedResponse<PostDetailResponse> search(PostFilterRequest filter);
-    List<PostDetailResponse> getBySeller(String sellerId);
+    List<PostDetailResponse> getBySeller(String sellerId, vn.agriconnect.API.model.enums.PostStatus status);
     List<PostDetailResponse> getApproved();
     void approve(String postId);
     void reject(String postId, String reason);
     void incrementViewCount(String postId);
-    void toggleLike(String postId);
+    vn.agriconnect.API.dto.response.PostInteractionResponse toggleLike(String postId);
     void close(String postId);
 }

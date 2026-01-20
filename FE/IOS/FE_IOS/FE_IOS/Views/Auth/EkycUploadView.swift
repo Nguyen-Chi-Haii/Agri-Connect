@@ -105,15 +105,30 @@ struct EkycUploadView: View {
         .alert(isPresented: $showError) {
             Alert(title: Text("Lỗi"), message: Text(errorMessage), dismissButton: .default(Text("OK")))
         }
+        .sheet(isPresented: $showImagePicker) {
+            ImagePicker(image: bindingForCurrentSelection())
+        }
+    }
+    
+    private func bindingForCurrentSelection() -> Binding<UIImage?> {
+        switch currentImageSelection {
+        case .front:
+            return $idFrontImage
+        case .back:
+            return $idBackImage
+        case .license:
+            return $businessLicenseImage
+        }
     }
     
     // MARK: - Farmer Form
     private var farmerForm: some View {
         VStack(spacing: 16) {
-            FormField(
+            ValidatedFormField(
                 title: "Số CCCD",
                 placeholder: "Nhập 12 số CCCD",
                 text: $idNumber,
+                error: $errorMessage.toOptional(), // Simple binding workaround or better to add dedicated error state
                 keyboardType: .numberPad
             )
             
@@ -140,16 +155,18 @@ struct EkycUploadView: View {
     // MARK: - Trader Form
     private var traderForm: some View {
         VStack(spacing: 16) {
-            FormField(
+            ValidatedFormField(
                 title: "Mã số thuế",
                 placeholder: "Nhập mã số thuế",
-                text: $taxCode
+                text: $taxCode,
+                error: .constant(nil) // No inline validation yet for simplicity or add binding
             )
             
-            FormField(
+            ValidatedFormField(
                 title: "Tên công ty / Hộ kinh doanh",
                 placeholder: "Nhập tên doanh nghiệp",
-                text: $companyName
+                text: $companyName,
+                error: .constant(nil)
             )
             
             ImageUploadCard(
@@ -180,7 +197,9 @@ struct EkycUploadView: View {
         
         isLoading = true
         
-        let request = KycSubmissionRequest(
+        // ... rest of submit
+        
+       let request = KycSubmissionRequest(
             kycType: isFarmer ? "CCCD" : "TAX_CODE",
             idNumber: isFarmer ? idNumber : nil,
             idFrontImage: nil,
@@ -228,17 +247,17 @@ struct ImageUploadCard: View {
             Button(action: onTap) {
                 if let image = image {
                     Image(uiImage: image)
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                        .frame(height: 150)
-                        .clipped()
-                        .cornerRadius(12)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(height: 150)
+                    .clipped()
+                    .cornerRadius(12)
                 } else {
                     VStack(spacing: 12) {
                         Image(systemName: "camera.fill")
-                            .font(.system(size: 30))
+                        .font(.system(size: 30))
                         Text("Chạm để tải ảnh lên")
-                            .font(.subheadline)
+                        .font(.subheadline)
                     }
                     .foregroundColor(.gray)
                     .frame(maxWidth: .infinity)
@@ -247,12 +266,22 @@ struct ImageUploadCard: View {
                     .cornerRadius(12)
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
-                            .stroke(style: StrokeStyle(lineWidth: 2, dash: [5]))
-                            .foregroundColor(.gray.opacity(0.5))
+                        .stroke(style: StrokeStyle(lineWidth: 2, dash: [5]))
+                        .foregroundColor(.gray.opacity(0.5))
                     )
                 }
             }
         }
+    }
+}
+
+// Extension to help with optional binding if needed, or just use .constant(nil)
+extension Binding where Value == String {
+    func toOptional() -> Binding<String?> {
+        return Binding<String?>(
+            get: { self.wrappedValue },
+            set: { self.wrappedValue = $0 ?? "" }
+        )
     }
 }
 
@@ -263,3 +292,6 @@ struct EkycUploadView_Previews: PreviewProvider {
         }
     }
 }
+
+// Duplicate ImagePicker removed
+

@@ -1,8 +1,10 @@
 import Foundation
 import Security
 
+import Combine
+
 // MARK: - Token Manager
-class TokenManager {
+class TokenManager: ObservableObject {
     static let shared = TokenManager()
     
     private let accessTokenKey = "agriconnect_access_token"
@@ -11,19 +13,23 @@ class TokenManager {
     private let userNameKey = "agriconnect_user_name"
     private let userRoleKey = "agriconnect_user_role"
     
-    private init() {}
+    private init() {
+        self.accessToken = KeychainHelper.get(key: accessTokenKey)
+    }
     
     // MARK: - Token Properties
-    var accessToken: String? {
-        get { KeychainHelper.get(key: accessTokenKey) }
-        set {
-            if let value = newValue {
+    @Published var accessToken: String? {
+        didSet {
+            print("🔐 [TokenManager] accessToken changed. New value: \(accessToken != nil ? "EXISTS" : "NIL")")
+            if let value = accessToken {
                 KeychainHelper.save(key: accessTokenKey, value: value)
             } else {
                 KeychainHelper.delete(key: accessTokenKey)
             }
         }
     }
+    
+    @Published var userProfile: UserProfile?
     
     var refreshToken: String? {
         get { KeychainHelper.get(key: refreshTokenKey) }
@@ -53,11 +59,14 @@ class TokenManager {
     }
     
     var isLoggedIn: Bool {
-        return accessToken != nil
+        let loggedIn = accessToken != nil
+        print("🔐 [TokenManager] isLoggedIn check: \(loggedIn)")
+        return loggedIn
     }
     
     // MARK: - Methods
     func saveTokens(access: String, refresh: String) {
+        print("🔐 [TokenManager] saveTokens called")
         accessToken = access
         refreshToken = refresh
     }
@@ -69,6 +78,8 @@ class TokenManager {
     }
     
     func clearAll() {
+        print("🔐 [TokenManager] clearAll called. Clearing tokens and user info.")
+        // objectWillChange.send() // Not needed with @Published
         accessToken = nil
         refreshToken = nil
         userId = nil

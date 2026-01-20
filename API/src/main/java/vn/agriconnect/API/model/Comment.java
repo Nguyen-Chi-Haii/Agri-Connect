@@ -15,6 +15,7 @@ public class Comment {
     
     private String postId;
     private String userId; // User who commented
+    private String userName; // Added for UI display
     private String content;
     
     @CreatedDate
