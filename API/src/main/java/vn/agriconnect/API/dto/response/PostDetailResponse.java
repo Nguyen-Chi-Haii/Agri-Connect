@@ -40,5 +40,6 @@ public class PostDetailResponse {
     // Interaction stats
     private int likeCount;
     private int commentCount;
+    @com.fasterxml.jackson.annotation.JsonProperty("isLiked")
     private boolean isLiked;
 }

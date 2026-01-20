@@ -299,8 +299,17 @@ struct PostCard: View {
             method: .post
         ) { (result: Result<ApiResponse<PostInteractionResponse>, Error>) in
             if case .success(let response) = result, let data = response.data {
-                post.isLiked = data.isLiked ?? post.isLiked
                 post.likeCount = data.likeCount ?? post.likeCount
+                
+                if let status = data.isLiked {
+                    post.isLiked = status
+                } else {
+                    // Fallback: If backend missing isLiked, prevents Red Heart + 0 Count
+                    if (post.likeCount ?? 0) <= 0 {
+                        post.isLiked = false
+                    }
+                    // If count > 0, we keep optimistic state or previous state
+                }
             } else if case .failure = result {
                 // Revert
                 post.isLiked = wasLiked

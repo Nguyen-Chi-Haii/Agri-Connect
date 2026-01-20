@@ -12,5 +12,6 @@ import lombok.NoArgsConstructor;
 public class PostInteractionResponse {
     private int likeCount;
     private int commentCount;
+    @com.fasterxml.jackson.annotation.JsonProperty("isLiked")
     private boolean isLiked;
 }
