@@ -165,10 +165,10 @@ struct Post: Decodable, Identifiable {
     let location: Location?
     let status: String?
     let createdAt: String?
-    let likeCount: Int?
-    let commentCount: Int?
+    var likeCount: Int?
+    var commentCount: Int?
     let viewCount: Int?
-    let isLiked: Bool?
+    var isLiked: Bool?
     
     // Convenience Accessors
     var province: String? { location?.province }
@@ -177,9 +177,9 @@ struct Post: Decodable, Identifiable {
 }
 
 struct PostInteractionResponse: Decodable {
-    let likeCount: Int?
-    let commentCount: Int?
-    let isLiked: Bool?
+    var likeCount: Int?
+    var commentCount: Int?
+    var isLiked: Bool?
 }
 
 struct CreateLocationRequest: Encodable {

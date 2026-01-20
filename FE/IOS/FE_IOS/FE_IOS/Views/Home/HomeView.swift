@@ -81,9 +81,9 @@ struct HomeView: View {
                             .padding()
                     } else {
                         LazyVStack(spacing: 12) {
-                            ForEach(filteredPosts) { post in
-                                NavigationLink(destination: PostDetailView(postId: post.id)) {
-                                    PostCard(post: post)
+                            ForEach($posts) { $post in
+                                NavigationLink(destination: PostDetailView(postId: post.id, initialPost: post)) {
+                                    PostCard(post: $post)
                                 }
                                 .buttonStyle(PlainButtonStyle())
                             }
@@ -172,15 +172,9 @@ struct CategoryCard: View {
 
 // MARK: - Post Card
 struct PostCard: View {
-    let post: Post
-    @State private var isLiked: Bool
-    @State private var likeCount: Int
+    @Binding var post: Post
     
-    init(post: Post) {
-        self.post = post
-        _isLiked = State(initialValue: post.isLiked ?? false)
-        _likeCount = State(initialValue: post.likeCount ?? 0)
-    }
+    // Remote Image Handling
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -245,16 +239,16 @@ struct PostCard: View {
                 // Like
                 Button(action: toggleLike) {
                     HStack(spacing: 4) {
-                        Image(systemName: isLiked ? "heart.fill" : "heart")
-                            .foregroundColor(isLiked ? .red : .gray)
-                        Text("\(likeCount)")
+                        Image(systemName: (post.isLiked ?? false) ? "heart.fill" : "heart")
+                            .foregroundColor((post.isLiked ?? false) ? .red : .gray)
+                        Text("\(post.likeCount ?? 0)")
                             .font(.caption)
                             .foregroundColor(.gray)
                     }
                 }
                 
                 // Comment
-                NavigationLink(destination: PostDetailView(postId: post.id)) {
+                NavigationLink(destination: PostDetailView(postId: post.id, initialPost: post)) {
                     HStack(spacing: 4) {
                         Image(systemName: "bubble.left")
                             .foregroundColor(.gray)
@@ -283,12 +277,6 @@ struct PostCard: View {
         .background(Color.white)
         .cornerRadius(16)
         .shadow(color: .gray.opacity(0.15), radius: 6, x: 0, y: 2)
-        .onChange(of: post.isLiked) { newValue in
-            isLiked = newValue ?? false
-        }
-        .onChange(of: post.likeCount) { newValue in
-            likeCount = newValue ?? 0
-        }
     }
     
     private func formatPrice(_ price: Double) -> String {
@@ -299,19 +287,24 @@ struct PostCard: View {
     }
     
     private func toggleLike() {
-        isLiked.toggle()
-        likeCount += isLiked ? 1 : -1
+        // Optimistic update
+        let wasLiked = post.isLiked ?? false
+        let currentCount = post.likeCount ?? 0
+        
+        post.isLiked = !wasLiked
+        post.likeCount = currentCount + (post.isLiked! ? 1 : -1)
         
         APIClient.shared.request(
             endpoint: "/posts/\(post.id)/like",
             method: .post
         ) { (result: Result<ApiResponse<PostInteractionResponse>, Error>) in
             if case .success(let response) = result, let data = response.data {
-                isLiked = data.isLiked ?? isLiked
-                likeCount = data.likeCount ?? likeCount
+                post.isLiked = data.isLiked ?? post.isLiked
+                post.likeCount = data.likeCount ?? post.likeCount
             } else if case .failure = result {
-                isLiked.toggle()
-                likeCount += isLiked ? 1 : -1
+                // Revert
+                post.isLiked = wasLiked
+                post.likeCount = currentCount
             }
         }
     }

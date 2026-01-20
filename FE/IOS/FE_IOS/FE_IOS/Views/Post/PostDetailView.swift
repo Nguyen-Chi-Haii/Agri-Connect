@@ -2,12 +2,13 @@ import SwiftUI
 
 struct PostDetailView: View {
     let postId: String
+    let initialPost: Post?
     
     @State private var post: Post?
-    @State private var isLoading = true
-    @State private var isLiked = false
-    @State private var likeCount = 0
-    @State private var commentCount = 0
+    @State private var isLoading: Bool
+    @State private var isLiked: Bool
+    @State private var likeCount: Int
+    @State private var commentCount: Int
     @State private var comments: [Comment] = []
     @State private var commentText = ""
     @State private var isLoadingComments = false
@@ -16,6 +17,25 @@ struct PostDetailView: View {
     @State private var kycAlertTitle = ""
     @State private var kycAlertMessage = ""
     @State private var navigateToVerification = false
+    
+    init(postId: String, initialPost: Post? = nil) {
+        self.postId = postId
+        self.initialPost = initialPost
+        
+        if let p = initialPost {
+            _post = State(initialValue: p)
+            _isLoading = State(initialValue: false)
+            _isLiked = State(initialValue: p.isLiked ?? false)
+            _likeCount = State(initialValue: p.likeCount ?? 0)
+            _commentCount = State(initialValue: p.commentCount ?? 0)
+        } else {
+            _post = State(initialValue: nil)
+            _isLoading = State(initialValue: true)
+            _isLiked = State(initialValue: false)
+            _likeCount = State(initialValue: 0)
+            _commentCount = State(initialValue: 0)
+        }
+    }
     
     var body: some View {
         ZStack {
