@@ -246,7 +246,17 @@ struct CreatePostView: View {
             Alert(title: Text("Lỗi"), message: Text(errorMessage), dismissButton: .default(Text("OK")))
         }
         .alert(isPresented: $showKYCAlert) {
-            KYCHelper.showKYCAlert(title: kycAlertTitle, message: kycAlertMessage, navigateToProfile: nil)
+            KYCHelper.showKYCAlert(
+                title: kycAlertTitle,
+                message: kycAlertMessage,
+                navigateToProfile: Binding(
+                    get: { false },
+                    set: { _ in
+                        // Force redirect to Profile Tab
+                        self.tabSelection = 4
+                    }
+                )
+            )
         }
         .alert("Thành công", isPresented: $showSuccess) {
             Button("Xem bài đăng") {

@@ -51,7 +51,7 @@ struct MainTabView: View {
             
             // Profile Tab
             NavigationView {
-                ProfileView()
+                ProfileView(tabSelection: $selectedTab)
             }
             .navigationViewStyle(StackNavigationViewStyle())
             .tabItem {

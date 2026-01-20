@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct ProfileView: View {
+    @Binding var tabSelection: Int
     @State private var userProfile: UserProfile?
     @State private var isLoading = false
     @State private var showLogoutAlert = false
@@ -86,7 +87,7 @@ struct ProfileView: View {
                     
                     // Menu Items
                     VStack(spacing: 0) {
-                        NavigationLink(destination: MyPostsListView()) {
+                        NavigationLink(destination: MyPostsListView(tabSelection: $tabSelection)) {
                             ProfileMenuRow(icon: "doc.text.fill", title: "Bài đăng của tôi", color: .blue)
                         }
                         
@@ -216,6 +217,7 @@ struct ProfileMenuRow: View {
 
 // Placeholder views
 struct MyPostsListView: View {
+    @Binding var tabSelection: Int
     @State private var posts: [Post] = []
     @State private var isLoading = false
     @State private var showDeleteAlert = false
@@ -277,7 +279,12 @@ struct MyPostsListView: View {
                             Text("Chưa có bài đăng nào")
                                 .font(.headline)
                                 .foregroundColor(.gray)
-                            NavigationLink(destination: CreatePostView(tabSelection: .constant(4))) {
+                            Text("Chưa có bài đăng nào")
+                                .font(.headline)
+                                .foregroundColor(.gray)
+                            Button(action: {
+                                tabSelection = 2 // Switch to Create Post Tab
+                            }) {
                                 Text("Tạo bài đăng mới")
                                     .foregroundColor(.white)
                                     .padding()
@@ -567,7 +574,7 @@ struct StatisticsData: Codable {
 struct ProfileView_Previews: PreviewProvider {
     static var previews: some View {
         NavigationView {
-            ProfileView()
+            ProfileView(tabSelection: .constant(4))
         }
     }
 }
