@@ -15,6 +15,7 @@ struct PostDetailView: View {
     @State private var showKYCAlert = false
     @State private var kycAlertTitle = ""
     @State private var kycAlertMessage = ""
+    @State private var navigateToVerification = false // New State
     
     var body: some View {
         ScrollView {
@@ -192,6 +193,14 @@ struct PostDetailView: View {
                     }
                     .padding()
                 }
+                
+                // Hidden Navigation Link for KYC Redirect
+                if let profile = TokenManager.shared.userProfile {
+                    NavigationLink(
+                        destination: UpdateKycView(userProfile: profile),
+                        isActive: $navigateToVerification
+                    ) { EmptyView() }
+                }
             }
         }
         .navigationBarTitleDisplayMode(.inline)
@@ -203,7 +212,16 @@ struct PostDetailView: View {
             stopStatsPolling()
         }
         .alert(isPresented: $showKYCAlert) {
-            KYCHelper.showKYCAlert(title: kycAlertTitle, message: kycAlertMessage, navigateToProfile: nil)
+            Alert(
+                title: Text(kycAlertTitle),
+                message: Text(kycAlertMessage),
+                primaryButton: .default(Text("Xác thực ngay")) {
+                    if TokenManager.shared.userProfile != nil {
+                        navigateToVerification = true
+                    }
+                },
+                secondaryButton: .cancel(Text("Để sau"))
+            )
         }
     }
     

@@ -53,10 +53,24 @@ struct ProfileView: View {
                             .font(.title2)
                             .fontWeight(.bold)
                         
-                        // Role
                         Text(roleText)
                             .font(.subheadline)
                             .foregroundColor(.gray)
+                        
+                        // KYC Action
+                        if let user = userProfile, !user.isVerified {
+                          NavigationLink(destination: UpdateKycView(userProfile: user)) {
+                              Text(user.kycStatus == "REJECTED" ? "Xác thực lại" : "Xác thực ngay")
+                                  .font(.caption)
+                                  .fontWeight(.bold)
+                                  .foregroundColor(.white)
+                                  .padding(.horizontal, 12)
+                                  .padding(.vertical, 6)
+                                  .background(Color.orange)
+                                  .cornerRadius(12)
+                          }
+                          .padding(.top, 4)
+                        }
                         
                         // Phone
                         if let phone = userProfile?.phone {

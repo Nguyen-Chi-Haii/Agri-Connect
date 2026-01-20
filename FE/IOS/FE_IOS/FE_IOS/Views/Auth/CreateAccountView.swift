@@ -167,6 +167,9 @@ struct CreateAccountView: View {
         if username.isEmpty {
             usernameError = "Vui lòng nhập tên đăng nhập"
             isValid = false
+        } else if username.count < 3 {
+            usernameError = "Tên đăng nhập phải từ 3 ký tự trở lên"
+            isValid = false
         }
         
         // Phone validation

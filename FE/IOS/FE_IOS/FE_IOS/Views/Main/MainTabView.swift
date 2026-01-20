@@ -61,6 +61,15 @@ struct MainTabView: View {
             .tag(4)
         }
         .accentColor(Color(hex: "#2E7D32"))
+        .onChange(of: selectedTab) { newTab in
+            if newTab == 2 {
+                // Check Verification for Create Post
+                if let profile = TokenManager.shared.userProfile, !profile.isVerified {
+                    // Redirect to Profile for KYC
+                    selectedTab = 4
+                }
+            }
+        }
     }
 }
 
