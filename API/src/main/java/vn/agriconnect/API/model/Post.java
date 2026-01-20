@@ -19,23 +19,23 @@ import java.util.List;
 public class Post {
     @Id
     private String id;
-    
+
     private String sellerId;
     private String categoryId;
-    
+
     private String title;
     private String description;
     private List<String> images;
-    
+
     private Double price;
     private String unit;
-    private Integer quantity;
-    
+    private Double quantity;
+
     private Location location;
-    
+
     private PostStatus status = PostStatus.PENDING;
     private int viewCount = 0;
-    
+
     @CreatedDate
     private Instant createdAt;
 

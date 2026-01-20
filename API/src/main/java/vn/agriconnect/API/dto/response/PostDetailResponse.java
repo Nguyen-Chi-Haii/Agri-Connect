@@ -20,21 +20,21 @@ public class PostDetailResponse {
     private String description;
     private Double price;
     private String unit;
-    private Integer quantity;
+    private Double quantity;
     private List<String> images;
-    
+
     private String categoryId;
     private String categoryName;
-    
+
     private String sellerId;
     private String sellerName;
     private String sellerPhone;
     private String sellerAvatar;
-    
+
     private Location location;
     private PostStatus status;
     private int viewCount;
-    
+
     private Instant createdAt;
 
     // Interaction stats

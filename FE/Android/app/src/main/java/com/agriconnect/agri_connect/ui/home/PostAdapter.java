@@ -126,10 +126,11 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
                         : itemView.getContext().getResources().getColor(R.color.text_secondary));
             }
 
-            // Load post image
+            // Load post image using ImageHelper
             if (post.imageUrl != null && !post.imageUrl.isEmpty()) {
                 ivPostImage.setVisibility(View.VISIBLE);
-                ivPostImage.setImageResource(R.drawable.ic_gallery);
+                com.agriconnect.agri_connect.utils.ImageHelper.loadImage(
+                        itemView.getContext(), post.imageUrl, ivPostImage);
             } else {
                 ivPostImage.setVisibility(View.GONE);
             }

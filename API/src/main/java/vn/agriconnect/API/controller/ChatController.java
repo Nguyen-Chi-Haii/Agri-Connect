@@ -21,9 +21,10 @@ public class ChatController {
     private final ChatService chatService;
 
     @GetMapping("/conversations")
-    public ResponseEntity<ApiResponse<List<Conversation>>> getConversations() {
+    public ResponseEntity<ApiResponse<List<vn.agriconnect.API.dto.response.ConversationResponse>>> getConversations() {
         String userId = SecurityContextHolder.getContext().getAuthentication().getName();
-        List<Conversation> conversations = chatService.getConversations(userId);
+        List<vn.agriconnect.API.dto.response.ConversationResponse> conversations = chatService
+                .getConversationsWithDetails(userId);
         return ResponseEntity.ok(ApiResponse.success(conversations));
     }
 
