@@ -8,9 +8,6 @@ struct HomeView: View {
     @State private var selectedCategoryId: String? = nil
     
     var filteredPosts: [Post] {
-        if let categoryId = selectedCategoryId {
-            return posts.filter { $0.categoryId == categoryId }
-        }
         return posts
     }
     
@@ -22,6 +19,9 @@ struct HomeView: View {
                     Image(systemName: "magnifyingglass")
                         .foregroundColor(.gray)
                     TextField("Tìm kiếm nông sản...", text: $searchText)
+                        .onSubmit {
+                            loadData()
+                        }
                 }
                 .padding()
                 .background(Color(.systemGray6))
@@ -42,6 +42,7 @@ struct HomeView: View {
                                 isSelected: selectedCategoryId == nil,
                                 onTap: {
                                     selectedCategoryId = nil
+                                    loadData()
                                 }
                             )
                             
@@ -51,6 +52,7 @@ struct HomeView: View {
                                     isSelected: selectedCategoryId == category.id,
                                     onTap: {
                                         selectedCategoryId = category.id
+                                        loadData()
                                     }
                                 )
                             }
@@ -65,11 +67,6 @@ struct HomeView: View {
                         Text("Bài đăng mới")
                             .font(.headline)
                         Spacer()
-                        NavigationLink(destination: AllPostsView()) {
-                            Text("Xem tất cả")
-                                .font(.subheadline)
-                                .foregroundColor(Color(hex: "#2E7D32"))
-                        }
                     }
                     .padding(.horizontal)
                     
@@ -100,11 +97,7 @@ struct HomeView: View {
         .navigationTitle("Agri-Connect")
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarItems(
-            leading: Image(systemName: "leaf.fill").foregroundColor(Color(hex: "#2E7D32")),
-            trailing: NavigationLink(destination: SearchView()) {
-                Image(systemName: "line.3.horizontal.decrease.circle")
-                    .foregroundColor(Color(hex: "#2E7D32"))
-            }
+            leading: Image(systemName: "leaf.fill").foregroundColor(Color(hex: "#2E7D32"))
         )
         .onAppear {
             loadData()
@@ -113,18 +106,39 @@ struct HomeView: View {
     
     private func loadData() {
         isLoading = true
-        
-        APIClient.shared.request(
-            endpoint: APIConfig.Categories.list,
-            method: .get
-        ) { (result: Result<ApiResponse<[Category]>, Error>) in
-            if case .success(let response) = result, let data = response.data {
-                categories = data
+        // Load categories once
+        if categories.isEmpty {
+            APIClient.shared.request(
+                endpoint: APIConfig.Categories.list,
+                method: .get
+            ) { (result: Result<ApiResponse<[Category]>, Error>) in
+                if case .success(let response) = result, let data = response.data {
+                    categories = data
+                }
             }
         }
         
+        searchPosts()
+    }
+    
+    private func searchPosts() {
+        isLoading = true
+        var endpoint = APIConfig.Posts.approved
+        
+        // If searching or category selected, use main list with query params
+        if !searchText.isEmpty || selectedCategoryId != nil {
+            var params: [String] = []
+            if !searchText.isEmpty {
+                params.append("search=\(searchText.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "")")
+            }
+            if let catId = selectedCategoryId {
+                params.append("categoryId=\(catId)")
+            }
+            endpoint = "\(APIConfig.Posts.list)?\(params.joined(separator: "&"))"
+        }
+        
         APIClient.shared.request(
-            endpoint: APIConfig.Posts.approved,
+            endpoint: endpoint,
             method: .get
         ) { (result: Result<ApiResponse<[Post]>, Error>) in
             isLoading = false
@@ -159,6 +173,14 @@ struct CategoryCard: View {
 // MARK: - Post Card
 struct PostCard: View {
     let post: Post
+    @State private var isLiked: Bool
+    @State private var likeCount: Int
+    
+    init(post: Post) {
+        self.post = post
+        _isLiked = State(initialValue: post.isLiked ?? false)
+        _likeCount = State(initialValue: post.likeCount ?? 0)
+    }
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -214,8 +236,50 @@ struct PostCard: View {
                 }
             }
             .padding(.horizontal, 4)
+            
+            Divider()
+                .padding(.vertical, 4)
+            
+            // Interaction Buttons
+            HStack(spacing: 20) {
+                // Like
+                Button(action: toggleLike) {
+                    HStack(spacing: 4) {
+                        Image(systemName: isLiked ? "heart.fill" : "heart")
+                            .foregroundColor(isLiked ? .red : .gray)
+                        Text("\(likeCount)")
+                            .font(.caption)
+                            .foregroundColor(.gray)
+                    }
+                }
+                
+                // Comment
+                NavigationLink(destination: PostDetailView(postId: post.id)) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "bubble.left")
+                            .foregroundColor(.gray)
+                        Text("\(post.commentCount ?? 0)")
+                            .font(.caption)
+                            .foregroundColor(.gray)
+                    }
+                }
+                
+                // Chat
+                Button(action: startChat) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "message")
+                            .foregroundColor(Color(hex: "#2E7D32"))
+                        Text("Nhắn tin")
+                            .font(.caption)
+                            .foregroundColor(Color(hex: "#2E7D32"))
+                    }
+                }
+                
+                Spacer()
+            }
+            .padding(.horizontal, 8)
+            .padding(.bottom, 12)
         }
-        .padding()
         .background(Color.white)
         .cornerRadius(16)
         .shadow(color: .gray.opacity(0.15), radius: 6, x: 0, y: 2)
@@ -226,6 +290,33 @@ struct PostCard: View {
         formatter.numberStyle = .decimal
         formatter.groupingSeparator = "."
         return (formatter.string(from: NSNumber(value: price)) ?? "\(price)") + "đ"
+    }
+    
+    private func toggleLike() {
+        isLiked.toggle()
+        likeCount += isLiked ? 1 : -1
+        
+        APIClient.shared.request(
+            endpoint: "/posts/\(post.id)/like",
+            method: .post
+        ) { (result: Result<ApiResponse<EmptyResponse>, Error>) in
+            if case .failure = result {
+                isLiked.toggle()
+                likeCount += isLiked ? 1 : -1
+            }
+        }
+    }
+    
+    private func startChat() {
+        guard let sellerId = post.sellerId else { return }
+        
+        APIClient.shared.request(
+            endpoint: "/chat/conversations/\(sellerId)",
+            method: .post
+        ) { (result: Result<ApiResponse<Conversation>, Error>) in
+            // Navigation handled by parent or deep link
+             print("Chat requested for seller: \(sellerId)")
+        }
     }
 }
 

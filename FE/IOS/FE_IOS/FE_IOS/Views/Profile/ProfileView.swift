@@ -88,6 +88,12 @@ struct ProfileView: View {
                             ProfileMenuRow(icon: "chart.bar.fill", title: "Thống kê", color: .purple)
                         }
                         
+                        Divider().padding(.horizontal)
+                        
+                        NavigationLink(destination: KycStatusView()) {
+                            ProfileMenuRow(icon: "checkmark.shield.fill", title: "Xác minh danh tính", color: .green)
+                        }
+                        
                         if TokenManager.shared.userRole == "ADMIN" {
                             Divider().padding(.horizontal)
                             

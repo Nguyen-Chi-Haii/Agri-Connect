@@ -11,7 +11,6 @@ struct PostDetailView: View {
     @State private var comments: [Comment] = []
     @State private var commentText = ""
     @State private var isLoadingComments = false
-    @State private var showCommentSection = false
     @State private var statsTimer: Timer?
     
     var body: some View {
@@ -92,14 +91,12 @@ struct PostDetailView: View {
                                 }
                             }
                             
-                            // Comment Button
-                            Button(action: { showCommentSection.toggle() }) {
-                                HStack(spacing: 4) {
-                                    Image(systemName: "bubble.left.fill")
-                                        .foregroundColor(.gray)
-                                    Text("\(commentCount)")
-                                        .foregroundColor(.gray)
-                                }
+                            // Comment Symbol (Static)
+                            HStack(spacing: 4) {
+                                Image(systemName: "bubble.left.fill")
+                                    .foregroundColor(.gray)
+                                Text("\(commentCount)")
+                                    .foregroundColor(.gray)
                             }
                             
                             // Chat Button
@@ -151,39 +148,37 @@ struct PostDetailView: View {
                         }
                         
                         // Comment Section
-                        if showCommentSection {
-                            Divider()
-                                .padding(.vertical, 8)
+                        Divider()
+                            .padding(.vertical, 8)
+                        
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("Bình luận (\(commentCount))")
+                                .font(.headline)
                             
-                            VStack(alignment: .leading, spacing: 12) {
-                                Text("Bình luận (\(commentCount))")
-                                    .font(.headline)
+                            // Comment Input
+                            HStack {
+                                TextField("Viết bình luận...", text: $commentText)
+                                    .textFieldStyle(RoundedBorderTextFieldStyle())
                                 
-                                // Comment Input
-                                HStack {
-                                    TextField("Viết bình luận...", text: $commentText)
-                                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                                    
-                                    Button(action: sendComment) {
-                                        Image(systemName: "paperplane.fill")
-                                            .foregroundColor(Color(hex: "#2E7D32"))
-                                    }
-                                    .disabled(commentText.trimmingCharacters(in: .whitespaces).isEmpty)
+                                Button(action: sendComment) {
+                                    Image(systemName: "paperplane.fill")
+                                        .foregroundColor(Color(hex: "#2E7D32"))
                                 }
-                                
-                                // Comment List
-                                if isLoadingComments {
-                                    ProgressView()
-                                        .frame(maxWidth: .infinity)
-                                } else if comments.isEmpty {
-                                    Text("Chưa có bình luận nào")
-                                        .foregroundColor(.gray)
-                                        .frame(maxWidth: .infinity)
-                                        .padding()
-                                } else {
-                                    ForEach(comments) { comment in
-                                        CommentRow(comment: comment)
-                                    }
+                                .disabled(commentText.trimmingCharacters(in: .whitespaces).isEmpty)
+                            }
+                            
+                            // Comment List
+                            if isLoadingComments {
+                                ProgressView()
+                                    .frame(maxWidth: .infinity)
+                            } else if comments.isEmpty {
+                                Text("Chưa có bình luận nào")
+                                    .foregroundColor(.gray)
+                                    .frame(maxWidth: .infinity)
+                                    .padding()
+                            } else {
+                                ForEach(comments) { comment in
+                                    CommentRow(comment: comment)
                                 }
                             }
                         }

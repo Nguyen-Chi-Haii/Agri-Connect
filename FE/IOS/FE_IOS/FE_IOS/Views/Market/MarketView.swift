@@ -8,10 +8,7 @@ struct MarketView: View {
     @State private var searchText = ""
     
     var filteredPrices: [MarketPrice] {
-        if searchText.isEmpty {
-            return prices
-        }
-        return prices.filter { $0.productName.localizedCaseInsensitiveContains(searchText) }
+        return prices
     }
     
     var body: some View {
@@ -23,23 +20,16 @@ struct MarketView: View {
                     Image(systemName: "magnifyingglass")
                         .foregroundColor(.gray)
                     TextField("Tìm kiếm giá...", text: $searchText)
+                        .onSubmit {
+                            loadPrices()
+                        }
                 }
                 .padding()
                 .background(Color(.systemGray6))
                 .cornerRadius(12)
                 
-                // Category filter
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
-                        CategoryFilterChip(
-                            title: "Tất cả",
-                            isSelected: selectedCategory == nil,
-                            action: {
-                                selectedCategory = nil
-                                loadPrices()
-                            }
-                        )
-                        
                         ForEach(categories) { category in
                             CategoryFilterChip(
                                 title: category.name,
@@ -87,9 +77,13 @@ struct MarketView: View {
     private func loadPrices() {
         isLoading = true
         
-        let endpoint = selectedCategory == nil
+        var endpoint = selectedCategory == nil
             ? APIConfig.MarketPrices.list
             : APIConfig.MarketPrices.byCategory(selectedCategory!)
+        
+        if !searchText.isEmpty {
+            endpoint = "/market-prices?search=\(searchText.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "")"
+        }
         
         APIClient.shared.request(
             endpoint: endpoint,

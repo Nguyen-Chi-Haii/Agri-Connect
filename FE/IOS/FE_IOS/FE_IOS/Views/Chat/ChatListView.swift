@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ChatListView: View {
     @State private var conversations: [Conversation] = []
+    @State private var participantNames: [String: String] = [:]
     @State private var isLoading = false
     
     var body: some View {
@@ -27,10 +28,13 @@ struct ChatListView: View {
                 List(conversations) { conversation in
                     NavigationLink(destination: ChatDetailView(
                         conversationId: conversation.id,
-                        otherUserName: conversation.participantName ?? "Người dùng",
+                        otherUserName: participantNames[getRecipientId(from: conversation)] ?? conversation.participantName ?? "Người dùng",
                         recipientId: getRecipientId(from: conversation)
                     )) {
-                        ConversationRow(conversation: conversation)
+                        ConversationRow(
+                            conversation: conversation,
+                            customName: participantNames[getRecipientId(from: conversation)]
+                        )
                     }
                 }
                 .listStyle(PlainListStyle())
@@ -53,6 +57,29 @@ struct ChatListView: View {
             isLoading = false
             if case .success(let response) = result, let data = response.data {
                 conversations = data
+                fetchParticipantNames(for: data)
+            }
+        }
+    }
+    
+    private func fetchParticipantNames(for conversations: [Conversation]) {
+        for conversation in conversations {
+            let recipientId = getRecipientId(from: conversation)
+            guard !recipientId.isEmpty && participantNames[recipientId] == nil else { continue }
+            
+            // If the conversation already has a name, use it, otherwise fetch
+            if let name = conversation.participantName {
+                participantNames[recipientId] = name
+                continue
+            }
+            
+            APIClient.shared.request(
+                endpoint: "/users/\(recipientId)",
+                method: .get
+            ) { (result: Result<ApiResponse<UserProfile>, Error>) in
+                if case .success(let response) = result, let profile = response.data {
+                    participantNames[recipientId] = profile.fullName
+                }
             }
         }
     }
@@ -69,6 +96,7 @@ struct ChatListView: View {
 // MARK: - Conversation Row
 struct ConversationRow: View {
     let conversation: Conversation
+    var customName: String?
     
     var body: some View {
         HStack(spacing: 12) {
@@ -94,7 +122,7 @@ struct ConversationRow: View {
     private var contentView: some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack {
-                Text(conversation.participantName ?? "Unknown")
+                Text(customName ?? conversation.participantName ?? "Unknown")
                     .font(.headline)
                 
                 Spacer()
@@ -131,7 +159,7 @@ struct ConversationRow: View {
     }
     
     private var avatarLetter: String {
-        String((conversation.participantName ?? "?").prefix(1))
+        String((customName ?? conversation.participantName ?? "?").prefix(1))
     }
     
     private func formatTime(_ isoDate: String?) -> String {

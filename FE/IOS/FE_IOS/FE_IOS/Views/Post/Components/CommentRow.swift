@@ -6,7 +6,7 @@ struct CommentRow: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack {
-                Text(comment.userName ?? "Người dùng")
+                Text(comment.userName ?? "Ẩn danh")
                     .font(.subheadline)
                     .fontWeight(.semibold)
                 
