@@ -4,7 +4,20 @@ struct MainTabView: View {
     @State private var selectedTab = 0
     
     var body: some View {
-        TabView(selection: $selectedTab) {
+        let binding = Binding<Int>(
+            get: { self.selectedTab },
+            set: { newValue in
+                if newValue == 2 {
+                    if let user = TokenManager.shared.userProfile, !user.isVerified {
+                        self.selectedTab = 4
+                        return
+                    }
+                }
+                self.selectedTab = newValue
+            }
+        )
+        
+        TabView(selection: binding) {
             // Home Tab
             NavigationView {
                 HomeView()

@@ -15,7 +15,7 @@ struct PostDetailView: View {
     @State private var showKYCAlert = false
     @State private var kycAlertTitle = ""
     @State private var kycAlertMessage = ""
-    @State private var navigateToVerification = false // New State
+    @State private var navigateToVerification = false
     
     var body: some View {
         ScrollView {
@@ -24,172 +24,44 @@ struct PostDetailView: View {
                     .frame(maxWidth: .infinity, minHeight: 300)
             } else if let post = post {
                 VStack(alignment: .leading, spacing: 16) {
-                    // Images
-                    if let images = post.images, !images.isEmpty {
-                        TabView {
-                            ForEach(images, id: \.self) { imageUrl in
-                                if let url = URL(string: imageUrl) {
-                                    AsyncImage(url: url) { phase in
-                                        switch phase {
-                                        case .success(let image):
-                                            image
-                                                .resizable()
-                                                .aspectRatio(contentMode: .fill)
-                                        default:
-                                            Rectangle()
-                                                .fill(Color.gray.opacity(0.3))
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        .frame(height: 250)
-                        .tabViewStyle(PageTabViewStyle())
-                    } else {
-                        Rectangle()
-                            .fill(Color.gray.opacity(0.2))
-                            .frame(height: 200)
-                            .overlay(
-                                Image(systemName: "photo")
-                                    .font(.system(size: 50))
-                                    .foregroundColor(.gray)
-                            )
-                    }
+                    PostImageSection(images: post.images)
                     
                     VStack(alignment: .leading, spacing: 12) {
-                        Group {
-                            // Category
-                            if let categoryName = post.categoryName {
-                                Text(categoryName)
-                                    .font(.caption)
-                                    .padding(.horizontal, 12)
-                                    .padding(.vertical, 4)
-                                    .background(Color(hex: "#E8F5E9"))
-                                    .foregroundColor(Color(hex: "#2E7D32"))
-                                    .cornerRadius(12)
-                            }
-                            
-                            // Title
-                            Text(post.title)
-                                .font(.title2)
-                                .fontWeight(.bold)
-                            
-                            // Price
-                            if let price = post.price, let unit = post.unit {
-                                Text("\(formatPrice(price)) / \(unit)")
-                                    .font(.title3)
-                                    .fontWeight(.semibold)
-                                    .foregroundColor(Color(hex: "#2E7D32"))
-                            }
-                            
-                            Divider()
-                            
-                            // Action Buttons
-                            HStack(spacing: 24) {
-                                // Like Button
-                                Button(action: toggleLike) {
-                                    HStack(spacing: 4) {
-                                        Image(systemName: isLiked ? "heart.fill" : "heart")
-                                            .foregroundColor(isLiked ? .red : .gray)
-                                        Text("\(likeCount)")
-                                            .foregroundColor(isLiked ? .red : .gray)
-                                    }
-                                }
-                                
-                                // Comment Symbol (Static)
-                                HStack(spacing: 4) {
-                                    Image(systemName: "bubble.left.fill")
-                                        .foregroundColor(.gray)
-                                    Text("\(commentCount)")
-                                        .foregroundColor(.gray)
-                                }
-                                
-                                // Chat Button
-                                Button(action: startChat) {
-                                    HStack(spacing: 4) {
-                                        Image(systemName: "message.fill")
-                                            .foregroundColor(Color(hex: "#2E7D32"))
-                                        Text("Nhắn tin")
-                                            .foregroundColor(Color(hex: "#2E7D32"))
-                                    }
-                                }
-                                
-                                Spacer()
-                            }
-                            .padding(.vertical, 8)
-                            
-                            Divider()
-                        }
+                        PostInfoSection(post: post)
                         
-                        Group {
-                            // Details
-                            VStack(alignment: .leading, spacing: 8) {
-                                if let quantity = post.quantity, let unit = post.unit {
-                                    DetailRow(icon: "cube.box.fill", title: "Số lượng", value: "\(Int(quantity)) \(unit)")
-                                }
-                                
-                                if let province = post.province {
-                                    DetailRow(icon: "mappin.circle.fill", title: "Địa điểm", value: province)
-                                }
-                                
-                                if let author = post.authorName {
-                                    DetailRow(icon: "person.fill", title: "Người đăng", value: author)
-                                }
-                                
-                                if let date = post.createdAt {
-                                    DetailRow(icon: "calendar", title: "Ngày đăng", value: formatDate(date))
-                                }
-                            }
-                            
-                            Divider()
-                            
-                            // Description
-                            if let desc = post.description {
-                                VStack(alignment: .leading, spacing: 8) {
-                                    Text("Mô tả")
-                                        .font(.headline)
-                                    
-                                    Text(desc)
-                                        .foregroundColor(.secondary)
-                                }
-                            }
-                        }
-                        
-                        // Comment Section
                         Divider()
-                            .padding(.vertical, 8)
                         
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text("Bình luận (\(commentCount))")
-                                .font(.headline)
-                            
-                            // Comment Input
-                            HStack {
-                                TextField("Viết bình luận...", text: $commentText)
-                                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                                
-                                Button(action: sendComment) {
-                                    Image(systemName: "paperplane.fill")
-                                        .foregroundColor(Color(hex: "#2E7D32"))
-                                }
-                                .disabled(commentText.trimmingCharacters(in: .whitespaces).isEmpty)
-                            }
-                            
-                            // Comment List
-                            if isLoadingComments {
-                                ProgressView()
-                                    .frame(maxWidth: .infinity)
-                            } else if comments.isEmpty {
-                                Text("Chưa có bình luận nào")
-                                    .foregroundColor(.gray)
-                                    .frame(maxWidth: .infinity)
-                                    .padding()
-                            } else {
-                                ForEach(comments) { comment in
-                                    CommentRow(comment: comment)
-                                }
+                        PostActionSection(
+                            isLiked: $isLiked,
+                            likeCount: $likeCount,
+                            commentCount: $commentCount,
+                            onLike: toggleLike,
+                            onChat: startChat
+                        )
+                        .padding(.vertical, 8)
+                        
+                        Divider()
+                        
+                        PostDetailListSection(post: post, formatDate: formatDate)
+                        
+                        Divider()
+                        
+                        if let desc = post.description {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("Mô tả").font(.headline)
+                                Text(desc).foregroundColor(.secondary)
                             }
                         }
+                        
+                        Divider().padding(.vertical, 8)
+                        
+                        PostCommentSection(
+                            commentCount: commentCount,
+                            commentText: $commentText,
+                            comments: comments,
+                            isLoadingComments: isLoadingComments,
+                            onSend: sendComment
+                        )
                     }
                     .padding()
                 }
@@ -216,13 +88,14 @@ struct PostDetailView: View {
                 title: Text(kycAlertTitle),
                 message: Text(kycAlertMessage),
                 primaryButton: .default(Text("Xác thực ngay")) {
-                    // Trigger navigation state
                     self.navigateToVerification = true
                 },
                 secondaryButton: .cancel(Text("Để sau"))
             )
         }
     }
+    
+    // MARK: - Logic & API Calls
     
     private func startStatsPolling() {
         statsTimer = Timer.scheduledTimer(withTimeInterval: 10.0, repeats: true) { _ in
@@ -266,19 +139,12 @@ struct PostDetailView: View {
     
     private func toggleLike() {
         KYCHelper.shared.requireVerified(
-            onSuccess: {
-                self.performLike()
-            },
-            onFailure: { title, message in
-                self.kycAlertTitle = title
-                self.kycAlertMessage = message ?? ""
-                self.showKYCAlert = true
-            }
+            onSuccess: { self.performLike() },
+            onFailure: { t, m in self.showAlert(t, m) }
         )
     }
     
     private func performLike() {
-        // Optimistic UI update
         isLiked.toggle()
         likeCount += isLiked ? 1 : -1
         
@@ -287,12 +153,10 @@ struct PostDetailView: View {
             method: .post
         ) { (result: Result<ApiResponse<PostInteractionResponse>, Error>) in
             if case .success(let response) = result, let data = response.data {
-                // Sync with server values
                 isLiked = data.isLiked ?? isLiked
                 likeCount = data.likeCount ?? likeCount
                 commentCount = data.commentCount ?? commentCount
             } else if case .failure = result {
-                // Revert on failure
                 isLiked.toggle()
                 likeCount += isLiked ? 1 : -1
             }
@@ -315,22 +179,14 @@ struct PostDetailView: View {
     
     private func sendComment() {
         KYCHelper.shared.requireVerified(
-            onSuccess: {
-                self.performSendComment()
-            },
-            onFailure: { title, message in
-                self.kycAlertTitle = title
-                self.kycAlertMessage = message ?? ""
-                self.showKYCAlert = true
-            }
+            onSuccess: { self.performSendComment() },
+            onFailure: { t, m in self.showAlert(t, m) }
         )
     }
     
     private func performSendComment() {
         guard !commentText.trimmingCharacters(in: .whitespaces).isEmpty else { return }
-        
         let body: [String: String] = ["content": commentText]
-        
         APIClient.shared.request(
             endpoint: "\(APIConfig.Posts.list)/\(postId)/comments",
             method: .post,
@@ -346,36 +202,27 @@ struct PostDetailView: View {
     
     private func startChat() {
         KYCHelper.shared.requireVerified(
-            onSuccess: {
-                self.performStartChat()
-            },
-            onFailure: { title, message in
-                self.kycAlertTitle = title
-                self.kycAlertMessage = message ?? ""
-                self.showKYCAlert = true
-            }
+            onSuccess: { self.performStartChat() },
+            onFailure: { t, m in self.showAlert(t, m) }
         )
     }
     
     private func performStartChat() {
         guard let sellerId = post?.sellerId else { return }
-        
         APIClient.shared.request(
             endpoint: "/chat/conversations/\(sellerId)",
             method: .post
         ) { (result: Result<ApiResponse<Conversation>, Error>) in
             if case .success(let response) = result, let conversation = response.data {
-                // TODO: Navigate to ChatDetailView
                 print("Created conversation: \(conversation.id)")
             }
         }
     }
     
-    private func formatPrice(_ price: Double) -> String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.groupingSeparator = "."
-        return (formatter.string(from: NSNumber(value: price)) ?? "\(price)") + "đ"
+    private func showAlert(_ title: String, _ message: String?) {
+        self.kycAlertTitle = title
+        self.kycAlertMessage = message ?? ""
+        self.showKYCAlert = true
     }
     
     private func formatDate(_ dateString: String) -> String {
@@ -387,7 +234,161 @@ struct PostDetailView: View {
     }
 }
 
-// MARK: - Detail Row
+// MARK: - Subviews
+
+struct PostImageSection: View {
+    let images: [String]?
+    
+    var body: some View {
+        if let images = images, !images.isEmpty {
+            TabView {
+                ForEach(images, id: \.self) { imageUrl in
+                    if let url = URL(string: imageUrl) {
+                        AsyncImage(url: url) { phase in
+                            switch phase {
+                            case .success(let image):
+                                image.resizable().aspectRatio(contentMode: .fill)
+                            default:
+                                Rectangle().fill(Color.gray.opacity(0.3))
+                            }
+                        }
+                    }
+                }
+            }
+            .frame(height: 250)
+            .tabViewStyle(PageTabViewStyle())
+        } else {
+            Rectangle()
+                .fill(Color.gray.opacity(0.2))
+                .frame(height: 200)
+                .overlay(Image(systemName: "photo").font(.system(size: 50)).foregroundColor(.gray))
+        }
+    }
+}
+
+struct PostInfoSection: View {
+    let post: Post
+    
+    var body: some View {
+        Group {
+            if let categoryName = post.categoryName {
+                Text(categoryName)
+                    .font(.caption)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 4)
+                    .background(Color(hex: "#E8F5E9"))
+                    .foregroundColor(Color(hex: "#2E7D32"))
+                    .cornerRadius(12)
+            }
+            
+            Text(post.title).font(.title2).fontWeight(.bold)
+            
+            if let price = post.price, let unit = post.unit {
+                Text("\(formatPrice(price)) / \(unit)")
+                    .font(.title3)
+                    .fontWeight(.semibold)
+                    .foregroundColor(Color(hex: "#2E7D32"))
+            }
+        }
+    }
+    
+    private func formatPrice(_ price: Double) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.groupingSeparator = "."
+        return (formatter.string(from: NSNumber(value: price)) ?? "\(price)") + "đ"
+    }
+}
+
+struct PostActionSection: View {
+    @Binding var isLiked: Bool
+    @Binding var likeCount: Int
+    @Binding var commentCount: Int
+    var onLike: () -> Void
+    var onChat: () -> Void
+    
+    var body: some View {
+        HStack(spacing: 24) {
+            Button(action: onLike) {
+                HStack(spacing: 4) {
+                    Image(systemName: isLiked ? "heart.fill" : "heart")
+                        .foregroundColor(isLiked ? .red : .gray)
+                    Text("\(likeCount)").foregroundColor(isLiked ? .red : .gray)
+                }
+            }
+            
+            HStack(spacing: 4) {
+                Image(systemName: "bubble.left.fill").foregroundColor(.gray)
+                Text("\(commentCount)").foregroundColor(.gray)
+            }
+            
+            Button(action: onChat) {
+                HStack(spacing: 4) {
+                    Image(systemName: "message.fill").foregroundColor(Color(hex: "#2E7D32"))
+                    Text("Nhắn tin").foregroundColor(Color(hex: "#2E7D32"))
+                }
+            }
+            Spacer()
+        }
+    }
+}
+
+struct PostDetailListSection: View {
+    let post: Post
+    let formatDate: (String) -> String
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            if let quantity = post.quantity, let unit = post.unit {
+                DetailRow(icon: "cube.box.fill", title: "Số lượng", value: "\(Int(quantity)) \(unit)")
+            }
+            if let province = post.province {
+                DetailRow(icon: "mappin.circle.fill", title: "Địa điểm", value: province)
+            }
+            if let author = post.authorName {
+                DetailRow(icon: "person.fill", title: "Người đăng", value: author)
+            }
+            if let date = post.createdAt {
+                DetailRow(icon: "calendar", title: "Ngày đăng", value: formatDate(date))
+            }
+        }
+    }
+}
+
+struct PostCommentSection: View {
+    var commentCount: Int
+    @Binding var commentText: String
+    var comments: [Comment]
+    var isLoadingComments: Bool
+    var onSend: () -> Void
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Bình luận (\(commentCount))").font(.headline)
+            
+            HStack {
+                TextField("Viết bình luận...", text: $commentText)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                Button(action: onSend) {
+                    Image(systemName: "paperplane.fill").foregroundColor(Color(hex: "#2E7D32"))
+                }
+                .disabled(commentText.trimmingCharacters(in: .whitespaces).isEmpty)
+            }
+            
+            if isLoadingComments {
+                ProgressView().frame(maxWidth: .infinity)
+            } else if comments.isEmpty {
+                Text("Chưa có bình luận nào").foregroundColor(.gray).frame(maxWidth: .infinity).padding()
+            } else {
+                ForEach(comments) { comment in
+                    CommentRow(comment: comment)
+                }
+            }
+        }
+    }
+}
+
+// Re-use DetailRow from before
 struct DetailRow: View {
     let icon: String
     let title: String
@@ -398,14 +399,9 @@ struct DetailRow: View {
             Image(systemName: icon)
                 .foregroundColor(Color(hex: "#2E7D32"))
                 .frame(width: 24)
-            
-            Text(title)
-                .foregroundColor(.gray)
-            
+            Text(title).foregroundColor(.gray)
             Spacer()
-            
-            Text(value)
-                .fontWeight(.medium)
+            Text(value).fontWeight(.medium)
         }
     }
 }
