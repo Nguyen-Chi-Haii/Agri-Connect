@@ -251,9 +251,14 @@ struct CreatePostView: View {
                 message: kycAlertMessage,
                 navigateToProfile: Binding(
                     get: { false },
-                    set: { _ in
-                        // Force redirect to Profile Tab
-                        self.tabSelection = 4
+                    set: { shouldNavigate in
+                        if shouldNavigate {
+                            // User clicked "Verify Now" -> Go to Profile (4)
+                            self.tabSelection = 4
+                        } else {
+                            // User clicked "Later" -> Go to Home (0) to block access
+                            self.tabSelection = 0
+                        }
                     }
                 )
             )
@@ -286,6 +291,20 @@ struct CreatePostView: View {
     }
     
     private func submitPost() {
+        // Double check KYC before submitting
+        KYCHelper.shared.requireVerified(
+            onSuccess: {
+                proceedSubmission()
+            },
+            onFailure: { title, message in
+                kycAlertTitle = title
+                kycAlertMessage = message ?? "Cần xác thực"
+                showKYCAlert = true
+            }
+        )
+    }
+    
+    private func proceedSubmission() {
         var isValid = true
         
         // Reset errors
