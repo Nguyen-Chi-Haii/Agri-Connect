@@ -24,6 +24,8 @@ import com.agriconnect.agri_connect.ui.admin.AdminMainActivity;
 import com.agriconnect.agri_connect.ui.main.MainNavigationActivity;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
+import com.agriconnect.agri_connect.utils.FormValidator;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -32,6 +34,7 @@ import retrofit2.Response;
 public class LoginActivity extends AppCompatActivity {
 
     private TextInputEditText etPhone, etPassword;
+    private TextInputLayout tilPhone, tilPassword;
     private MaterialButton btnLogin;
     private ProgressBar progressBar;
     private TextView tvRegisterLink;
@@ -67,6 +70,8 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void initViews() {
+        tilPhone = findViewById(R.id.tilPhone);
+        tilPassword = findViewById(R.id.tilPassword);
         etPhone = findViewById(R.id.etPhone);
         etPassword = findViewById(R.id.etPassword);
         btnLogin = findViewById(R.id.btnLogin);
@@ -75,6 +80,10 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void setupListeners() {
+        // Real-time validation
+        FormValidator.addRequiredValidation(etPhone, tilPhone, "Tên đăng nhập");
+        FormValidator.addPasswordValidation(etPassword, tilPassword);
+
         btnLogin.setOnClickListener(v -> attemptLogin());
 
         tvRegisterLink.setOnClickListener(v -> {

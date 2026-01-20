@@ -32,6 +32,8 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
+import com.agriconnect.agri_connect.utils.FormValidator;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -42,7 +44,7 @@ public class CreateAccountActivity extends AppCompatActivity {
     private ImageView btnBack;
     private TextView tvRoleBadge;
     private TextInputEditText etFullName, etUsername, etPhone, etPassword, etConfirmPassword, etAddress, etTaxCode;
-    private com.google.android.material.textfield.TextInputLayout tilTaxCode, tilAddress;
+    private TextInputLayout tilTaxCode, tilAddress, tilFullName, tilUsername, tilPhone, tilPassword, tilConfirmPassword;
     private MaterialButton btnRegister;
     private ProgressBar progressBar;
     private TextView tvLoginLink;
@@ -95,6 +97,11 @@ public class CreateAccountActivity extends AppCompatActivity {
     private void initViews() {
         btnBack = findViewById(R.id.btnBack);
         tvRoleBadge = findViewById(R.id.tvRoleBadge);
+        tilFullName = findViewById(R.id.tilFullName);
+        tilUsername = findViewById(R.id.tilUsername);
+        tilPhone = findViewById(R.id.tilPhone);
+        tilPassword = findViewById(R.id.tilPassword);
+        tilConfirmPassword = findViewById(R.id.tilConfirmPassword);
         etFullName = findViewById(R.id.etFullName);
         etUsername = findViewById(R.id.etUsername);
         etPhone = findViewById(R.id.etPhone);
@@ -124,6 +131,13 @@ public class CreateAccountActivity extends AppCompatActivity {
     }
 
     private void setupListeners() {
+        // Real-time form validation
+        FormValidator.addRequiredValidation(etFullName, tilFullName, "Họ tên");
+        FormValidator.addRequiredValidation(etUsername, tilUsername, "Tên đăng nhập");
+        FormValidator.addPhoneValidation(etPhone, tilPhone);
+        FormValidator.addPasswordValidation(etPassword, tilPassword);
+        FormValidator.addConfirmPasswordValidation(etConfirmPassword, tilConfirmPassword, etPassword);
+
         btnBack.setOnClickListener(v -> finish());
 
         btnRegister.setOnClickListener(v -> attemptRegister());
