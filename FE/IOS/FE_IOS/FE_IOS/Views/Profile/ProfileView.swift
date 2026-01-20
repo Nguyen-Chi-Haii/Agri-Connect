@@ -216,19 +216,12 @@ struct MyPostsListView: View {
         ("CLOSED", "Đã đóng")
     ]
     
-    var filteredPosts: [Post] {
-        if selectedFilter.isEmpty {
-            return posts
-        }
-        return posts.filter { $0.status == selectedFilter }
-    }
-    
     var body: some View {
         Group {
             if isLoading && posts.isEmpty {
                 ProgressView()
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else if posts.isEmpty {
+            } else if posts.isEmpty && selectedFilter.isEmpty {
                 VStack(spacing: 16) {
                     Image(systemName: "doc.text")
                         .font(.system(size: 60))
@@ -247,7 +240,7 @@ struct MyPostsListView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 VStack(spacing: 0) {
-                    // Filters (Always visible if user has any posts)
+                    // Filters (Visible if user has any posts or is filtering)
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 8) {
                             ForEach(filters, id: \.0) { filter in
@@ -278,7 +271,7 @@ struct MyPostsListView: View {
                     
                     Divider()
                     
-                    if filteredPosts.isEmpty {
+                    if posts.isEmpty {
                         VStack(spacing: 16) {
                             Spacer()
                             Image(systemName: "magnifyingglass")
@@ -288,10 +281,10 @@ struct MyPostsListView: View {
                                 .foregroundColor(.gray)
                             Spacer()
                         }
-                        .frame(maxWidth: .infinity)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                     } else {
                         List {
-                            ForEach(filteredPosts) { post in
+                            ForEach(posts) { post in
                                 NavigationLink(destination: PostDetailView(postId: post.id)) {
                                     MyPostRow(post: post, onDelete: {
                                         postToDelete = post

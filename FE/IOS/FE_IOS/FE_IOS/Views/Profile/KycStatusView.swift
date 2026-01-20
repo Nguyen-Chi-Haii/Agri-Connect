@@ -122,7 +122,7 @@ struct KycStatusView: View {
     
     private var statusTitle: String {
         switch userProfile?.kycStatus {
-        case "APPROVED": return "Đã xác minh"
+        case "APPROVED", "VERIFIED": return "Đã xác minh"
         case "PENDING": return "Đang chờ duyệt"
         case "REJECTED": return "Bị từ chối"
         default: return "Chưa xác minh"
@@ -131,7 +131,7 @@ struct KycStatusView: View {
     
     private var statusDescription: String {
         switch userProfile?.kycStatus {
-        case "APPROVED": return "Tài khoản của bạn đã được xác minh chính chủ. Bạn có đầy đủ quyền hạn trên hệ thống."
+        case "APPROVED", "VERIFIED": return "Tài khoản của bạn đã được xác minh chính chủ. Bạn có đầy đủ quyền hạn trên hệ thống."
         case "PENDING": return "Yêu cầu của bạn đang được quản trị viên xem duyệt. Vui lòng đợi trong vòng 24-48h."
         case "REJECTED": return "Yêu cầu của bạn không được chấp nhận. Vui lòng kiểm tra lý do và thực hiện lại."
         default: return "Xác minh danh tính giúp tăng uy tín và bảo mật cho tài khoản của bạn."
@@ -140,7 +140,7 @@ struct KycStatusView: View {
     
     private var statusIcon: String {
         switch userProfile?.kycStatus {
-        case "APPROVED": return "checkmark.seal.fill"
+        case "APPROVED", "VERIFIED": return "checkmark.seal.fill"
         case "PENDING": return "clock.fill"
         case "REJECTED": return "exclamationmark.shield.fill"
         default: return "person.badge.shield.checkmark"
@@ -149,7 +149,7 @@ struct KycStatusView: View {
     
     private var statusColor: Color {
         switch userProfile?.kycStatus {
-        case "APPROVED": return .green
+        case "APPROVED", "VERIFIED": return .green
         case "PENDING": return .orange
         case "REJECTED": return .red
         default: return .blue
@@ -192,6 +192,7 @@ struct KycImageView: View {
                             .aspectRatio(contentMode: .fill)
                             .frame(maxWidth: .infinity)
                             .frame(height: 120)
+                            .clipped()
                             .cornerRadius(8)
                     case .failure(_):
                         placeholderView
