@@ -70,7 +70,9 @@ struct MainTabView: View {
         if tag == 2 {
             if let user = TokenManager.shared.userProfile {
                 if !user.isVerified {
-                    self.selectedTab = 4
+                    DispatchQueue.main.async {
+                        self.selectedTab = 4
+                    }
                 }
             }
         }
