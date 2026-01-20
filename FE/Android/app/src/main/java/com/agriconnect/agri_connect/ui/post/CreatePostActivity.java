@@ -394,6 +394,46 @@ public class CreatePostActivity extends AppCompatActivity {
 
         showLoading(true);
 
+    private void createPost() {
+        String title = getText(etTitle);
+        String content = getText(etContent);
+        String priceStr = getText(etPrice);
+        String unit = getText(etUnit);
+        String quantityStr = getText(etQuantity);
+        String location = getText(etLocation);
+
+        String categoryText = actvCategory.getText().toString().trim();
+
+        if (selectedCategoryId == null) {
+            for (com.agriconnect.agri_connect.api.model.Category cat : categoryList) {
+                String display = (cat.getIcon() != null ? cat.getIcon() + " " : "") + cat.getName();
+                if (display.equals(categoryText) || cat.getName().equals(categoryText)) {
+                    selectedCategoryId = cat.getId();
+                    break;
+                }
+            }
+        }
+
+        // Validation
+        if (title.isEmpty()) {
+            etTitle.setError("Vui lòng nhập tiêu đề");
+            etTitle.requestFocus();
+            return;
+        }
+
+        if (selectedCategoryId == null || categoryText.isEmpty()) {
+            Toast.makeText(this, "Vui lòng chọn danh mục", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (priceStr.isEmpty()) {
+            etPrice.setError("Vui lòng nhập giá");
+            etPrice.requestFocus();
+            return;
+        }
+
+        showLoading(true);
+
         // Create post object
         Post post = new Post();
         post.setTitle(title);

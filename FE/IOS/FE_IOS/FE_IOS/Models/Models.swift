@@ -172,6 +172,11 @@ struct Post: Decodable, Identifiable {
     var authorName: String? { sellerName } // Alias for backward compatibility if needed
 }
 
+struct CreateLocationRequest: Encodable {
+    let province: String?
+    let district: String?
+}
+
 struct CreatePostRequest: Encodable {
     let categoryId: String
     let title: String
@@ -180,16 +185,7 @@ struct CreatePostRequest: Encodable {
     let unit: String
     let quantity: Double
     let images: [String]?
-    // Backend expects location object for create too? 
-    // Checking format: PostCreateRequest.java usually expects specific fields. 
-    // Assuming flat params or nested. 
-    // PostCreateRequest.java uses: private Location location;
-    // So we need to fix CreatePostRequest as well later, but mostly fixing READ now.
-    let province: String?
-    let district: String?
-    
-    // Custom encoding might be needed if Backend expects nested location in POST.
-    // For now, focusing on Decoding fix for Admin View.
+    let location: CreateLocationRequest?
 }
 
 // MARK: - Category Model

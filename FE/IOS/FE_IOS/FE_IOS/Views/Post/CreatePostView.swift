@@ -305,6 +305,26 @@ struct CreatePostView: View {
         
         isLoading = true
         
+        // 1. Upload images first if any
+        if !selectedImages.isEmpty {
+            APIClient.shared.uploadImages(selectedImages, folder: "posts") { [self] result in
+                switch result {
+                case .success(let urls):
+                    // 2. Proceed to create post with URLs
+                    self.createPost(imageUrls: urls)
+                case .failure(let error):
+                    self.isLoading = false
+                    self.errorMessage = "Lỗi upload ảnh: \(error.localizedDescription)"
+                    self.showError = true
+                }
+            }
+        } else {
+            // No images, just create post
+            createPost(imageUrls: nil)
+        }
+    }
+    
+    private func createPost(imageUrls: [String]?) {
         let request = CreatePostRequest(
             categoryId: selectedCategory!.id,
             title: title,
@@ -312,9 +332,8 @@ struct CreatePostView: View {
             price: Double(price) ?? 0,
             unit: unit,
             quantity: Double(quantity) ?? 0,
-            images: nil,
-            province: province.isEmpty ? nil : province,
-            district: district.isEmpty ? nil : district
+            images: imageUrls,
+            location: CreateLocationRequest(province: province, district: district)
         )
         
         APIClient.shared.request(
@@ -322,20 +341,20 @@ struct CreatePostView: View {
             method: .post,
             body: request
         ) { (result: Result<ApiResponse<Post>, Error>) in
-            isLoading = false
+            self.isLoading = false
             
             switch result {
             case .success(let response):
                 if response.success {
-                    showSuccess = true
-                    presentationMode.wrappedValue.dismiss()
+                    self.showSuccess = true
+                    self.presentationMode.wrappedValue.dismiss()
                 } else {
-                    errorMessage = response.message ?? "Đăng bài thất bại"
-                    showError = true
+                    self.errorMessage = response.message ?? "Đăng bài thất bại"
+                    self.showError = true
                 }
             case .failure(let error):
-                errorMessage = "Lỗi: \(error.localizedDescription)"
-                showError = true
+                self.errorMessage = "Lỗi: \(error.localizedDescription)"
+                self.showError = true
             }
         }
     }
