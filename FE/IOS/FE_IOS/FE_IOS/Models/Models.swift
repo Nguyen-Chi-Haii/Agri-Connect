@@ -94,6 +94,10 @@ struct UserProfile: Decodable, Identifiable {
         return _kycStatus ?? kyc?.status
     }
     
+    var isVerified: Bool {
+        return verified == true || kycStatus == "APPROVED" || kycStatus == "VERIFIED"
+    }
+    
     enum CodingKeys: String, CodingKey {
         case id, username, fullName, phone, avatar, address, role, verified, kyc, createdAt
         case active = "isActive" // Map JSON isActive -> active

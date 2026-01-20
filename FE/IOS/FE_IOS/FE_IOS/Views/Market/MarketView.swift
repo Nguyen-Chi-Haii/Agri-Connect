@@ -30,6 +30,15 @@ struct MarketView: View {
                 
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
+                        CategoryFilterChip(
+                            title: "Tất cả",
+                            isSelected: selectedCategory == nil,
+                            action: {
+                                selectedCategory = nil
+                                loadPrices()
+                            }
+                        )
+                        
                         ForEach(categories) { category in
                             CategoryFilterChip(
                                 title: category.name,
@@ -70,7 +79,19 @@ struct MarketView: View {
         .navigationTitle("Giá thị trường")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
+            loadCategories()
             loadPrices()
+        }
+    }
+    
+    private func loadCategories() {
+        APIClient.shared.request(
+            endpoint: APIConfig.Categories.list,
+            method: .get
+        ) { (result: Result<ApiResponse<[Category]>, Error>) in
+            if case .success(let response) = result, let data = response.data {
+                categories = data
+            }
         }
     }
     

@@ -12,6 +12,9 @@ struct PostDetailView: View {
     @State private var commentText = ""
     @State private var isLoadingComments = false
     @State private var statsTimer: Timer?
+    @State private var showKYCAlert = false
+    @State private var kycAlertTitle = ""
+    @State private var kycAlertMessage = ""
     
     var body: some View {
         ScrollView {
@@ -196,8 +199,9 @@ struct PostDetailView: View {
             loadPost()
             startStatsPolling()
         }
-        .onDisappear {
-            stopStatsPolling()
+        }
+        .alert(isPresented: $showKYCAlert) {
+            KYCHelper.showKYCAlert(title: kycAlertTitle, message: kycAlertMessage, navigateToProfile: nil)
         }
     }
     
@@ -242,6 +246,19 @@ struct PostDetailView: View {
     }
     
     private func toggleLike() {
+        KYCHelper.shared.requireVerified(
+            onSuccess: {
+                self.performLike()
+            },
+            onFailure: { title, message in
+                self.kycAlertTitle = title
+                self.kycAlertMessage = message ?? ""
+                self.showKYCAlert = true
+            }
+        )
+    }
+    
+    private func performLike() {
         // Optimistic UI update
         isLiked.toggle()
         likeCount += isLiked ? 1 : -1
@@ -278,6 +295,19 @@ struct PostDetailView: View {
     }
     
     private func sendComment() {
+        KYCHelper.shared.requireVerified(
+            onSuccess: {
+                self.performSendComment()
+            },
+            onFailure: { title, message in
+                self.kycAlertTitle = title
+                self.kycAlertMessage = message ?? ""
+                self.showKYCAlert = true
+            }
+        )
+    }
+    
+    private func performSendComment() {
         guard !commentText.trimmingCharacters(in: .whitespaces).isEmpty else { return }
         
         let body: [String: String] = ["content": commentText]
@@ -296,6 +326,19 @@ struct PostDetailView: View {
     }
     
     private func startChat() {
+        KYCHelper.shared.requireVerified(
+            onSuccess: {
+                self.performStartChat()
+            },
+            onFailure: { title, message in
+                self.kycAlertTitle = title
+                self.kycAlertMessage = message ?? ""
+                self.showKYCAlert = true
+            }
+        )
+    }
+    
+    private func performStartChat() {
         guard let sellerId = post?.sellerId else { return }
         
         APIClient.shared.request(

@@ -40,7 +40,7 @@ struct ProfileView: View {
                             }
                             
                             // Verified badge
-                            if userProfile?.verified == true {
+                            if userProfile?.isVerified == true {
                                 Image(systemName: "checkmark.seal.fill")
                                     .foregroundColor(.blue)
                                     .font(.title3)

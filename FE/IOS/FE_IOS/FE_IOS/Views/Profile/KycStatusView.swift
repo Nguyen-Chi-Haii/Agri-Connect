@@ -8,14 +8,14 @@ struct KycStatusView: View {
         ScrollView {
             VStack(spacing: 24) {
                 // Status Header
-                VStack(spacing: 12) {
+                VStack(spacing: 8) {
                     ZStack {
                         Circle()
                             .fill(statusColor.opacity(0.1))
-                            .frame(width: 80, height: 80)
+                            .frame(width: 64, height: 64)
                         
                         Image(systemName: statusIcon)
-                            .font(.system(size: 40))
+                            .font(.system(size: 32))
                             .foregroundColor(statusColor)
                     }
                     
@@ -27,9 +27,11 @@ struct KycStatusView: View {
                         .font(.caption)
                         .foregroundColor(.gray)
                         .multilineTextAlignment(.center)
-                        .padding(.horizontal)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.horizontal, 32)
                 }
-                .padding(.top, 20)
+                .padding(.top, 16)
+                .frame(maxWidth: .infinity)
                 
                 // Details
                 if let kyc = userProfile?.kyc {
@@ -162,14 +164,17 @@ struct DetailInfoRow: View {
     let value: String
     
     var body: some View {
-        HStack {
+        HStack(alignment: .firstTextBaseline) {
             Text(title)
                 .foregroundColor(.gray)
+                .layoutPriority(1)
             Spacer()
             Text(value)
                 .fontWeight(.medium)
+                .multilineTextAlignment(.trailing)
         }
-        .padding()
+        .padding(.vertical, 12)
+        .padding(.horizontal)
     }
 }
 

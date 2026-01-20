@@ -240,9 +240,13 @@ struct CreatePostView: View {
             province = ""
             district = ""
             loadCategories()
+            checkKYCStatus()
         }
         .alert(isPresented: $showError) {
             Alert(title: Text("Lỗi"), message: Text(errorMessage), dismissButton: .default(Text("OK")))
+        }
+        .alert(isPresented: $showKYCAlert) {
+            KYCHelper.showKYCAlert(title: kycAlertTitle, message: kycAlertMessage, navigateToProfile: nil)
         }
         .alert("Thành công", isPresented: $showSuccess) {
             Button("Xem bài đăng") {
