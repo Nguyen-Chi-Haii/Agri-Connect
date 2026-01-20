@@ -41,10 +41,15 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.agriconnect.agri_connect.utils.FormValidator;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import android.util.Base64;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -458,6 +463,15 @@ public class CreatePostActivity extends AppCompatActivity {
         loc.setProvince(location);
         post.setLocation(loc);
 
+        // Convert and add images
+        if (!selectedImages.isEmpty()) {
+            List<String> base64Images = getImagesAsBase64();
+            post.setImages(base64Images);
+            android.util.Log.d("CreatePost", "Images to upload: " + base64Images.size());
+        } else {
+            android.util.Log.d("CreatePost", "No images selected");
+        }
+
         postApi.createPost(post).enqueue(new Callback<ApiResponse<Post>>() {
             @Override
             public void onResponse(Call<ApiResponse<Post>> call, Response<ApiResponse<Post>> response) {
@@ -491,5 +505,54 @@ public class CreatePostActivity extends AppCompatActivity {
     private void showLoading(boolean show) {
         progressBar.setVisibility(show ? View.VISIBLE : View.GONE);
         btnPost.setEnabled(!show);
+    }
+
+    /**
+     * Convert Uri to Base64 encoded string for image upload
+     */
+    private String convertUriToBase64(Uri uri) {
+        try {
+            InputStream inputStream = getContentResolver().openInputStream(uri);
+            if (inputStream == null)
+                return null;
+
+            // Decode and compress image
+            Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+            inputStream.close();
+
+            if (bitmap == null)
+                return null;
+
+            // Resize if too large (max 800px width)
+            int maxWidth = 800;
+            if (bitmap.getWidth() > maxWidth) {
+                int newHeight = (int) ((float) maxWidth / bitmap.getWidth() * bitmap.getHeight());
+                bitmap = Bitmap.createScaledBitmap(bitmap, maxWidth, newHeight, true);
+            }
+
+            // Convert to Base64
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 70, byteArrayOutputStream);
+            byte[] byteArray = byteArrayOutputStream.toByteArray();
+
+            return "data:image/jpeg;base64," + Base64.encodeToString(byteArray, Base64.NO_WRAP);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * Convert all selected images to Base64 strings
+     */
+    private List<String> getImagesAsBase64() {
+        List<String> base64Images = new ArrayList<>();
+        for (Uri uri : selectedImages) {
+            String base64 = convertUriToBase64(uri);
+            if (base64 != null) {
+                base64Images.add(base64);
+            }
+        }
+        return base64Images;
     }
 }

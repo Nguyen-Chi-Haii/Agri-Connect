@@ -9,7 +9,10 @@ import java.util.List;
 @Repository
 public interface MessageRepository extends MongoRepository<Message, String> {
     List<Message> findByConversationIdOrderByCreatedAtAsc(String conversationId);
+
     List<Message> findByConversationIdAndIsReadFalse(String conversationId);
-    List<Message> findByConversationIdAndSenderIdNotAndReadFalse(String conversationId, String senderId);
+
+    List<Message> findByConversationIdAndSenderIdNotAndIsReadFalse(String conversationId, String senderId);
+
     long countByConversationIdAndIsReadFalseAndSenderIdNot(String conversationId, String userId);
 }

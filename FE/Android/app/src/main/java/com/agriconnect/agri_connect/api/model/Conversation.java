@@ -19,6 +19,19 @@ public class Conversation {
     @SerializedName("updatedAt")
     private String updatedAt;
 
+    // Additional fields from ConversationResponse
+    @SerializedName("otherUserId")
+    private String otherUserId;
+
+    @SerializedName("otherUserName")
+    private String otherUserName;
+
+    @SerializedName("otherUserAvatar")
+    private String otherUserAvatar;
+
+    @SerializedName("unreadCount")
+    private int unreadCount;
+
     // Getters
     public String getId() {
         return id;
@@ -34,6 +47,22 @@ public class Conversation {
 
     public String getUpdatedAt() {
         return updatedAt;
+    }
+
+    public String getOtherUserId() {
+        return otherUserId;
+    }
+
+    public String getOtherUserName() {
+        return otherUserName;
+    }
+
+    public String getOtherUserAvatar() {
+        return otherUserAvatar;
+    }
+
+    public int getUnreadCount() {
+        return unreadCount;
     }
 
     // Setters
@@ -53,18 +82,29 @@ public class Conversation {
         this.updatedAt = updatedAt;
     }
 
-    // Helper for legacy code (will return null for now until backend or logic
-    // provides it)
+    public void setOtherUserId(String otherUserId) {
+        this.otherUserId = otherUserId;
+    }
+
+    public void setOtherUserName(String otherUserName) {
+        this.otherUserName = otherUserName;
+    }
+
+    public void setOtherUserAvatar(String otherUserAvatar) {
+        this.otherUserAvatar = otherUserAvatar;
+    }
+
+    public void setUnreadCount(int unreadCount) {
+        this.unreadCount = unreadCount;
+    }
+
+    // Helper methods for compatibility
     public String getParticipantName() {
-        return null;
+        return otherUserName;
     }
 
     public String getParticipantAvatarUrl() {
-        return null;
-    }
-
-    public int getUnreadCount() {
-        return 0;
+        return otherUserAvatar;
     }
 
     public String getLastMessageText() {
