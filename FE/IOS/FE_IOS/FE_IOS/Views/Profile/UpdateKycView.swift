@@ -46,87 +46,102 @@ struct UpdateKycView: View {
                 
                 // Form
                 VStack(spacing: 20) {
-                    // ID Number
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Số CCCD/CMND")
-                            .font(.subheadline)
-                            .foregroundColor(.gray)
+                    if userProfile?.role == "TRADER" {
+                        // TRADER Form: Tax Code Only
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Mã số thuế")
+                                .font(.subheadline)
+                                .foregroundColor(.gray)
+                            
+                            TextField("Nhập mã số thuế doanh nghiệp", text: $idNumber) // Reuse idNumber state for taxCode
+                                .padding()
+                                .background(Color(.systemGray6))
+                                .cornerRadius(12)
+                                .keyboardType(.numberPad)
+                        }
+                    } else {
+                        // FARMER Form: CCCD + Images
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Số CCCD/CMND")
+                                .font(.subheadline)
+                                .foregroundColor(.gray)
+                            
+                            TextField("Nhập số giấy tờ tùy thân", text: $idNumber)
+                                .padding()
+                                .background(Color(.systemGray6))
+                                .cornerRadius(12)
+                                .keyboardType(.numberPad)
+                        }
                         
-                        TextField("Nhập số giấy tờ tùy thân", text: $idNumber)
-                            .padding()
-                            .background(Color(.systemGray6))
-                            .cornerRadius(12)
-                            .keyboardType(.numberPad)
-                    }
-                    
-                    // Front Image
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Mặt trước CCCD")
-                            .font(.subheadline)
-                            .foregroundColor(.gray)
-                        
-                        Button {
-                            showFrontImagePicker = true
-                        } label: {
-                            if let image = frontImage {
-                                Image(uiImage: image)
-                                    .resizable()
-                                    .scaledToFill()
-                                    .frame(height: 200)
-                                    .frame(maxWidth: .infinity)
-                                    .cornerRadius(12)
-                                    .clipped()
-                            } else {
-                                ZStack {
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .stroke(style: StrokeStyle(lineWidth: 1, dash: [5]))
-                                        .foregroundColor(.gray)
-                                        .frame(height: 150)
-                                    
-                                    VStack(spacing: 8) {
-                                        Image(systemName: "camera.fill")
-                                            .font(.system(size: 30))
+                        // Front Image
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Mặt trước CCCD")
+                                .font(.subheadline)
+                                .foregroundColor(.gray)
+                            
+                            Button {
+                                showFrontImagePicker = true
+                            } label: {
+                                if let image = frontImage {
+                                    Image(uiImage: image)
+                                        .resizable()
+                                        .scaledToFill()
+                                        .frame(height: 200)
+                                        .frame(maxWidth: .infinity)
+                                        .cornerRadius(12)
+                                        .clipped()
+                                } else {
+                                    ZStack {
+                                        RoundedRectangle(cornerRadius: 12)
+                                            .stroke(style: StrokeStyle(lineWidth: 1, dash: [5]))
                                             .foregroundColor(.gray)
-                                        Text("Chụp ảnh mặt trước")
-                                            .font(.caption)
-                                            .foregroundColor(.gray)
+                                            .frame(height: 150)
+                                        
+                                        VStack(spacing: 8) {
+                                            Image(systemName: "camera.fill")
+                                                .font(.system(size: 30))
+                                                .foregroundColor(.gray)
+                                            Text("Chụp ảnh mặt trước")
+                                                .font(.caption)
+                                                .foregroundColor(.gray)
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
-                    
-                    // Back Image
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Mặt sau CCCD")
-                            .font(.subheadline)
-                            .foregroundColor(.gray)
                         
-                        Button {
-                            showBackImagePicker = true
-                        } label: {
-                            if let image = backImage {
-                                Image(uiImage: image)
-                                    .resizable()
-                                    .scaledToFill()
-                                    .frame(height: 200)
-                                    .frame(maxWidth: .infinity)
-                                    .cornerRadius(12)
-                                    .clipped()
-                            } else {
-                                ZStack {
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .stroke(style: StrokeStyle(lineWidth: 1, dash: [5]))
-                                        .foregroundColor(.gray)
-                                        .frame(height: 150)
-                                    
-                                    VStack(spacing: 8) {
-                                        Image(systemName: "camera.fill")
-                                            .font(.system(size: 30))
+                        // Back Image
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Mặt sau CCCD")
+                                .font(.subheadline)
+                                .foregroundColor(.gray)
+                            
+                            Button {
+                                showBackImagePicker = true
+                            } label: {
+                                if let image = backImage {
+                                    Image(uiImage: image)
+                                        .resizable()
+                                        .scaledToFill()
+                                        .frame(height: 200)
+                                        .frame(maxWidth: .infinity)
+                                        .cornerRadius(12)
+                                        .clipped()
+                                } else {
+                                    ZStack {
+                                        RoundedRectangle(cornerRadius: 12)
+                                            .stroke(style: StrokeStyle(lineWidth: 1, dash: [5]))
                                             .foregroundColor(.gray)
-                                        Text("Chụp ảnh mặt sau")
-                                            .font(.caption)
-                                            .foregroundColor(.gray)
+                                            .frame(height: 150)
+                                        
+                                        VStack(spacing: 8) {
+                                            Image(systemName: "camera.fill")
+                                                .font(.system(size: 30))
+                                                .foregroundColor(.gray)
+                                            Text("Chụp ảnh mặt sau")
+                                                .font(.caption)
+                                                .foregroundColor(.gray)
+                                        }
                                     }
                                 }
                             }
@@ -205,10 +220,48 @@ struct UpdateKycView: View {
     }
     
     var isValid: Bool {
-        return !idNumber.isEmpty && frontImage != nil && backImage != nil
+        if userProfile?.role == "TRADER" {
+            // Trader: Only Tax Code required
+            return !idNumber.isEmpty
+        } else {
+            // Farmer: ID + Images required
+            return !idNumber.isEmpty && frontImage != nil && backImage != nil
+        }
     }
     
     func submitKyc() {
+        if userProfile?.role == "TRADER" {
+            submitTraderKyc()
+        } else {
+            submitFarmerKyc()
+        }
+    }
+    
+    // Separate submission functions for clarity
+    func submitTraderKyc() {
+        isLoading = true
+        
+        let kycData = KycSubmissionRequest(
+            kycType: "TAX_CODE",
+            idNumber: nil,
+            idFrontImage: nil,
+            idBackImage: nil,
+            taxCode: idNumber, // Using idNumber field for Tax Code input
+            companyName: nil,
+            businessLicense: nil
+        )
+        
+        APIClient.shared.request(
+            endpoint: "/users/kyc-info",
+            method: .post,
+            body: kycData
+        ) { (result: Result<ApiResponse<UserProfile>, Error>) in
+            isLoading = false
+            handleSubmissionResult(result)
+        }
+    }
+
+    func submitFarmerKyc() {
         guard let front = frontImage, let back = backImage else { return }
         
         isLoading = true
@@ -257,7 +310,6 @@ struct UpdateKycView: View {
             }
             
             // 2. Submit KYC Data
-            // Use "CCCD" for personal ID verification
             let kycData = KycSubmissionRequest(
                 kycType: "CCCD",
                 idNumber: idNumber,
@@ -274,19 +326,23 @@ struct UpdateKycView: View {
                 body: kycData
             ) { (result: Result<ApiResponse<UserProfile>, Error>) in
                 isLoading = false
-                switch result {
-                case .success(let response):
-                    if response.success {
-                        showSuccess = true
-                    } else {
-                        errorMessage = response.message ?? "Gửi yêu cầu thất bại"
-                        showError = true
-                    }
-                case .failure(let error):
-                    errorMessage = "Lỗi kết nối: \(error.localizedDescription)"
-                    showError = true
-                }
+                handleSubmissionResult(result)
             }
+        }
+    }
+    
+    private func handleSubmissionResult(_ result: Result<ApiResponse<UserProfile>, Error>) {
+        switch result {
+        case .success(let response):
+            if response.success {
+                showSuccess = true
+            } else {
+                errorMessage = response.message ?? "Gửi yêu cầu thất bại"
+                showError = true
+            }
+        case .failure(let error):
+            errorMessage = "Lỗi kết nối: \(error.localizedDescription)"
+            showError = true
         }
     }
 }

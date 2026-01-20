@@ -105,8 +105,15 @@ struct ProfileView: View {
                         
                         Divider().padding(.horizontal)
                         
-                        NavigationLink(destination: KycStatusView()) {
-                            ProfileMenuRow(icon: "checkmark.shield.fill", title: "Xác minh danh tính", color: .green)
+                        if let user = userProfile,
+                           (user.kycStatus == "NONE" || user.kycStatus == "REJECTED" || user.kycStatus == nil) {
+                            NavigationLink(destination: UpdateKycView(userProfile: user)) {
+                                ProfileMenuRow(icon: "checkmark.shield.fill", title: "Xác minh danh tính", color: .green)
+                            }
+                        } else {
+                            NavigationLink(destination: KycStatusView()) {
+                                ProfileMenuRow(icon: "checkmark.shield.fill", title: "Xác minh danh tính", color: .green)
+                            }
                         }
                         
                         if TokenManager.shared.userRole == "ADMIN" {
