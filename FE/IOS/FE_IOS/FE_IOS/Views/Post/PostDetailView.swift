@@ -194,7 +194,7 @@ struct PostDetailView: View {
                     .padding()
                 }
                 
-                // Hidden Navigation Link for KYC Redirect
+                // Hidden Navigation Link
                 if let profile = TokenManager.shared.userProfile {
                     NavigationLink(
                         destination: UpdateKycView(userProfile: profile),
@@ -216,9 +216,8 @@ struct PostDetailView: View {
                 title: Text(kycAlertTitle),
                 message: Text(kycAlertMessage),
                 primaryButton: .default(Text("Xác thực ngay")) {
-                    if TokenManager.shared.userProfile != nil {
-                        navigateToVerification = true
-                    }
+                    // Trigger navigation state
+                    self.navigateToVerification = true
                 },
                 secondaryButton: .cancel(Text("Để sau"))
             )
