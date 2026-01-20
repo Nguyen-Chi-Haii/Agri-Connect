@@ -199,6 +199,8 @@ struct PostDetailView: View {
             loadPost()
             startStatsPolling()
         }
+        .onDisappear {
+            stopStatsPolling()
         }
         .alert(isPresented: $showKYCAlert) {
             KYCHelper.showKYCAlert(title: kycAlertTitle, message: kycAlertMessage, navigateToProfile: nil)

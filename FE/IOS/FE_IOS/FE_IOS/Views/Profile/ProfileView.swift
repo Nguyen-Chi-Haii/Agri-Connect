@@ -249,7 +249,7 @@ struct MyPostsListView: View {
             
             Divider()
             
-            Group {
+            VStack {
                 if isLoading && posts.isEmpty {
                     ProgressView()
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
