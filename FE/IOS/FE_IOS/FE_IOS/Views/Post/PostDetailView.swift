@@ -18,61 +18,17 @@ struct PostDetailView: View {
     @State private var navigateToVerification = false
     
     var body: some View {
-        ScrollView {
-            if isLoading {
-                ProgressView()
-                    .frame(maxWidth: .infinity, minHeight: 300)
-            } else if let post = post {
-                VStack(alignment: .leading, spacing: 16) {
-                    PostImageSection(images: post.images)
-                    
-                    VStack(alignment: .leading, spacing: 12) {
-                        PostInfoSection(post: post)
-                        
-                        Divider()
-                        
-                        PostActionSection(
-                            isLiked: $isLiked,
-                            likeCount: $likeCount,
-                            commentCount: $commentCount,
-                            onLike: toggleLike,
-                            onChat: startChat
-                        )
-                        .padding(.vertical, 8)
-                        
-                        Divider()
-                        
-                        PostDetailListSection(post: post, formatDate: formatDate)
-                        
-                        Divider()
-                        
-                        if let desc = post.description {
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text("Mô tả").font(.headline)
-                                Text(desc).foregroundColor(.secondary)
-                            }
-                        }
-                        
-                        Divider().padding(.vertical, 8)
-                        
-                        PostCommentSection(
-                            commentCount: commentCount,
-                            commentText: $commentText,
-                            comments: comments,
-                            isLoadingComments: isLoadingComments,
-                            onSend: sendComment
-                        )
-                    }
-                    .padding()
-                }
-                
-                // Hidden Navigation Link
-                if let profile = TokenManager.shared.userProfile {
-                    NavigationLink(
-                        destination: UpdateKycView(userProfile: profile),
-                        isActive: $navigateToVerification
-                    ) { EmptyView() }
-                }
+        ZStack {
+            // Main Content
+            contentView
+            
+            // Hidden Link for Redirect
+            if let profile = TokenManager.shared.userProfile {
+                NavigationLink(
+                    destination: UpdateKycView(userProfile: profile),
+                    isActive: $navigateToVerification
+                ) { EmptyView() }
+                .hidden()
             }
         }
         .navigationBarTitleDisplayMode(.inline)
@@ -92,6 +48,67 @@ struct PostDetailView: View {
                 },
                 secondaryButton: .cancel(Text("Để sau"))
             )
+        }
+    }
+    
+    // MARK: - Subviews
+    
+    @ViewBuilder
+    private var contentView: some View {
+        if isLoading {
+            ProgressView()
+                .frame(maxWidth: .infinity, minHeight: 300)
+        } else if let post = post {
+            mainPostView(post)
+        } else {
+            EmptyView()
+        }
+    }
+    
+    private func mainPostView(_ post: Post) -> some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                PostImageSection(images: post.images)
+                
+                VStack(alignment: .leading, spacing: 12) {
+                    PostInfoSection(post: post)
+                    
+                    Divider()
+                    
+                    PostActionSection(
+                        isLiked: $isLiked,
+                        likeCount: $likeCount,
+                        commentCount: $commentCount,
+                        onLike: toggleLike,
+                        onChat: startChat
+                    )
+                    .padding(.vertical, 8)
+                    
+                    Divider()
+                    
+                    PostDetailListSection(post: post, formatDate: formatDate)
+                    
+                    Divider()
+                    
+                    if let desc = post.description {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Mô tả").font(.headline)
+                            Text(desc).foregroundColor(.secondary)
+                        }
+                    }
+                    
+                    Divider().padding(.vertical, 8)
+                    
+                    PostCommentSection(
+                        commentCount: commentCount,
+                        commentText: $commentText,
+                        comments: comments,
+                        isLoadingComments: isLoadingComments,
+                        onSend: sendComment
+                    )
+                }
+                .padding()
+            }
         }
     }
     
