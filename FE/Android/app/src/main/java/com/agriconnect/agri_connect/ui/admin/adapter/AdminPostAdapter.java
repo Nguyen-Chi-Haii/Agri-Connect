@@ -31,6 +31,8 @@ public class AdminPostAdapter extends RecyclerView.Adapter<AdminPostAdapter.View
 
         void onReject(Post post);
 
+        void onDelete(Post post);
+
         void onClose(Post post);
     }
 
