@@ -257,21 +257,14 @@ struct UpdateKycView: View {
             }
             
             // 2. Submit KYC Data
-            let kycData: [String: Any] = [
-                "idNumber": idNumber,
-                "idFrontImage": fUrl,
-                "idBackImage": bUrl
-            ]
-            
-            // Assuming endpoint is similar to registration or a specific /kyc endpoint
-            // Based on Android code, it might be separate or part of profile update.
-            // Let's assume a dedicated endpoint or profile update.
-            // Android uses /api/users/kyc-submission (inferred)
-            // Let's check APIConfig first but for now I'll use a placeholder endpoint string
-            // I'll update APIConfig in next step if needed.
+            let kycData = KycSubmissionRequest(
+                idNumber: idNumber,
+                idFrontImage: fUrl,
+                idBackImage: bUrl
+            )
             
             APIClient.shared.request(
-                endpoint: "/users/kyc-info", // Needs verification with APIConfig
+                endpoint: "/users/kyc-info", 
                 method: .post,
                 body: kycData
             ) { (result: Result<ApiResponse<UserProfile>, Error>) in
@@ -289,6 +282,45 @@ struct UpdateKycView: View {
                     showError = true
                 }
             }
+        }
+    }
+}
+
+struct KycSubmissionRequest: Encodable {
+    let idNumber: String
+    let idFrontImage: String
+    let idBackImage: String
+}
+
+struct KycStatusBadge: View {
+    let status: String
+    
+    var body: some View {
+        Text(statusText)
+            .font(.caption)
+            .fontWeight(.bold)
+            .foregroundColor(.white)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(statusColor)
+            .cornerRadius(8)
+    }
+    
+    var statusText: String {
+        switch status {
+        case "APPROVED", "VERIFIED": return "Đã xác minh"
+        case "PENDING": return "Chờ duyệt"
+        case "REJECTED": return "Bị từ chối"
+        default: return "Chưa xác minh"
+        }
+    }
+    
+    var statusColor: Color {
+        switch status {
+        case "APPROVED", "VERIFIED": return .green
+        case "PENDING": return .orange
+        case "REJECTED": return .red
+        default: return .gray
         }
     }
 }
