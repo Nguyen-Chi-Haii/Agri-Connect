@@ -241,7 +241,7 @@ struct PostCard: View {
                     HStack(spacing: 4) {
                         Image(systemName: (post.isLiked ?? false) ? "heart.fill" : "heart")
                             .foregroundColor((post.isLiked ?? false) ? .red : .gray)
-                        Text("\(post.likeCount ?? 0)")
+                        Text("\((post.isLiked ?? false) ? max(1, post.likeCount ?? 0) : max(0, post.likeCount ?? 0))")
                             .font(.caption)
                             .foregroundColor(.gray)
                     }

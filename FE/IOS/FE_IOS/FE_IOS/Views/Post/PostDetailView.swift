@@ -265,6 +265,7 @@ struct PostDetailView: View {
     private func formatDate(_ dateString: String) -> String {
         let components = dateString.prefix(10).split(separator: "-")
         if components.count >= 3 {
+//...
             return "\(components[2])/\(components[1])/\(components[0])"
         }
         return dateString
@@ -350,7 +351,8 @@ struct PostActionSection: View {
                 HStack(spacing: 4) {
                     Image(systemName: isLiked ? "heart.fill" : "heart")
                         .foregroundColor(isLiked ? .red : .gray)
-                    Text("\(likeCount)").foregroundColor(isLiked ? .red : .gray)
+                    Text("\(isLiked ? max(1, likeCount) : max(0, likeCount))")
+                        .foregroundColor(isLiked ? .red : .gray)
                 }
             }
             
