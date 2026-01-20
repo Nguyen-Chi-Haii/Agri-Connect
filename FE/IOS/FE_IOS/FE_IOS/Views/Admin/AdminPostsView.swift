@@ -103,7 +103,7 @@ struct AdminPostsView: View {
             } else {
                 List(filteredPosts) { post in
                     ZStack {
-                        NavigationLink(destination: PostDetailView(post: post)) {
+                        NavigationLink(destination: PostDetailView(postId: post.id)) {
                             EmptyView()
                         }
                         .opacity(0)
@@ -326,13 +326,13 @@ struct AdminPostRow: View {
                             HStack {
                                 Image(systemName: "lock.fill")
                                 Text("Đóng bài")
+                                    .fontWeight(.medium)
                             }
                             .font(.caption)
-                            .fontWeight(.medium)
                             .padding(.horizontal, 12)
                             .padding(.vertical, 6)
                             .background(Color.orange.opacity(0.1))
-                            .foregroundColor(.orange)
+                            .foregroundColor(Color.orange)
                             .cornerRadius(8)
                         }
                     }
