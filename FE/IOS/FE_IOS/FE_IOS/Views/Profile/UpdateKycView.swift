@@ -257,10 +257,15 @@ struct UpdateKycView: View {
             }
             
             // 2. Submit KYC Data
+            // Use "CCCD" for personal ID verification
             let kycData = KycSubmissionRequest(
+                kycType: "CCCD",
                 idNumber: idNumber,
                 idFrontImage: fUrl,
-                idBackImage: bUrl
+                idBackImage: bUrl,
+                taxCode: nil,
+                companyName: nil,
+                businessLicense: nil
             )
             
             APIClient.shared.request(
@@ -286,11 +291,6 @@ struct UpdateKycView: View {
     }
 }
 
-struct KycSubmissionRequest: Encodable {
-    let idNumber: String
-    let idFrontImage: String
-    let idBackImage: String
-}
 
 struct KycStatusBadge: View {
     let status: String
