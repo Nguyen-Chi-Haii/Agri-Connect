@@ -4,9 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import vn.agriconnect.API.dto.request.post.PostCreateRequest;
 import vn.agriconnect.API.dto.response.PostDetailResponse;
-import vn.agriconnect.API.model.Category;
 import vn.agriconnect.API.model.Post;
-import vn.agriconnect.API.model.User;
 import vn.agriconnect.API.repository.CategoryRepository;
 import vn.agriconnect.API.repository.UserRepository;
 

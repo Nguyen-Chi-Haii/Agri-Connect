@@ -18,6 +18,6 @@ public interface PostService {
     void approve(String postId);
     void reject(String postId, String reason);
     void incrementViewCount(String postId);
-    void toggleLike(String postId);
+    vn.agriconnect.API.dto.response.PostInteractionResponse toggleLike(String postId);
     void close(String postId);
 }

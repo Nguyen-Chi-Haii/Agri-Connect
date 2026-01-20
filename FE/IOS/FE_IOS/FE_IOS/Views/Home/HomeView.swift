@@ -305,8 +305,11 @@ struct PostCard: View {
         APIClient.shared.request(
             endpoint: "/posts/\(post.id)/like",
             method: .post
-        ) { (result: Result<ApiResponse<EmptyResponse>, Error>) in
-            if case .failure = result {
+        ) { (result: Result<ApiResponse<PostInteractionResponse>, Error>) in
+            if case .success(let response) = result, let data = response.data {
+                isLiked = data.isLiked ?? isLiked
+                likeCount = data.likeCount ?? likeCount
+            } else if case .failure = result {
                 isLiked.toggle()
                 likeCount += isLiked ? 1 : -1
             }

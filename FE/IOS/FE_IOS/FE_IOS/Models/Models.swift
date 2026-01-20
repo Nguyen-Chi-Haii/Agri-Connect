@@ -172,6 +172,12 @@ struct Post: Decodable, Identifiable {
     var authorName: String? { sellerName } // Alias for backward compatibility if needed
 }
 
+struct PostInteractionResponse: Decodable {
+    let likeCount: Int?
+    let commentCount: Int?
+    let isLiked: Bool?
+}
+
 struct CreateLocationRequest: Encodable {
     let province: String?
     let district: String?

@@ -92,9 +92,9 @@ public class PostController {
         return ResponseEntity.ok(ApiResponse.success("Bài đăng đã bị từ chối", null));
     }
     @PostMapping("/{postId}/like")
-    public ResponseEntity<ApiResponse<Void>> toggleLike(@PathVariable String postId) {
-        postService.toggleLike(postId);
-        return ResponseEntity.ok(ApiResponse.success(null));
+    public ResponseEntity<ApiResponse<vn.agriconnect.API.dto.response.PostInteractionResponse>> toggleLike(@PathVariable String postId) {
+        vn.agriconnect.API.dto.response.PostInteractionResponse result = postService.toggleLike(postId);
+        return ResponseEntity.ok(ApiResponse.success(result));
     }
 
     @PutMapping("/{postId}/close")

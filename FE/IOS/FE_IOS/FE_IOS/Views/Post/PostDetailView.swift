@@ -249,8 +249,13 @@ struct PostDetailView: View {
         APIClient.shared.request(
             endpoint: "\(APIConfig.Posts.list)/\(postId)/like",
             method: .post
-        ) { (result: Result<ApiResponse<EmptyResponse>, Error>) in
-            if case .failure = result {
+        ) { (result: Result<ApiResponse<PostInteractionResponse>, Error>) in
+            if case .success(let response) = result, let data = response.data {
+                // Sync with server values
+                isLiked = data.isLiked ?? isLiked
+                likeCount = data.likeCount ?? likeCount
+                commentCount = data.commentCount ?? commentCount
+            } else if case .failure = result {
                 // Revert on failure
                 isLiked.toggle()
                 likeCount += isLiked ? 1 : -1

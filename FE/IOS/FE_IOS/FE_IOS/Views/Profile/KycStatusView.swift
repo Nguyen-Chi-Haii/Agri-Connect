@@ -54,6 +54,22 @@ struct KycStatusView: View {
                         .cornerRadius(12)
                         .padding(.horizontal)
                         
+                        // ID Images
+                        if let front = kyc.idFrontImage {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("Hình ảnh xác minh")
+                                    .font(.headline)
+                                
+                                HStack(spacing: 12) {
+                                    KycImageView(url: front, title: "Mặt trước")
+                                    if let back = kyc.idBackImage {
+                                        KycImageView(url: back, title: "Mặt sau")
+                                    }
+                                }
+                            }
+                            .padding(.horizontal)
+                        }
+                        
                         if let reason = kyc.reason {
                             VStack(alignment: .leading, spacing: 8) {
                                 Text("Lý do từ chối")
@@ -154,6 +170,56 @@ struct DetailInfoRow: View {
                 .fontWeight(.medium)
         }
         .padding()
+    }
+}
+
+struct KycImageView: View {
+    let url: String
+    let title: String
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(title)
+                .font(.caption)
+                .foregroundColor(.gray)
+            
+            if let imageUrl = URL(string: url) {
+                AsyncImage(url: imageUrl) { phase in
+                    switch phase {
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 120)
+                            .cornerRadius(8)
+                    case .failure(_):
+                        placeholderView
+                    case .empty:
+                        ProgressView()
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 120)
+                    @unknown default:
+                        EmptyView()
+                    }
+                }
+            } else {
+                placeholderView
+            }
+        }
+        .frame(maxWidth: .infinity)
+    }
+    
+    private var placeholderView: some View {
+        Rectangle()
+            .fill(Color.gray.opacity(0.1))
+            .frame(maxWidth: .infinity)
+            .frame(height: 120)
+            .cornerRadius(8)
+            .overlay(
+                Image(systemName: "photo")
+                    .foregroundColor(.gray)
+            )
     }
 }
 

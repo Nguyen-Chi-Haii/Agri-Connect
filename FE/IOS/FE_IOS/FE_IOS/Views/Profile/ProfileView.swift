@@ -225,7 +225,7 @@ struct MyPostsListView: View {
     
     var body: some View {
         Group {
-            if isLoading {
+            if isLoading && posts.isEmpty {
                 ProgressView()
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if posts.isEmpty {
@@ -247,7 +247,7 @@ struct MyPostsListView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 VStack(spacing: 0) {
-                    // Filters
+                    // Filters (Always visible if user has any posts)
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 8) {
                             ForEach(filters, id: \.0) { filter in
@@ -278,17 +278,30 @@ struct MyPostsListView: View {
                     
                     Divider()
                     
-                    List {
-                        ForEach(filteredPosts) { post in
-                            NavigationLink(destination: PostDetailView(postId: post.id)) {
-                                MyPostRow(post: post, onDelete: {
-                                    postToDelete = post
-                                    showDeleteAlert = true
-                                })
+                    if filteredPosts.isEmpty {
+                        VStack(spacing: 16) {
+                            Spacer()
+                            Image(systemName: "magnifyingglass")
+                                .font(.system(size: 40))
+                                .foregroundColor(.gray)
+                            Text("Không có bài viết nào với trạng thái này")
+                                .foregroundColor(.gray)
+                            Spacer()
+                        }
+                        .frame(maxWidth: .infinity)
+                    } else {
+                        List {
+                            ForEach(filteredPosts) { post in
+                                NavigationLink(destination: PostDetailView(postId: post.id)) {
+                                    MyPostRow(post: post, onDelete: {
+                                        postToDelete = post
+                                        showDeleteAlert = true
+                                    })
+                                }
                             }
                         }
+                        .listStyle(PlainListStyle())
                     }
-                    .listStyle(PlainListStyle())
                 }
             }
         }
