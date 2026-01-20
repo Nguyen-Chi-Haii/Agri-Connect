@@ -29,6 +29,8 @@ class TokenManager: ObservableObject {
         }
     }
     
+    @Published var userProfile: UserProfile?
+    
     var refreshToken: String? {
         get { KeychainHelper.get(key: refreshTokenKey) }
         set {
