@@ -29,6 +29,23 @@
 		01D566F12F18E8250085C9BD /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01D566DA2F18E8210085C9BD /* SearchView.swift */; };
 		01D566F22F18E8250085C9BD /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01D566DC2F18E8220085C9BD /* APIClient.swift */; };
 		01D566F32F18E8250085C9BD /* TokenManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01D566DD2F18E8220085C9BD /* TokenManager.swift */; };
+		3E65D5CF2F1FCC7600379D60 /* Configuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E65D5CE2F1FCC7600379D60 /* Configuration.swift */; };
+		3E65D5D42F1FCC8700379D60 /* ImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E65D5D12F1FCC8700379D60 /* ImagePicker.swift */; };
+		3E65D5D52F1FCC8700379D60 /* KYCHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E65D5D22F1FCC8700379D60 /* KYCHelper.swift */; };
+		3E65D5D62F1FCC8700379D60 /* LocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E65D5D32F1FCC8700379D60 /* LocationManager.swift */; };
+		3E65D5DC2F1FCC9A00379D60 /* CommentRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E65D5D82F1FCC9900379D60 /* CommentRow.swift */; };
+		3E65D5DD2F1FCC9A00379D60 /* PostStatusBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E65D5D92F1FCC9900379D60 /* PostStatusBadge.swift */; };
+		3E65D5DE2F1FCC9A00379D60 /* MyPostRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E65D5DA2F1FCC9900379D60 /* MyPostRow.swift */; };
+		3E65D5DF2F1FCC9A00379D60 /* EditPostView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E65D5DB2F1FCC9900379D60 /* EditPostView.swift */; };
+		3E65D5E32F1FCCAA00379D60 /* AdminSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E65D5E02F1FCCA900379D60 /* AdminSettingsView.swift */; };
+		3E65D5E42F1FCCAA00379D60 /* EditCategoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E65D5E12F1FCCA900379D60 /* EditCategoryView.swift */; };
+		3E65D5E52F1FCCAA00379D60 /* AdminTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E65D5E22F1FCCA900379D60 /* AdminTabView.swift */; };
+		3E65D5EA2F1FCCCF00379D60 /* LocationFillButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E65D5E72F1FCCCF00379D60 /* LocationFillButton.swift */; };
+		3E65D5EB2F1FCCD000379D60 /* CategoryChip.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E65D5E82F1FCCCF00379D60 /* CategoryChip.swift */; };
+		3E65D5EC2F1FCCD000379D60 /* ValidatedFormField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E65D5E92F1FCCCF00379D60 /* ValidatedFormField.swift */; };
+		3E65D5EE2F1FCCDE00379D60 /* ChatDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E65D5ED2F1FCCDE00379D60 /* ChatDetailView.swift */; };
+		3E65D5F12F1FCCEA00379D60 /* KycStatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E65D5EF2F1FCCEA00379D60 /* KycStatusView.swift */; };
+		3E65D5F22F1FCCEA00379D60 /* UpdateKycView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E65D5F02F1FCCEA00379D60 /* UpdateKycView.swift */; };
 		3E7F22632F1774FA00FD2849 /* FE_IOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E7F22622F1774FA00FD2849 /* FE_IOSApp.swift */; };
 		3E7F22652F1774FB00FD2849 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E7F22642F1774FB00FD2849 /* ContentView.swift */; };
 		3E7F22672F1774FF00FD2849 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3E7F22662F1774FF00FD2849 /* Assets.xcassets */; };
@@ -78,6 +95,23 @@
 		01D566DA2F18E8210085C9BD /* SearchView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SearchView.swift; sourceTree = "<group>"; };
 		01D566DC2F18E8220085C9BD /* APIClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
 		01D566DD2F18E8220085C9BD /* TokenManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TokenManager.swift; sourceTree = "<group>"; };
+		3E65D5CE2F1FCC7600379D60 /* Configuration.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Configuration.swift; sourceTree = "<group>"; };
+		3E65D5D12F1FCC8700379D60 /* ImagePicker.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImagePicker.swift; sourceTree = "<group>"; };
+		3E65D5D22F1FCC8700379D60 /* KYCHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KYCHelper.swift; sourceTree = "<group>"; };
+		3E65D5D32F1FCC8700379D60 /* LocationManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocationManager.swift; sourceTree = "<group>"; };
+		3E65D5D82F1FCC9900379D60 /* CommentRow.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CommentRow.swift; sourceTree = "<group>"; };
+		3E65D5D92F1FCC9900379D60 /* PostStatusBadge.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PostStatusBadge.swift; sourceTree = "<group>"; };
+		3E65D5DA2F1FCC9900379D60 /* MyPostRow.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MyPostRow.swift; sourceTree = "<group>"; };
+		3E65D5DB2F1FCC9900379D60 /* EditPostView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EditPostView.swift; sourceTree = "<group>"; };
+		3E65D5E02F1FCCA900379D60 /* AdminSettingsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AdminSettingsView.swift; sourceTree = "<group>"; };
+		3E65D5E12F1FCCA900379D60 /* EditCategoryView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EditCategoryView.swift; sourceTree = "<group>"; };
+		3E65D5E22F1FCCA900379D60 /* AdminTabView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AdminTabView.swift; sourceTree = "<group>"; };
+		3E65D5E72F1FCCCF00379D60 /* LocationFillButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocationFillButton.swift; sourceTree = "<group>"; };
+		3E65D5E82F1FCCCF00379D60 /* CategoryChip.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CategoryChip.swift; sourceTree = "<group>"; };
+		3E65D5E92F1FCCCF00379D60 /* ValidatedFormField.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ValidatedFormField.swift; sourceTree = "<group>"; };
+		3E65D5ED2F1FCCDE00379D60 /* ChatDetailView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChatDetailView.swift; sourceTree = "<group>"; };
+		3E65D5EF2F1FCCEA00379D60 /* KycStatusView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KycStatusView.swift; sourceTree = "<group>"; };
+		3E65D5F02F1FCCEA00379D60 /* UpdateKycView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UpdateKycView.swift; sourceTree = "<group>"; };
 		3E7F225F2F1774FA00FD2849 /* FE_IOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FE_IOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3E7F22622F1774FA00FD2849 /* FE_IOSApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FE_IOSApp.swift; sourceTree = "<group>"; };
 		3E7F22642F1774FB00FD2849 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -134,6 +168,7 @@
 		01D566C02F18E81B0085C9BD /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				3E65D5E62F1FCCCF00379D60 /* Components */,
 				01D566C12F18E81C0085C9BD /* Admin */,
 				01D566C62F18E81D0085C9BD /* Auth */,
 				01D566CC2F18E81F0085C9BD /* Chat */,
@@ -150,6 +185,9 @@
 		01D566C12F18E81C0085C9BD /* Admin */ = {
 			isa = PBXGroup;
 			children = (
+				3E65D5E02F1FCCA900379D60 /* AdminSettingsView.swift */,
+				3E65D5E22F1FCCA900379D60 /* AdminTabView.swift */,
+				3E65D5E12F1FCCA900379D60 /* EditCategoryView.swift */,
 				01D566C22F18E81C0085C9BD /* AdminCategoriesView.swift */,
 				01D566C32F18E81C0085C9BD /* AdminDashboardView.swift */,
 				01D566C42F18E81C0085C9BD /* AdminPostsView.swift */,
@@ -173,6 +211,7 @@
 		01D566CC2F18E81F0085C9BD /* Chat */ = {
 			isa = PBXGroup;
 			children = (
+				3E65D5ED2F1FCCDE00379D60 /* ChatDetailView.swift */,
 				01D566CD2F18E81F0085C9BD /* ChatListView.swift */,
 			);
 			path = Chat;
@@ -205,6 +244,8 @@
 		01D566D42F18E81F0085C9BD /* Post */ = {
 			isa = PBXGroup;
 			children = (
+				3E65D5D72F1FCC9900379D60 /* Components */,
+				3E65D5DB2F1FCC9900379D60 /* EditPostView.swift */,
 				01D566D52F18E8200085C9BD /* CreatePostView.swift */,
 				01D566D62F18E8200085C9BD /* PostDetailView.swift */,
 			);
@@ -214,6 +255,8 @@
 		01D566D72F18E8200085C9BD /* Profile */ = {
 			isa = PBXGroup;
 			children = (
+				3E65D5EF2F1FCCEA00379D60 /* KycStatusView.swift */,
+				3E65D5F02F1FCCEA00379D60 /* UpdateKycView.swift */,
 				01D566D82F18E8200085C9BD /* ProfileView.swift */,
 			);
 			path = Profile;
@@ -230,10 +273,41 @@
 		01D566DB2F18E8220085C9BD /* Network */ = {
 			isa = PBXGroup;
 			children = (
+				3E65D5CE2F1FCC7600379D60 /* Configuration.swift */,
 				01D566DC2F18E8220085C9BD /* APIClient.swift */,
 				01D566DD2F18E8220085C9BD /* TokenManager.swift */,
 			);
 			path = Network;
+			sourceTree = "<group>";
+		};
+		3E65D5D02F1FCC8700379D60 /* Helpers */ = {
+			isa = PBXGroup;
+			children = (
+				3E65D5D12F1FCC8700379D60 /* ImagePicker.swift */,
+				3E65D5D22F1FCC8700379D60 /* KYCHelper.swift */,
+				3E65D5D32F1FCC8700379D60 /* LocationManager.swift */,
+			);
+			path = Helpers;
+			sourceTree = "<group>";
+		};
+		3E65D5D72F1FCC9900379D60 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				3E65D5D82F1FCC9900379D60 /* CommentRow.swift */,
+				3E65D5D92F1FCC9900379D60 /* PostStatusBadge.swift */,
+				3E65D5DA2F1FCC9900379D60 /* MyPostRow.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		3E65D5E62F1FCCCF00379D60 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				3E65D5E72F1FCCCF00379D60 /* LocationFillButton.swift */,
+				3E65D5E82F1FCCCF00379D60 /* CategoryChip.swift */,
+				3E65D5E92F1FCCCF00379D60 /* ValidatedFormField.swift */,
+			);
+			path = Components;
 			sourceTree = "<group>";
 		};
 		3E7F22562F1774FA00FD2849 = {
@@ -259,6 +333,7 @@
 		3E7F22612F1774FA00FD2849 /* FE_IOS */ = {
 			isa = PBXGroup;
 			children = (
+				3E65D5D02F1FCC8700379D60 /* Helpers */,
 				01D566BD2F18E8190085C9BD /* Assets.xcassets */,
 				01D566BE2F18E81A0085C9BD /* Models */,
 				01D566DB2F18E8220085C9BD /* Network */,
@@ -430,10 +505,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				01D566F12F18E8250085C9BD /* SearchView.swift in Sources */,
+				3E65D5DE2F1FCC9A00379D60 /* MyPostRow.swift in Sources */,
 				01D566E02F18E8240085C9BD /* Models.swift in Sources */,
 				01D566EB2F18E8250085C9BD /* HomeView.swift in Sources */,
 				01D566E62F18E8250085C9BD /* EkycUploadView.swift in Sources */,
 				3E7F22652F1774FB00FD2849 /* ContentView.swift in Sources */,
+				3E65D5DD2F1FCC9A00379D60 /* PostStatusBadge.swift in Sources */,
 				01D566E32F18E8250085C9BD /* AdminPostsView.swift in Sources */,
 				01D566E12F18E8240085C9BD /* AdminCategoriesView.swift in Sources */,
 				01D566E92F18E8250085C9BD /* VerifyOtpView.swift in Sources */,
@@ -441,16 +518,31 @@
 				01D566E22F18E8240085C9BD /* AdminDashboardView.swift in Sources */,
 				3E7F22632F1774FA00FD2849 /* FE_IOSApp.swift in Sources */,
 				01D566F32F18E8250085C9BD /* TokenManager.swift in Sources */,
+				3E65D5D62F1FCC8700379D60 /* LocationManager.swift in Sources */,
 				01D566EF2F18E8250085C9BD /* PostDetailView.swift in Sources */,
+				3E65D5E42F1FCCAA00379D60 /* EditCategoryView.swift in Sources */,
+				3E65D5EC2F1FCCD000379D60 /* ValidatedFormField.swift in Sources */,
 				01D566E52F18E8250085C9BD /* CreateAccountView.swift in Sources */,
 				01D566ED2F18E8250085C9BD /* MarketView.swift in Sources */,
+				3E65D5EA2F1FCCCF00379D60 /* LocationFillButton.swift in Sources */,
+				3E65D5D52F1FCC8700379D60 /* KYCHelper.swift in Sources */,
 				01D566E82F18E8250085C9BD /* RoleSelectionView.swift in Sources */,
 				01D566E72F18E8250085C9BD /* LoginView.swift in Sources */,
 				01D566E42F18E8250085C9BD /* AdminUsersView.swift in Sources */,
+				3E65D5DF2F1FCC9A00379D60 /* EditPostView.swift in Sources */,
 				01D566EE2F18E8250085C9BD /* CreatePostView.swift in Sources */,
 				01D566F02F18E8250085C9BD /* ProfileView.swift in Sources */,
+				3E65D5F12F1FCCEA00379D60 /* KycStatusView.swift in Sources */,
+				3E65D5CF2F1FCC7600379D60 /* Configuration.swift in Sources */,
+				3E65D5EB2F1FCCD000379D60 /* CategoryChip.swift in Sources */,
+				3E65D5D42F1FCC8700379D60 /* ImagePicker.swift in Sources */,
 				01D566EA2F18E8250085C9BD /* ChatListView.swift in Sources */,
 				01D566EC2F18E8250085C9BD /* MainTabView.swift in Sources */,
+				3E65D5F22F1FCCEA00379D60 /* UpdateKycView.swift in Sources */,
+				3E65D5DC2F1FCC9A00379D60 /* CommentRow.swift in Sources */,
+				3E65D5EE2F1FCCDE00379D60 /* ChatDetailView.swift in Sources */,
+				3E65D5E52F1FCCAA00379D60 /* AdminTabView.swift in Sources */,
+				3E65D5E32F1FCCAA00379D60 /* AdminSettingsView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
