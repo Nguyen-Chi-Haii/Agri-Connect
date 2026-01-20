@@ -17,6 +17,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/posts")
 @RequiredArgsConstructor
+@lombok.extern.slf4j.Slf4j
 public class PostController {
 
     private final PostService postService;
@@ -25,6 +26,12 @@ public class PostController {
     public ResponseEntity<ApiResponse<PostDetailResponse>> create(
             @Valid @RequestBody PostCreateRequest request) {
         String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        // Debug log for images
+        log.info("Creating post - Title: {}, Images count: {}",
+                request.getTitle(),
+                request.getImages() != null ? request.getImages().size() : 0);
+
         PostDetailResponse post = postService.create(userId, request);
         return ResponseEntity.ok(ApiResponse.success("Bài đăng đã được tạo", post));
     }
@@ -88,6 +95,7 @@ public class PostController {
         postService.reject(postId, reason);
         return ResponseEntity.ok(ApiResponse.success("Bài đăng đã bị từ chối", null));
     }
+
     @PostMapping("/{postId}/like")
     public ResponseEntity<ApiResponse<Void>> toggleLike(@PathVariable String postId) {
         postService.toggleLike(postId);

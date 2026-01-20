@@ -52,6 +52,7 @@ public class PostDetailActivity extends AppCompatActivity {
     private TextInputEditText etComment;
     private ImageView btnSendComment;
     private ProgressBar progressBar;
+    private androidx.viewpager2.widget.ViewPager2 vpImages;
 
     private PostApi postApi;
     private String postId;
@@ -191,6 +192,7 @@ public class PostDetailActivity extends AppCompatActivity {
         btnSendComment = findViewById(R.id.btnSendComment);
         progressBar = findViewById(R.id.progressBar);
         scrollView = findViewById(R.id.nestedScrollView);
+        vpImages = findViewById(R.id.vpImages);
     }
 
     private void setupRecyclerView() {
@@ -393,6 +395,15 @@ public class PostDetailActivity extends AppCompatActivity {
 
         if (tvCommentCountTop != null) {
             tvCommentCountTop.setText(post.getCommentCount() + " bình luận");
+        }
+
+        // Display images using ViewPager2
+        if (post.getImages() != null && !post.getImages().isEmpty()) {
+            vpImages.setVisibility(View.VISIBLE);
+            ImagePagerAdapter imageAdapter = new ImagePagerAdapter(post.getImages());
+            vpImages.setAdapter(imageAdapter);
+        } else {
+            vpImages.setVisibility(View.GONE);
         }
     }
 

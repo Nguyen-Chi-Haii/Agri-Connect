@@ -256,7 +256,7 @@ public class DataSeeder implements CommandLineRunner {
         post1.setDescription("Lúa ST25 chất lượng cao, thu hoạch mới, độ ẩm 14%. Giao tận nơi trong tỉnh.");
         post1.setPrice(8500000.0);
         post1.setUnit("tấn");
-        post1.setQuantity(5);
+        post1.setQuantity(5.0);
         post1.setImages(Arrays.asList("/uploads/lua-st25-1.jpg", "/uploads/lua-st25-2.jpg"));
         post1.setStatus(PostStatus.APPROVED);
         Location loc1 = new Location();
@@ -272,7 +272,7 @@ public class DataSeeder implements CommandLineRunner {
         post2.setDescription("Rau trồng theo phương pháp hữu cơ, không thuốc trừ sâu. Giao hàng mỗi sáng.");
         post2.setPrice(15000.0);
         post2.setUnit("kg");
-        post2.setQuantity(100);
+        post2.setQuantity(100.0);
         post2.setStatus(PostStatus.APPROVED);
         Location loc2 = new Location();
         loc2.setProvince("Tiền Giang");
@@ -287,7 +287,7 @@ public class DataSeeder implements CommandLineRunner {
         post3.setDescription("Xoài cát Hòa Lộc chín cây, thơm ngon, ngọt lịm. Đóng hộp quà tặng theo yêu cầu.");
         post3.setPrice(65000.0);
         post3.setUnit("kg");
-        post3.setQuantity(500);
+        post3.setQuantity(500.0);
         post3.setImages(Arrays.asList("/uploads/xoai-1.jpg"));
         post3.setStatus(PostStatus.APPROVED);
         Location loc3 = new Location();
@@ -302,7 +302,7 @@ public class DataSeeder implements CommandLineRunner {
         post4.setDescription("Bò giống Brahman 2 năm tuổi, khỏe mạnh, đã tiêm phòng đầy đủ.");
         post4.setPrice(35000000.0);
         post4.setUnit("con");
-        post4.setQuantity(3);
+        post4.setQuantity(3.0);
         post4.setStatus(PostStatus.PENDING);
         Location loc4 = new Location();
         loc4.setProvince("Bình Phước");
