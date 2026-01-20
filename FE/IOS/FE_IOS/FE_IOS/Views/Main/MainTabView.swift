@@ -67,16 +67,14 @@ struct MainTabView: View {
     }
     
     private func checkRedirect(_ tag: Int) {
-        if tag == 2 {
-            if let user = TokenManager.shared.userProfile {
-                if !user.isVerified {
-                    DispatchQueue.main.async {
-                        self.selectedTab = 4
-                    }
-                }
+        guard tag == 2 else { return }
+        guard let user = TokenManager.shared.userProfile else { return }
+        
+        if !user.isVerified {
+            DispatchQueue.main.async {
+                self.selectedTab = 4
             }
         }
-    }
     }
 }
 
