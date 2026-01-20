@@ -15,7 +15,7 @@ struct ValidatedFormField: View {
                 .font(.caption)
                 .foregroundColor(.gray)
             
-            Group {
+            ZStack {
                 if isSecure {
                     SecureField(placeholder, text: $text)
                         .textContentType(textContentType)
