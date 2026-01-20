@@ -101,12 +101,22 @@ struct AdminPostsView: View {
                 }
                 Spacer()
             } else {
-                    List(filteredPosts) { post in
+                List(filteredPosts) { post in
+                    ZStack {
+                        NavigationLink(destination: PostDetailView(post: post)) {
+                            EmptyView()
+                        }
+                        .opacity(0)
+                        
                         AdminPostRow(post: post) {
                             loadPosts(page: currentPage)
                         }
                     }
-                    .listStyle(PlainListStyle())
+                    .listRowInsets(EdgeInsets())
+                    .padding(.horizontal)
+                    .padding(.vertical, 8)
+                }
+                .listStyle(PlainListStyle())
                     
                     // Pagination Controls
                     if totalPages > 1 {
@@ -221,28 +231,55 @@ struct AdminPostRow: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             // Header
-            HStack {
-                if let authorName = post.authorName {
-                    HStack(spacing: 8) {
-                        Circle()
-                            .fill(Color(hex: "#E8F5E9"))
-                            .frame(width: 30, height: 30)
-                            .overlay(
-                                Text(String(authorName.prefix(1)))
-                                    .font(.caption)
-                                    .fontWeight(.bold)
-                                    .foregroundColor(Color(hex: "#2E7D32"))
-                            )
-                        
-                        Text(authorName)
-                            .font(.caption)
-                            .foregroundColor(.gray)
+            HStack(spacing: 12) {
+                // Thumbnail
+                if let images = post.images, let firstImage = images.first, let url = URL(string: firstImage) {
+                    AsyncImage(url: url) { phase in
+                        switch phase {
+                        case .success(let image):
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                        default:
+                            Rectangle()
+                                .fill(Color.gray.opacity(0.3))
+                                .overlay(Image(systemName: "photo").foregroundColor(.white))
+                        }
                     }
+                    .frame(width: 60, height: 60)
+                    .cornerRadius(8)
+                    .clipped()
+                } else {
+                    Rectangle()
+                        .fill(Color.gray.opacity(0.1))
+                        .frame(width: 60, height: 60)
+                        .cornerRadius(8)
+                        .overlay(Image(systemName: "photo").foregroundColor(.gray))
+                }
+                
+                VStack(alignment: .leading, spacing: 4) {
+                    if let authorName = post.authorName {
+                        HStack(spacing: 4) {
+                            Circle()
+                                .fill(Color(hex: "#E8F5E9"))
+                                .frame(width: 20, height: 20)
+                                .overlay(
+                                    Text(String(authorName.prefix(1)))
+                                        .font(.system(size: 10))
+                                        .fontWeight(.bold)
+                                        .foregroundColor(Color(hex: "#2E7D32"))
+                                )
+                            
+                            Text(authorName)
+                                .font(.caption)
+                                .foregroundColor(.gray)
+                        }
+                    }
+                    
+                    PostStatusBadge(status: post.status ?? "")
                 }
                 
                 Spacer()
-                
-                PostStatusBadge(status: post.status ?? "")
             }
             
             // Title
@@ -286,16 +323,18 @@ struct AdminPostRow: View {
                 HStack {
                     if post.status != "CLOSED" {
                         Button(action: showCloseAlert) {
-                            Text("Đóng")
-                                .font(.caption)
-                                .foregroundColor(.orange)
-                        }
-                    }
-                    
-                    Button(action: showDeleteAlert) {
-                        Text("Xóa")
+                            HStack {
+                                Image(systemName: "lock.fill")
+                                Text("Đóng bài")
+                            }
                             .font(.caption)
-                            .foregroundColor(.red)
+                            .fontWeight(.medium)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(Color.orange.opacity(0.1))
+                            .foregroundColor(.orange)
+                            .cornerRadius(8)
+                        }
                     }
                 }
             }
