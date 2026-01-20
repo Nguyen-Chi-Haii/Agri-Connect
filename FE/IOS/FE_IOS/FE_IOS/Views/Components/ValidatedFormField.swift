@@ -19,13 +19,14 @@ struct ValidatedFormField: View {
                 if isSecure {
                     SecureField(placeholder, text: $text)
                         .textContentType(textContentType)
-                        .autocorrectionDisabled()
-                        .autocapitalization(.none)
+                        .disableAutocorrection(true)
+                        .autocapitalization(UITextAutocapitalizationType.none)
                 } else {
                     TextField(placeholder, text: $text)
                         .keyboardType(keyboardType)
                         .textContentType(textContentType)
-                        .autocapitalization(.none)
+                        .disableAutocorrection(true)
+                        .autocapitalization(UITextAutocapitalizationType.none)
                 }
             }
             .padding()

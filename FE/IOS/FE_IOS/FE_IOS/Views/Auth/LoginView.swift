@@ -48,7 +48,8 @@ struct LoginView: View {
                             title: "Tên đăng nhập",
                             placeholder: "Nhập tên đăng nhập",
                             text: $username,
-                            error: $usernameError
+                            error: $usernameError,
+                            textContentType: .username
                         )
                         
                         // Password
@@ -57,7 +58,8 @@ struct LoginView: View {
                             placeholder: "Nhập mật khẩu",
                             text: $password,
                             error: $passwordError,
-                            isSecure: true
+                            isSecure: true,
+                            textContentType: .password
                         )
                     }
                     .padding(.horizontal, 24)
