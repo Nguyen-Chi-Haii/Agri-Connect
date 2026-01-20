@@ -53,97 +53,101 @@ struct PostDetailView: View {
                     }
                     
                     VStack(alignment: .leading, spacing: 12) {
-                        // Category
-                        if let categoryName = post.categoryName {
-                            Text(categoryName)
-                                .font(.caption)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 4)
-                                .background(Color(hex: "#E8F5E9"))
-                                .foregroundColor(Color(hex: "#2E7D32"))
-                                .cornerRadius(12)
-                        }
-                        
-                        // Title
-                        Text(post.title)
-                            .font(.title2)
-                            .fontWeight(.bold)
-                        
-                        // Price
-                        if let price = post.price, let unit = post.unit {
-                            Text("\(formatPrice(price)) / \(unit)")
-                                .font(.title3)
-                                .fontWeight(.semibold)
-                                .foregroundColor(Color(hex: "#2E7D32"))
-                        }
-                        
-                        Divider()
-                        
-                        // Action Buttons
-                        HStack(spacing: 24) {
-                            // Like Button
-                            Button(action: toggleLike) {
-                                HStack(spacing: 4) {
-                                    Image(systemName: isLiked ? "heart.fill" : "heart")
-                                        .foregroundColor(isLiked ? .red : .gray)
-                                    Text("\(likeCount)")
-                                        .foregroundColor(isLiked ? .red : .gray)
+                        Group {
+                            // Category
+                            if let categoryName = post.categoryName {
+                                Text(categoryName)
+                                    .font(.caption)
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 4)
+                                    .background(Color(hex: "#E8F5E9"))
+                                    .foregroundColor(Color(hex: "#2E7D32"))
+                                    .cornerRadius(12)
+                            }
+                            
+                            // Title
+                            Text(post.title)
+                                .font(.title2)
+                                .fontWeight(.bold)
+                            
+                            // Price
+                            if let price = post.price, let unit = post.unit {
+                                Text("\(formatPrice(price)) / \(unit)")
+                                    .font(.title3)
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(Color(hex: "#2E7D32"))
+                            }
+                            
+                            Divider()
+                            
+                            // Action Buttons
+                            HStack(spacing: 24) {
+                                // Like Button
+                                Button(action: toggleLike) {
+                                    HStack(spacing: 4) {
+                                        Image(systemName: isLiked ? "heart.fill" : "heart")
+                                            .foregroundColor(isLiked ? .red : .gray)
+                                        Text("\(likeCount)")
+                                            .foregroundColor(isLiked ? .red : .gray)
+                                    }
                                 }
-                            }
-                            
-                            // Comment Symbol (Static)
-                            HStack(spacing: 4) {
-                                Image(systemName: "bubble.left.fill")
-                                    .foregroundColor(.gray)
-                                Text("\(commentCount)")
-                                    .foregroundColor(.gray)
-                            }
-                            
-                            // Chat Button
-                            Button(action: startChat) {
-                                HStack(spacing: 4) {
-                                    Image(systemName: "message.fill")
-                                        .foregroundColor(Color(hex: "#2E7D32"))
-                                    Text("Nhắn tin")
-                                        .foregroundColor(Color(hex: "#2E7D32"))
-                                }
-                            }
-                            
-                            Spacer()
-                        }
-                        .padding(.vertical, 8)
-                        
-                        Divider()
-                        
-                        // Details
-                        VStack(alignment: .leading, spacing: 8) {
-                            if let quantity = post.quantity, let unit = post.unit {
-                                DetailRow(icon: "cube.box.fill", title: "Số lượng", value: "\(Int(quantity)) \(unit)")
-                            }
-                            
-                            if let province = post.province {
-                                DetailRow(icon: "mappin.circle.fill", title: "Địa điểm", value: province)
-                            }
-                            
-                            if let author = post.authorName {
-                                DetailRow(icon: "person.fill", title: "Người đăng", value: author)
-                            }
-                            
-                            if let date = post.createdAt {
-                                DetailRow(icon: "calendar", title: "Ngày đăng", value: formatDate(date))
-                            }
-                        }
-                        
-                        Divider()
-                        
-                        // Description
-                        if let desc = post.description {
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text("Mô tả")
-                                    .font(.headline)
                                 
-                                Text(desc)
-                                    .foregroundColor(.secondary)
+                                // Comment Symbol (Static)
+                                HStack(spacing: 4) {
+                                    Image(systemName: "bubble.left.fill")
+                                        .foregroundColor(.gray)
+                                    Text("\(commentCount)")
+                                        .foregroundColor(.gray)
+                                }
+                                
+                                // Chat Button
+                                Button(action: startChat) {
+                                    HStack(spacing: 4) {
+                                        Image(systemName: "message.fill")
+                                            .foregroundColor(Color(hex: "#2E7D32"))
+                                        Text("Nhắn tin")
+                                            .foregroundColor(Color(hex: "#2E7D32"))
+                                    }
+                                }
+                                
+                                Spacer()
+                            }
+                            .padding(.vertical, 8)
+                            
+                            Divider()
+                        }
+                        
+                        Group {
+                            // Details
+                            VStack(alignment: .leading, spacing: 8) {
+                                if let quantity = post.quantity, let unit = post.unit {
+                                    DetailRow(icon: "cube.box.fill", title: "Số lượng", value: "\(Int(quantity)) \(unit)")
+                                }
+                                
+                                if let province = post.province {
+                                    DetailRow(icon: "mappin.circle.fill", title: "Địa điểm", value: province)
+                                }
+                                
+                                if let author = post.authorName {
+                                    DetailRow(icon: "person.fill", title: "Người đăng", value: author)
+                                }
+                                
+                                if let date = post.createdAt {
+                                    DetailRow(icon: "calendar", title: "Ngày đăng", value: formatDate(date))
+                                }
+                            }
+                            
+                            Divider()
+                            
+                            // Description
+                            if let desc = post.description {
+                                VStack(alignment: .leading, spacing: 8) {
+                                    Text("Mô tả")
+                                        .font(.headline)
+                                    
+                                    Text(desc)
+                                        .foregroundColor(.secondary)
+                                }
                             }
                         }
                         
