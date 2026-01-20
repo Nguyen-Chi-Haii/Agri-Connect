@@ -217,84 +217,81 @@ struct MyPostsListView: View {
     ]
     
     var body: some View {
-        Group {
-            if isLoading && posts.isEmpty {
-                ProgressView()
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else if posts.isEmpty && selectedFilter.isEmpty {
-                VStack(spacing: 16) {
-                    Image(systemName: "doc.text")
-                        .font(.system(size: 60))
-                        .foregroundColor(.gray)
-                    Text("Chưa có bài đăng nào")
-                        .font(.headline)
-                        .foregroundColor(.gray)
-                    NavigationLink(destination: CreatePostView(tabSelection: .constant(4))) {
-                        Text("Tạo bài đăng mới")
-                            .foregroundColor(.white)
-                            .padding()
-                            .background(Color(hex: "#2E7D32"))
-                            .cornerRadius(12)
+        VStack(spacing: 0) {
+            // Filters
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(filters, id: \.0) { filter in
+                        Button {
+                            selectedFilter = filter.0
+                        } label: {
+                            Text(filter.1)
+                                .font(.subheadline)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 8)
+                                .background(
+                                    selectedFilter == filter.0
+                                    ? Color(hex: "#2E7D32")
+                                    : Color(.systemGray6)
+                                )
+                                .foregroundColor(
+                                    selectedFilter == filter.0
+                                    ? .white
+                                    : .primary
+                                )
+                                .cornerRadius(20)
+                        }
                     }
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else {
-                VStack(spacing: 0) {
-                    // Filters (Visible if user has any posts or is filtering)
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 8) {
-                            ForEach(filters, id: \.0) { filter in
-                                Button {
-                                    selectedFilter = filter.0
-                                } label: {
-                                    Text(filter.1)
-                                        .font(.subheadline)
-                                        .padding(.horizontal, 16)
-                                        .padding(.vertical, 8)
-                                        .background(
-                                            selectedFilter == filter.0
-                                            ? Color(hex: "#2E7D32")
-                                            : Color(.systemGray6)
-                                        )
-                                        .foregroundColor(
-                                            selectedFilter == filter.0
-                                            ? .white
-                                            : .primary
-                                        )
-                                        .cornerRadius(20)
-                                }
+                .padding(.horizontal)
+                .padding(.vertical, 8)
+            }
+            
+            Divider()
+            
+            Group {
+                if isLoading && posts.isEmpty {
+                    ProgressView()
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else if posts.isEmpty {
+                    VStack(spacing: 16) {
+                        Spacer()
+                        if selectedFilter.isEmpty {
+                            Image(systemName: "doc.text")
+                                .font(.system(size: 60))
+                                .foregroundColor(.gray)
+                            Text("Chưa có bài đăng nào")
+                                .font(.headline)
+                                .foregroundColor(.gray)
+                            NavigationLink(destination: CreatePostView(tabSelection: .constant(4))) {
+                                Text("Tạo bài đăng mới")
+                                    .foregroundColor(.white)
+                                    .padding()
+                                    .background(Color(hex: "#2E7D32"))
+                                    .cornerRadius(12)
                             }
-                        }
-                        .padding(.horizontal)
-                        .padding(.vertical, 8)
-                    }
-                    
-                    Divider()
-                    
-                    if posts.isEmpty {
-                        VStack(spacing: 16) {
-                            Spacer()
+                        } else {
                             Image(systemName: "magnifyingglass")
                                 .font(.system(size: 40))
                                 .foregroundColor(.gray)
                             Text("Không có bài viết nào với trạng thái này")
                                 .foregroundColor(.gray)
-                            Spacer()
                         }
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    } else {
-                        List {
-                            ForEach(posts) { post in
-                                NavigationLink(destination: PostDetailView(postId: post.id)) {
-                                    MyPostRow(post: post, onDelete: {
-                                        postToDelete = post
-                                        showDeleteAlert = true
-                                    })
-                                }
+                        Spacer()
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else {
+                    List {
+                        ForEach(posts) { post in
+                            NavigationLink(destination: PostDetailView(postId: post.id)) {
+                                MyPostRow(post: post, onDelete: {
+                                    postToDelete = post
+                                    showDeleteAlert = true
+                                })
                             }
                         }
-                        .listStyle(PlainListStyle())
                     }
+                    .listStyle(PlainListStyle())
                 }
             }
         }

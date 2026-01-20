@@ -8,28 +8,28 @@ struct KycStatusView: View {
         ScrollView {
             VStack(spacing: 24) {
                 // Status Header
-                VStack(spacing: 16) {
+                VStack(spacing: 12) {
                     ZStack {
                         Circle()
                             .fill(statusColor.opacity(0.1))
-                            .frame(width: 100, height: 100)
+                            .frame(width: 80, height: 80)
                         
                         Image(systemName: statusIcon)
-                            .font(.system(size: 50))
+                            .font(.system(size: 40))
                             .foregroundColor(statusColor)
                     }
                     
                     Text(statusTitle)
-                        .font(.title2)
+                        .font(.headline)
                         .fontWeight(.bold)
                     
                     Text(statusDescription)
-                        .font(.subheadline)
+                        .font(.caption)
                         .foregroundColor(.gray)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal)
                 }
-                .padding(.top, 40)
+                .padding(.top, 20)
                 
                 // Details
                 if let kyc = userProfile?.kyc {
@@ -189,9 +189,9 @@ struct KycImageView: View {
                     case .success(let image):
                         image
                             .resizable()
-                            .aspectRatio(contentMode: .fill)
+                            .aspectRatio(contentMode: .fit)
                             .frame(maxWidth: .infinity)
-                            .frame(height: 120)
+                            .frame(maxHeight: 200)
                             .clipped()
                             .cornerRadius(8)
                     case .failure(_):
