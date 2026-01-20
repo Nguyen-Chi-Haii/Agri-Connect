@@ -270,7 +270,7 @@ struct CreatePostView: View {
             Text("Bài đăng của bạn đã được khởi tạo và đang chờ duyệt.")
         }
         .sheet(isPresented: $showImagePicker) {
-            MultiImagePicker(images: $selectedImages, selectionLimit: 5)
+            UnifiedMultiImagePicker(images: $selectedImages, selectionLimit: 5)
         }
     }
     

@@ -44,7 +44,7 @@ struct ImagePicker: UIViewControllerRepresentable {
     }
 }
 
-struct MultiImagePicker: UIViewControllerRepresentable {
+struct UnifiedMultiImagePicker: UIViewControllerRepresentable {
     @Binding var images: [UIImage]
     @Environment(\.presentationMode) var presentationMode
     var selectionLimit: Int = 5
@@ -66,9 +66,9 @@ struct MultiImagePicker: UIViewControllerRepresentable {
     }
     
     class Coordinator: NSObject, PHPickerViewControllerDelegate {
-        let parent: MultiImagePicker
+        let parent: UnifiedMultiImagePicker
         
-        init(_ parent: MultiImagePicker) {
+        init(_ parent: UnifiedMultiImagePicker) {
             self.parent = parent
         }
         
