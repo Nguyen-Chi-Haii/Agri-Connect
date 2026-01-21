@@ -18,30 +18,37 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         manager.desiredAccuracy = kCLLocationAccuracyBest
     }
     
+    private var timeoutTimer: Timer?
+    
     func requestLocation() {
         isLoading = true
         locationError = nil
+        location = nil // Reset location to ensure we get a fresh one or fail
+        addressComponents = nil // Reset address to ensure UI clears old data
+        
+        // Invalidate existing timer
+        timeoutTimer?.invalidate()
+        
+        // Start new timeout timer (15s)
+        timeoutTimer = Timer.scheduledTimer(withTimeInterval: 15.0, repeats: false) { [weak self] _ in
+            guard let self = self else { return }
+            if self.isLoading {
+                print("⚠️ [LocationManager] Timeout reached. Stopping updates.")
+                self.manager.stopUpdatingLocation()
+                self.isLoading = false
+                self.locationError = NSError(domain: "Location", code: 2, userInfo: [NSLocalizedDescriptionKey: "Không thể lấy vị trí. Vui lòng kiểm tra GPS và thử lại."])
+            }
+        }
         
         switch manager.authorizationStatus {
         case .notDetermined:
             manager.requestWhenInUseAuthorization()
         case .restricted, .denied:
+            timeoutTimer?.invalidate()
             locationError = NSError(domain: "Location", code: 1, userInfo: [NSLocalizedDescriptionKey: "Vui lòng cấp quyền truy cập vị trí trong Cài đặt"])
             isLoading = false
         case .authorizedWhenInUse, .authorizedAlways:
             manager.requestLocation()
-            
-            // Timeout after 15 seconds
-            DispatchQueue.main.asyncAfter(deadline: .now() + 15) { [weak self] in
-                guard let self = self else { return }
-                if self.isLoading {
-                    self.manager.stopUpdatingLocation()
-                    self.isLoading = false
-                    if self.location == nil {
-                        self.locationError = NSError(domain: "Location", code: 2, userInfo: [NSLocalizedDescriptionKey: "Không thể lấy vị trí. Vui lòng kiểm tra GPS và thử lại."])
-                    }
-                }
-            }
         @unknown default:
             break
         }
@@ -53,6 +60,7 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         if manager.authorizationStatus == .authorizedWhenInUse || manager.authorizationStatus == .authorizedAlways {
             manager.requestLocation()
         } else if manager.authorizationStatus == .denied || manager.authorizationStatus == .restricted {
+             timeoutTimer?.invalidate()
              isLoading = false
              locationError = NSError(domain: "Location", code: 1, userInfo: [NSLocalizedDescriptionKey: "Vui lòng cấp quyền truy cập vị trí trong Cài đặt"])
         }
@@ -81,6 +89,7 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         }
         
         isLoading = false
+        timeoutTimer?.invalidate()
         locationError = error
     }
     
@@ -93,12 +102,14 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
                 self?.isLoading = false
                 
                 if let error = error {
+                    self?.timeoutTimer?.invalidate()
                     self?.locationError = error
                     print("❌ [LocationManager] Geocoding error: \(error.localizedDescription)")
                     return
                 }
                 
                 if let placemark = placemarks?.first {
+                    self?.timeoutTimer?.invalidate()
                     // Check if we're in Vietnam
                     let isVietnam = placemark.isoCountryCode == "VN"
                     
