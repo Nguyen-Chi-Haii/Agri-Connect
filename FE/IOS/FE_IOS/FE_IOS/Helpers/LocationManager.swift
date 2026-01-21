@@ -20,6 +20,7 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     
     func requestLocation() {
         isLoading = true
+        locationError = nil
         
         switch manager.authorizationStatus {
         case .notDetermined:
@@ -29,6 +30,18 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             isLoading = false
         case .authorizedWhenInUse, .authorizedAlways:
             manager.requestLocation()
+            
+            // Timeout after 15 seconds
+            DispatchQueue.main.asyncAfter(deadline: .now() + 15) { [weak self] in
+                guard let self = self else { return }
+                if self.isLoading {
+                    self.manager.stopUpdatingLocation()
+                    self.isLoading = false
+                    if self.location == nil {
+                        self.locationError = NSError(domain: "Location", code: 2, userInfo: [NSLocalizedDescriptionKey: "Không thể lấy vị trí. Vui lòng kiểm tra GPS và thử lại."])
+                    }
+                }
+            }
         @unknown default:
             break
         }
@@ -39,20 +52,36 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         if manager.authorizationStatus == .authorizedWhenInUse || manager.authorizationStatus == .authorizedAlways {
             manager.requestLocation()
+        } else if manager.authorizationStatus == .denied || manager.authorizationStatus == .restricted {
+             isLoading = false
+             locationError = NSError(domain: "Location", code: 1, userInfo: [NSLocalizedDescriptionKey: "Vui lòng cấp quyền truy cập vị trí trong Cài đặt"])
         }
     }
     
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         if let location = locations.first {
             self.location = location
+            // reverseGeocode will handle isLoading = false
             reverseGeocode(location: location)
         }
     }
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+        // Ignore simple errors if we are still trying, but for requestLocation logic we usually fail fast
+        // taking care not to fail immediately on minor temporary errors if we were using startUpdatingLocation, 
+        // but for requestLocation it typically fails once.
+        
+        // If error is kCLErrorLocationUnknown, it might resolve soon, but we will let the timeout handle it if it persists too long? 
+        // Or fail immediately. CoreLocation usually retries. Let's just log.
+        print("❌ [LocationManager] Error: \(error.localizedDescription)")
+        
+        if let clError = error as? CLError, clError.code == .locationUnknown {
+            // Keep waiting until timeout
+            return
+        }
+        
         isLoading = false
         locationError = error
-        print("❌ [LocationManager] Error: \(error.localizedDescription)")
     }
     
     // MARK: - Geocoding
@@ -92,8 +121,15 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
                     // Clean up prefixes if present
                     province = province.replacingOccurrences(of: "Tỉnh ", with: "")
                                        .replacingOccurrences(of: "Thành phố ", with: "")
+                                       .replacingOccurrences(of: "Quận ", with: "")
+                                       .replacingOccurrences(of: "Huyện ", with: "")
+                    
+                    // Similar cleanup for district if needed, though usually prefix is on the value
                     district = district.replacingOccurrences(of: "Quận ", with: "")
                                        .replacingOccurrences(of: "Huyện ", with: "")
+                                       .replacingOccurrences(of: "Thị xã ", with: "")
+                                       .replacingOccurrences(of: "Thành phố ", with: "")
+
                     
                     print("📍 [LocationManager] Geocoded: \(district), \(province) (Country: \(placemark.isoCountryCode ?? "unknown"))")
                     self?.addressComponents = (province, district)
