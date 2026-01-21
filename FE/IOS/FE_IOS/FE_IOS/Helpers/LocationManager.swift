@@ -40,6 +40,8 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             }
         }
         
+        // ... (timer setup remains) ...
+        
         switch manager.authorizationStatus {
         case .notDetermined:
             manager.requestWhenInUseAuthorization()
@@ -48,7 +50,8 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             locationError = NSError(domain: "Location", code: 1, userInfo: [NSLocalizedDescriptionKey: "Vui lòng cấp quyền truy cập vị trí trong Cài đặt"])
             isLoading = false
         case .authorizedWhenInUse, .authorizedAlways:
-            manager.requestLocation()
+            // Use startUpdatingLocation instead of requestLocation for better Simulator reliability
+            manager.startUpdatingLocation()
         @unknown default:
             break
         }
@@ -58,7 +61,7 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         if manager.authorizationStatus == .authorizedWhenInUse || manager.authorizationStatus == .authorizedAlways {
-            manager.requestLocation()
+            manager.startUpdatingLocation()
         } else if manager.authorizationStatus == .denied || manager.authorizationStatus == .restricted {
              timeoutTimer?.invalidate()
              isLoading = false
@@ -68,6 +71,9 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         if let location = locations.first {
+            // STOP updating immediately to act like a one-shot request
+            manager.stopUpdatingLocation()
+            
             self.location = location
             // reverseGeocode will handle isLoading = false
             reverseGeocode(location: location)
