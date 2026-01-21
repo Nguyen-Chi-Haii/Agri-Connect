@@ -7,12 +7,27 @@ struct HomeView: View {
     @State private var searchText = ""
     @State private var selectedCategoryId: String? = nil
     
+    // KYC Alert State
+    @State private var showKYCAlert = false
+    @State private var kycAlertTitle = ""
+    @State private var kycAlertMessage = ""
+    @State private var navigateToVerification = false
+    
     var filteredPosts: [Post] {
         return posts
     }
     
     var body: some View {
         ScrollView {
+            // Hidden Link for Redirect
+            if let profile = TokenManager.shared.userProfile {
+                NavigationLink(
+                    destination: UpdateKycView(userProfile: profile),
+                    isActive: $navigateToVerification
+                ) { EmptyView() }
+                .hidden()
+            }
+
             VStack(spacing: 16) {
                 // Search Bar
                 HStack {
@@ -83,7 +98,9 @@ struct HomeView: View {
                         LazyVStack(spacing: 12) {
                             ForEach($posts) { $post in
                                 NavigationLink(destination: PostDetailView(postId: post.id, initialPost: post)) {
-                                    PostCard(post: $post)
+                                    PostCard(post: $post, onKYCRequired: { title, message in
+                                        self.showAlert(title, message)
+                                    })
                                 }
                                 .buttonStyle(PlainButtonStyle())
                             }
@@ -101,6 +118,16 @@ struct HomeView: View {
         )
         .onAppear {
             loadData()
+        }
+        .alert(isPresented: $showKYCAlert) {
+            Alert(
+                title: Text(kycAlertTitle),
+                message: Text(kycAlertMessage),
+                primaryButton: .default(Text("Xác thực ngay")) {
+                    self.navigateToVerification = true
+                },
+                secondaryButton: .cancel(Text("Để sau"))
+            )
         }
     }
     
@@ -147,6 +174,11 @@ struct HomeView: View {
             }
         }
     }
+    private func showAlert(_ title: String, _ message: String?) {
+        self.kycAlertTitle = title
+        self.kycAlertMessage = message ?? ""
+        self.showKYCAlert = true
+    }
 }
 
 // MARK: - Category Card
@@ -173,6 +205,7 @@ struct CategoryCard: View {
 // MARK: - Post Card
 struct PostCard: View {
     @Binding var post: Post
+    var onKYCRequired: ((String, String?) -> Void)?
     
     // Remote Image Handling
     
@@ -287,6 +320,13 @@ struct PostCard: View {
     }
     
     private func toggleLike() {
+        KYCHelper.shared.requireVerified(
+            onSuccess: { self.performLike() },
+            onFailure: { t, m in self.onKYCRequired?(t, m) }
+        )
+    }
+
+    private func performLike() {
         // Optimistic update
         let wasLiked = post.isLiked ?? false
         let currentCount = post.likeCount ?? 0
