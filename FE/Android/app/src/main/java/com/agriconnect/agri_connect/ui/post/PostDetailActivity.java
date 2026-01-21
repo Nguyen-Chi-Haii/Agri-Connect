@@ -44,7 +44,7 @@ public class PostDetailActivity extends AppCompatActivity {
     private ImageView btnBack;
     private CircleImageView ivAvatar;
     private TextView tvUserName, tvPostTime, tvTitle, tvContent, tvPrice;
-    private TextView tvQuantity, tvLocation, tvLikeCount, tvViews, tvNoComments, tvCommentCountTop;
+    private TextView tvQuantity, tvLocation, tvLikeCount, tvViews, tvNoComments, tvCommentCountTop, tvImageCount;
     private ImageView ivVerified, ivLike;
     private View btnLike, btnChat, btnComment;
     private NestedScrollView scrollView;
@@ -193,6 +193,7 @@ public class PostDetailActivity extends AppCompatActivity {
         progressBar = findViewById(R.id.progressBar);
         scrollView = findViewById(R.id.nestedScrollView);
         vpImages = findViewById(R.id.vpImages);
+        tvImageCount = findViewById(R.id.tvImageCount);
     }
 
     private void setupRecyclerView() {
@@ -430,8 +431,26 @@ public class PostDetailActivity extends AppCompatActivity {
             vpImages.setVisibility(View.VISIBLE);
             ImagePagerAdapter imageAdapter = new ImagePagerAdapter(post.getImages());
             vpImages.setAdapter(imageAdapter);
+            
+            int totalImages = post.getImages().size();
+            if (totalImages > 1) {
+                tvImageCount.setVisibility(View.VISIBLE);
+                tvImageCount.setText("1/" + totalImages);
+                
+                // Remove old callbacks to avoid duplication if called multiple times (though displayPost usually called once per load)
+                // Better: just register
+                vpImages.registerOnPageChangeCallback(new androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback() {
+                    @Override
+                    public void onPageSelected(int position) {
+                        tvImageCount.setText((position + 1) + "/" + totalImages);
+                    }
+                });
+            } else {
+                tvImageCount.setVisibility(View.GONE);
+            }
         } else {
             vpImages.setVisibility(View.GONE);
+            tvImageCount.setVisibility(View.GONE);
         }
     }
 

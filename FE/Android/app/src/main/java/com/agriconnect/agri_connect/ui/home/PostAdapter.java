@@ -118,7 +118,9 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
             btnLike = itemView.findViewById(R.id.btnLike);
             btnComment = itemView.findViewById(R.id.btnComment);
             ivLike = itemView.findViewById(R.id.ivLike);
+            tvImageCount = itemView.findViewById(R.id.tvImageCount);
         }
+        private final TextView tvImageCount;
 
         public void bind(HomeFragment.PostItem post, OnPostClickListener listener, OnLikeClickListener likeListener,
                 int position) {
@@ -150,8 +152,17 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
                 ivPostImage.setVisibility(View.VISIBLE);
                 com.agriconnect.agri_connect.utils.ImageHelper.loadImage(
                         itemView.getContext(), post.imageUrl, ivPostImage);
+                
+                // Badge
+                if (post.imageCount > 1) {
+                    tvImageCount.setVisibility(View.VISIBLE);
+                    tvImageCount.setText("1/" + post.imageCount);
+                } else {
+                    tvImageCount.setVisibility(View.GONE);
+                }
             } else {
                 ivPostImage.setVisibility(View.GONE);
+                tvImageCount.setVisibility(View.GONE);
             }
 
             // Click to view detail

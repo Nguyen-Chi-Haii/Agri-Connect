@@ -287,6 +287,9 @@ public class HomeFragment extends Fragment {
                 item.isLiked = post.isLiked();
                 if (post.getImages() != null && !post.getImages().isEmpty()) {
                     item.imageUrl = post.getImages().get(0);
+                    item.imageCount = post.getImages().size();
+                } else {
+                    item.imageCount = 0;
                 }
                 postItems.add(item);
             }
@@ -343,6 +346,7 @@ public class HomeFragment extends Fragment {
         public String imageUrl;
         public boolean isLiked;
         public String status;
+        public int imageCount;
 
         public PostItem(String id, String userName, String time, String content,
                 String price, int likeCount, int commentCount, int viewCount, boolean isVerified, String status) {

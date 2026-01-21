@@ -82,6 +82,8 @@ public class AdminPostAdapter extends RecyclerView.Adapter<AdminPostAdapter.View
         TextView tvLikeCount, tvCommentCount;
         LinearLayout layoutActions;
         MaterialButton btnApprove, btnReject, btnDelete, btnClose;
+        android.widget.ImageView ivImage;
+        TextView tvImageCount;
 
         ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -97,6 +99,8 @@ public class AdminPostAdapter extends RecyclerView.Adapter<AdminPostAdapter.View
             btnReject = itemView.findViewById(R.id.btnReject);
             btnDelete = itemView.findViewById(R.id.btnDelete);
             btnClose = itemView.findViewById(R.id.btnClose);
+            ivImage = itemView.findViewById(R.id.ivImage);
+            tvImageCount = itemView.findViewById(R.id.tvImageCount);
 
             // Click whole item to view details
             itemView.setOnClickListener(v -> {
@@ -184,6 +188,27 @@ public class AdminPostAdapter extends RecyclerView.Adapter<AdminPostAdapter.View
                 if (listener != null)
                     listener.onClose(post);
             });
+            
+            // Load Image
+            if (post.getImages() != null && !post.getImages().isEmpty()) {
+                com.bumptech.glide.Glide.with(itemView.getContext())
+                        .load(post.getImages().get(0))
+                        .placeholder(R.drawable.ic_gallery)
+                        .error(R.drawable.ic_gallery)
+                        .centerCrop()
+                        .into(ivImage);
+                
+                int count = post.getImages().size();
+                if (count > 1) {
+                    tvImageCount.setVisibility(View.VISIBLE);
+                    tvImageCount.setText("+" + (count - 1));
+                } else {
+                    tvImageCount.setVisibility(View.GONE);
+                }
+            } else {
+                ivImage.setImageResource(R.drawable.ic_gallery);
+                tvImageCount.setVisibility(View.GONE);
+            }
         }
     }
 }

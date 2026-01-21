@@ -61,7 +61,10 @@ public class MyPostsAdapter extends RecyclerView.Adapter<MyPostsAdapter.MyPostVi
             tvViews = itemView.findViewById(R.id.tvViews);
             tvStatus = itemView.findViewById(R.id.tvStatus);
             btnClose = itemView.findViewById(R.id.btnClose);
+            tvImageCount = itemView.findViewById(R.id.tvImageCount);
         }
+        
+        TextView tvImageCount;
 
         public void bind(HomeFragment.PostItem post, int position) {
             tvTitle.setText(post.content);
@@ -83,7 +86,6 @@ public class MyPostsAdapter extends RecyclerView.Adapter<MyPostsAdapter.MyPostVi
             if ("PENDING".equals(status)) {
                 bgColor = R.color.warning;
                 statusText = "Chờ duyệt";
-                btnClose.setVisibility(View.GONE); // Can't close pending posts (or maybe allow?) - let's allow closing any post
                 btnClose.setVisibility(View.VISIBLE);
             } else if ("APPROVED".equals(status)) {
                 bgColor = R.color.success;
@@ -113,8 +115,17 @@ public class MyPostsAdapter extends RecyclerView.Adapter<MyPostsAdapter.MyPostVi
                         .error(R.drawable.ic_gallery)
                         .centerCrop()
                         .into(ivImage);
+                        
+                // Badge
+                if (post.imageCount > 1) {
+                    tvImageCount.setVisibility(View.VISIBLE);
+                    tvImageCount.setText("+" + (post.imageCount - 1)); // Style: +N
+                } else {
+                    tvImageCount.setVisibility(View.GONE);
+                }
             } else {
                 ivImage.setImageResource(R.drawable.ic_gallery);
+                tvImageCount.setVisibility(View.GONE);
             }
 
             // Click item to view detail

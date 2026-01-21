@@ -157,6 +157,9 @@ public class MyPostsActivity extends AppCompatActivity implements MyPostsAdapter
                             );
                             if (post.getImages() != null && !post.getImages().isEmpty()) {
                                 item.imageUrl = post.getImages().get(0);
+                                item.imageCount = post.getImages().size();
+                            } else {
+                                item.imageCount = 0;
                             }
                             posts.add(item);
                         }

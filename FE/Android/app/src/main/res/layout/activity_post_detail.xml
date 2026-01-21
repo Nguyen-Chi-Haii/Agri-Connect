@@ -143,12 +143,34 @@
                         tools:text="Mô tả chi tiết về sản phẩm..." />
 
                     <!-- Images -->
-                    <androidx.viewpager2.widget.ViewPager2
-                        android:id="@+id/vpImages"
+                    <!-- Images -->
+                    <FrameLayout
                         android:layout_width="match_parent"
-                        android:layout_height="200dp"
-                        android:layout_marginTop="@dimen/spacing_md"
-                        android:visibility="gone" />
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_md">
+
+                        <androidx.viewpager2.widget.ViewPager2
+                            android:id="@+id/vpImages"
+                            android:layout_width="match_parent"
+                            android:layout_height="200dp"
+                            android:visibility="gone" />
+
+                        <TextView
+                            android:id="@+id/tvImageCount"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="bottom|end"
+                            android:layout_margin="12dp"
+                            android:background="@drawable/bg_image_count"
+                            android:paddingHorizontal="10dp"
+                            android:paddingVertical="4dp"
+                            android:textColor="@android:color/white"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:visibility="gone"
+                            tools:text="1/5"
+                            tools:visibility="visible" />
+                    </FrameLayout>
 
                     <!-- Price Badge -->
                     <TextView

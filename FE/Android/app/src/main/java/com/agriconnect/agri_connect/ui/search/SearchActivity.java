@@ -182,6 +182,9 @@ public class SearchActivity extends AppCompatActivity {
                             );
                             if (post.getImages() != null && !post.getImages().isEmpty()) {
                                 item.imageUrl = post.getImages().get(0);
+                                item.imageCount = post.getImages().size();
+                            } else {
+                                item.imageCount = 0;
                             }
                             postItems.add(item);
                         }

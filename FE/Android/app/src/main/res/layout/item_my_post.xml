@@ -35,6 +35,22 @@
                     android:scaleType="centerCrop"
                     android:src="@drawable/ic_gallery"
                     android:background="@color/surface_variant" />
+
+                <TextView
+                    android:id="@+id/tvImageCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|end"
+                    android:layout_margin="4dp"
+                    android:background="@drawable/bg_image_count"
+                    android:paddingHorizontal="6dp"
+                    android:paddingVertical="2dp"
+                    android:textColor="@android:color/white"
+                    android:textSize="10sp"
+                    android:textStyle="bold"
+                    android:visibility="gone"
+                    tools:text="+3"
+                    tools:visibility="visible" />
             </androidx.cardview.widget.CardView>
 
             <!-- Post Info -->
