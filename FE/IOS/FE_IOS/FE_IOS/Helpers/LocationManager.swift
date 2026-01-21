@@ -35,8 +35,11 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             if self.isLoading {
                 print("⚠️ [LocationManager] Timeout reached. Stopping updates.")
                 self.manager.stopUpdatingLocation()
-                self.isLoading = false
-                self.locationError = NSError(domain: "Location", code: 2, userInfo: [NSLocalizedDescriptionKey: "Không thể lấy vị trí. Vui lòng kiểm tra GPS và thử lại."])
+                
+                DispatchQueue.main.async {
+                    self.isLoading = false
+                    self.locationError = NSError(domain: "Location", code: 2, userInfo: [NSLocalizedDescriptionKey: "Không thể lấy vị trí. Vui lòng kiểm tra GPS và thử lại."])
+                }
             }
         }
         
@@ -94,9 +97,11 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             return
         }
         
-        isLoading = false
-        timeoutTimer?.invalidate()
-        locationError = error
+        DispatchQueue.main.async {
+            self.isLoading = false
+            self.timeoutTimer?.invalidate()
+            self.locationError = error
+        }
     }
     
     // MARK: - Geocoding
