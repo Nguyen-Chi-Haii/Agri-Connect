@@ -39,6 +39,20 @@ public class EditProfileActivity extends AppCompatActivity {
     private UserApi userApi;
     private UserProfile currentProfile;
 
+    // Location
+    private com.google.android.gms.location.FusedLocationProviderClient fusedLocationClient;
+    private com.google.android.material.textfield.TextInputLayout tilAddress;
+    
+    private final androidx.activity.result.ActivityResultLauncher<String> requestLocationPermissionLauncher = registerForActivityResult(
+            new androidx.activity.result.contract.ActivityResultContracts.RequestPermission(),
+            isGranted -> {
+                if (isGranted) {
+                    getCurrentLocation();
+                } else {
+                    Toast.makeText(this, "Cần quyền truy cập vị trí để lấy địa chỉ", Toast.LENGTH_SHORT).show();
+                }
+            });
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,6 +66,7 @@ public class EditProfileActivity extends AppCompatActivity {
         });
 
         userApi = ApiClient.getInstance(this).getUserApi();
+        fusedLocationClient = com.google.android.gms.location.LocationServices.getFusedLocationProviderClient(this);
 
         initViews();
         setupListeners();
@@ -72,7 +87,9 @@ public class EditProfileActivity extends AppCompatActivity {
         tvEkycStatus = findViewById(R.id.tvEkycStatus);
         etFullName = findViewById(R.id.etFullName);
         etPhone = findViewById(R.id.etPhone);
+        etPhone = findViewById(R.id.etPhone);
         etAddress = findViewById(R.id.etAddress);
+        tilAddress = findViewById(R.id.tilAddress);
         ivAvatar = findViewById(R.id.ivAvatar);
         btnChangeAvatar = findViewById(R.id.btnChangeAvatar);
         btnEkyc = findViewById(R.id.btnEkyc);
@@ -124,6 +141,72 @@ public class EditProfileActivity extends AppCompatActivity {
         btnChangeAvatar.setOnClickListener(v -> {
             Toast.makeText(this, "Chức năng đổi ảnh đại diện đang phát triển", Toast.LENGTH_SHORT).show();
         });
+
+        // Location Icon Click
+        tilAddress.setEndIconOnClickListener(v -> {
+            if (androidx.core.content.ContextCompat.checkSelfPermission(this,
+                    android.Manifest.permission.ACCESS_FINE_LOCATION) == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                getCurrentLocation();
+            } else {
+                requestLocationPermissionLauncher.launch(android.Manifest.permission.ACCESS_FINE_LOCATION);
+            }
+        });
+    }
+
+    private void getCurrentLocation() {
+        Toast.makeText(this, "Đang lấy vị trí...", Toast.LENGTH_SHORT).show();
+
+        if (androidx.core.app.ActivityCompat.checkSelfPermission(this,
+                android.Manifest.permission.ACCESS_FINE_LOCATION) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+             return;
+        }
+
+        fusedLocationClient.getLastLocation()
+                .addOnSuccessListener(this, location -> {
+                    if (location != null) {
+                        getAddressFromLocation(location.getLatitude(), location.getLongitude());
+                    } else {
+                        // Fallback logic for emulator or when GPS is slow/off
+                        // Try typical Vietnam location as fallback for demo/emulator
+                        getAddressFromLocation(10.762622, 106.660172); // HCMC
+                        Toast.makeText(this, "Không tìm thấy GPS, dùng vị trí mặc định", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                     getAddressFromLocation(10.762622, 106.660172); // HCMC
+                     Toast.makeText(this, "Lỗi GPS, dùng vị trí mặc định", Toast.LENGTH_SHORT).show();
+                });
+    }
+
+    private void getAddressFromLocation(double latitude, double longitude) {
+        new Thread(() -> {
+            try {
+                String url = "https://nominatim.openstreetmap.org/reverse?format=json&lat="
+                        + latitude + "&lon=" + longitude + "&accept-language=vi";
+
+                okhttp3.OkHttpClient client = new okhttp3.OkHttpClient();
+                okhttp3.Request request = new okhttp3.Request.Builder()
+                        .url(url)
+                        .header("User-Agent", "AgriConnect/1.0")
+                        .build();
+
+                okhttp3.Response response = client.newCall(request).execute();
+                if (response.isSuccessful() && response.body() != null) {
+                    String json = response.body().string();
+                    org.json.JSONObject jsonObject = new org.json.JSONObject(json);
+                    String displayName = jsonObject.optString("display_name", "");
+
+                    runOnUiThread(() -> {
+                        if (!displayName.isEmpty()) {
+                            etAddress.setText(displayName);
+                            Toast.makeText(this, "Đã cập nhật địa chỉ", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
     }
 
     private void displayProfile(UserProfile profile) {

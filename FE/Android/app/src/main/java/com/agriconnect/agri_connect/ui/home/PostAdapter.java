@@ -24,6 +24,13 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         this.posts = posts;
         notifyDataSetChanged();
     }
+    
+    public HomeFragment.PostItem getItem(int position) {
+        if (position >= 0 && position < posts.size()) {
+            return posts.get(position);
+        }
+        return null;
+    }
 
     private OnPostClickListener listener;
     private OnLikeClickListener likeListener;
@@ -50,6 +57,18 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
             posts.get(position).likeCount = newLikeCount;
             posts.get(position).isLiked = isLiked;
             notifyItemChanged(position);
+        }
+    }
+
+    public void updatePostState(String postId, boolean isLiked, int likeCount, int commentCount) {
+        for (int i = 0; i < posts.size(); i++) {
+            if (posts.get(i).id.equals(postId)) {
+                posts.get(i).isLiked = isLiked;
+                posts.get(i).likeCount = likeCount;
+                posts.get(i).commentCount = commentCount;
+                notifyItemChanged(i);
+                break;
+            }
         }
     }
 

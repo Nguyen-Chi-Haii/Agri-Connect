@@ -172,7 +172,7 @@ public class ProfileFragment extends Fragment {
         // Admin button
         if (btnAdmin != null) {
             btnAdmin.setOnClickListener(v -> {
-                Intent intent = new Intent(getContext(), AdminDashboardActivity.class);
+                Intent intent = new Intent(getContext(), com.agriconnect.agri_connect.ui.admin.AdminMainActivity.class);
                 startActivity(intent);
             });
         }

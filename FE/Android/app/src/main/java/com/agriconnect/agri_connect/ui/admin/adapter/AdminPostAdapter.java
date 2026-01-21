@@ -45,6 +45,19 @@ public class AdminPostAdapter extends RecyclerView.Adapter<AdminPostAdapter.View
         notifyDataSetChanged();
     }
 
+    public void updatePostState(String postId, boolean isLiked, int likeCount, int commentCount) {
+        for (int i = 0; i < posts.size(); i++) {
+            if (posts.get(i).getId().equals(postId)) {
+                Post p = posts.get(i);
+                p.setLiked(isLiked);
+                p.setLikeCount(likeCount);
+                p.setCommentCount(commentCount);
+                notifyItemChanged(i);
+                break;
+            }
+        }
+    }
+
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {

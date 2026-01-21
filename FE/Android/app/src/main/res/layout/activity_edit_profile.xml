@@ -107,11 +107,16 @@
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilAddress"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                android:hint="Địa chỉ">
+                android:hint="Địa chỉ"
+                app:endIconMode="custom"
+                app:endIconDrawable="@drawable/ic_location"
+                app:endIconContentDescription="Lấy vị trí hiện tại"
+                app:endIconCheckable="true">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etAddress"

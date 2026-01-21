@@ -35,6 +35,17 @@ public class MainNavigationActivity extends AppCompatActivity {
             return insets;
         });
 
+        // Check for Admin redirection
+        ApiClient apiClient = ApiClient.getInstance(this);
+        com.agriconnect.agri_connect.api.TokenManager tokenManager = apiClient.getTokenManager();
+        if (tokenManager.isLoggedIn() && "ADMIN".equals(tokenManager.getUserRole())) {
+             android.content.Intent intent = new android.content.Intent(this, com.agriconnect.agri_connect.ui.admin.AdminMainActivity.class);
+             intent.setFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK | android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK);
+             startActivity(intent);
+             finish();
+             return;
+        }
+
         initViews();
         setupNavigation();
         setupBadges();

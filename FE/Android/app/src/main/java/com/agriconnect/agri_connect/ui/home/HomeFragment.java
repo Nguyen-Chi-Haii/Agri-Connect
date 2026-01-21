@@ -65,6 +65,23 @@ public class HomeFragment extends Fragment {
                 }
             });
 
+    private final ActivityResultLauncher<Intent> postDetailLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == android.app.Activity.RESULT_OK && result.getData() != null) {
+                    // Update post state from detail view
+                    Intent data = result.getData();
+                    String postId = data.getStringExtra("postId");
+                    boolean isLiked = data.getBooleanExtra("isLiked", false);
+                    int likeCount = data.getIntExtra("likeCount", 0);
+                    int commentCount = data.getIntExtra("commentCount", 0);
+                    
+                    if (postId != null) {
+                        postAdapter.updatePostState(postId, isLiked, likeCount, commentCount);
+                    }
+                }
+            });
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -107,7 +124,7 @@ public class HomeFragment extends Fragment {
         postAdapter.setOnPostClickListener(postId -> {
             Intent intent = new Intent(getContext(), PostDetailActivity.class);
             intent.putExtra("postId", postId);
-            startActivity(intent);
+            postDetailLauncher.launch(intent);
         });
         postAdapter.setOnLikeClickListener((postId, position) -> {
             toggleLike(postId, position);
@@ -344,17 +361,46 @@ public class HomeFragment extends Fragment {
     }
 
     private void toggleLike(String postId, int position) {
+        // Optimistic update
+        // We need the current state to toggle it.
+        // Since we don't have easy access to the item here without modifying adapter, 
+        // we can assume the user act on what they see.
+        // But better is to let the Adapter helper handle modification or access the item.
+        // Let's implement getItem in Adapter or simple logic here.
+        
+        // Actually best way:
+        // 1. Get current item from adapter (need public method)
+        // 2. Toggle locally
+        // 3. Notify adapter
+        // 4. Call API
+        
+        HomeFragment.PostItem item = postAdapter.getItem(position);
+        if (item == null) return;
+        
+        boolean oldIsLiked = item.isLiked;
+        int oldLikeCount = item.likeCount;
+        
+        // New state
+        boolean newIsLiked = !oldIsLiked;
+        int newLikeCount = oldLikeCount + (newIsLiked ? 1 : -1);
+        
+        // Update UI immediately
+        postAdapter.updateLikeCount(position, newLikeCount, newIsLiked);
+        
         postApi.toggleLike(postId).enqueue(new Callback<ApiResponse<Void>>() {
             @Override
             public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
-                if (response.isSuccessful()) {
-                    // Reload posts to get updated like count
-                    loadPosts(currentCategoryId);
+                if (!response.isSuccessful()) {
+                    // Revert on failure
+                    postAdapter.updateLikeCount(position, oldLikeCount, oldIsLiked);
+                    Toast.makeText(getContext(), "Không thể thực hiện", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
+                // Revert on failure
+                postAdapter.updateLikeCount(position, oldLikeCount, oldIsLiked);
                 if (getContext() != null) {
                     Toast.makeText(getContext(), "Lỗi kết nối", Toast.LENGTH_SHORT).show();
                 }

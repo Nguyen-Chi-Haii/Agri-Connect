@@ -76,6 +76,9 @@ public class MyPostsActivity extends AppCompatActivity implements MyPostsAdapter
         loadMyPosts();
     }
 
+    private com.google.android.material.chip.ChipGroup cgStatus;
+    private String currentStatus = null; // null = All
+
     private void initViews() {
         btnBack = findViewById(R.id.btnBack);
         rvPosts = findViewById(R.id.rvPosts);
@@ -83,6 +86,7 @@ public class MyPostsActivity extends AppCompatActivity implements MyPostsAdapter
         progressBar = findViewById(R.id.progressBar);
         fabCreatePost = findViewById(R.id.fabCreatePost);
         btnCreatePost = findViewById(R.id.btnCreatePost);
+        cgStatus = findViewById(R.id.cgStatus);
     }
 
     private void setupRecyclerView() {
@@ -99,6 +103,19 @@ public class MyPostsActivity extends AppCompatActivity implements MyPostsAdapter
         if (btnCreatePost != null) {
             btnCreatePost.setOnClickListener(v -> openCreatePost());
         }
+
+        cgStatus.setOnCheckedStateChangeListener((group, checkedIds) -> {
+            if (checkedIds.isEmpty()) return;
+            int id = checkedIds.get(0);
+            
+            if (id == R.id.chipPending) currentStatus = "PENDING";
+            else if (id == R.id.chipApproved) currentStatus = "APPROVED";
+            else if (id == R.id.chipRejected) currentStatus = "REJECTED";
+            else if (id == R.id.chipClosed) currentStatus = "CLOSED";
+            else currentStatus = null; // All
+
+            loadMyPosts(currentStatus);
+        });
     }
 
     private void openCreatePost() {
@@ -107,19 +124,26 @@ public class MyPostsActivity extends AppCompatActivity implements MyPostsAdapter
     }
 
     private void loadMyPosts() {
+        loadMyPosts(currentStatus);
+    }
+
+    private void loadMyPosts(String status) {
         progressBar.setVisibility(View.VISIBLE);
         layoutEmpty.setVisibility(View.GONE);
+        rvPosts.setVisibility(View.GONE);
 
-        postApi.getMyPosts().enqueue(new Callback<ApiResponse<List<Post>>>() {
+        // API Call with status param
+        postApi.getMyPosts(status).enqueue(new Callback<ApiResponse<List<Post>>>() {
             @Override
             public void onResponse(Call<ApiResponse<List<Post>>> call, Response<ApiResponse<List<Post>>> response) {
                 progressBar.setVisibility(View.GONE);
 
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     List<Post> postList = response.body().getData();
+                    
+                    posts.clear(); // Clear old data
 
                     if (postList != null && !postList.isEmpty()) {
-                        posts.clear();
                         for (Post post : postList) {
                             HomeFragment.PostItem item = new HomeFragment.PostItem(
                                     post.getId(),

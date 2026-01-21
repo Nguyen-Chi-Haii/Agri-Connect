@@ -363,6 +363,34 @@ public class PostDetailActivity extends AppCompatActivity {
         tvTitle.setText(post.getTitle());
         tvContent.setText(post.getDescription());
 
+        // Check status and disable interactions if not APPROVED
+        String status = post.getStatus();
+        boolean isApproved = "APPROVED".equals(status);
+        
+        if (!isApproved) {
+            btnLike.setEnabled(false);
+            btnLike.setAlpha(0.5f);
+            
+            btnChat.setEnabled(false);
+            btnChat.setAlpha(0.5f);
+            
+            btnComment.setEnabled(false);
+            btnComment.setAlpha(0.5f);
+            
+            // Hide comment input area
+            findViewById(R.id.layoutCommentInput).setVisibility(View.GONE);
+            
+            // Show status warning if needed, or just rely on the visual disabled state
+        } else {
+             btnLike.setEnabled(true);
+             btnLike.setAlpha(1.0f);
+             btnChat.setEnabled(true);
+             btnChat.setAlpha(1.0f);
+             btnComment.setEnabled(true);
+             btnComment.setAlpha(1.0f);
+             findViewById(R.id.layoutCommentInput).setVisibility(View.VISIBLE);
+        }
+
         if (post.getPrice() != null) {
             String priceText = String.format("%,.0f", post.getPrice()) + "đ";
             if (post.getUnit() != null) {
@@ -445,6 +473,20 @@ public class PostDetailActivity extends AppCompatActivity {
                 Toast.makeText(PostDetailActivity.this, "Lỗi kết nối", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    @Override
+    public void finish() {
+        // Return result before finishing
+        if (currentPost != null) {
+            android.content.Intent data = new android.content.Intent();
+            data.putExtra("postId", postId);
+            data.putExtra("isLiked", isLiked);
+            data.putExtra("likeCount", likeCount);
+            data.putExtra("commentCount", currentPost.getCommentCount()); // Or track locally if comments added
+            setResult(RESULT_OK, data);
+        }
+        super.finish();
     }
 
     private void updateLikeUI() {

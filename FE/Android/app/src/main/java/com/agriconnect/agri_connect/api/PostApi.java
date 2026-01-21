@@ -18,7 +18,7 @@ public interface PostApi {
     Call<ApiResponse<Post>> getPostById(@Path("postId") String postId);
 
     @GET("api/posts/my-posts")
-    Call<ApiResponse<List<Post>>> getMyPosts();
+    Call<ApiResponse<List<Post>>> getMyPosts(@Query("status") String status);
 
     @GET("api/posts")
     Call<ApiResponse<PagedResponse<Post>>> searchPosts(

@@ -147,13 +147,29 @@ public class AdminPostsActivity extends AppCompatActivity implements AdminPostAd
         recyclerPosts.setVisibility(filtered.isEmpty() ? View.GONE : View.VISIBLE);
     }
 
+    private final androidx.activity.result.ActivityResultLauncher<android.content.Intent> postDetailLauncher = registerForActivityResult(
+            new androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == android.app.Activity.RESULT_OK && result.getData() != null) {
+                    android.content.Intent data = result.getData();
+                    String postId = data.getStringExtra("postId");
+                    boolean isLiked = data.getBooleanExtra("isLiked", false);
+                    int likeCount = data.getIntExtra("likeCount", 0);
+                    int commentCount = data.getIntExtra("commentCount", 0);
+
+                    if (postId != null) {
+                        adapter.updatePostState(postId, isLiked, likeCount, commentCount);
+                    }
+                }
+            });
+
     @Override
     public void onClick(Post post) {
         // Open PostDetailActivity to view post details and comments
         android.content.Intent intent = new android.content.Intent(this,
                 com.agriconnect.agri_connect.ui.post.PostDetailActivity.class);
         intent.putExtra("postId", post.getId());
-        startActivity(intent);
+        postDetailLauncher.launch(intent);
     }
 
     @Override
