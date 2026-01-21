@@ -128,7 +128,8 @@ public class MyPostsActivity extends AppCompatActivity implements MyPostsAdapter
                                     post.getDescription() != null ? post.getDescription() : post.getTitle(),
                                     formatPrice(post.getPrice(), post.getUnit()),
                                     0, 0, post.getViewCount(),
-                                    post.isSellerVerified()
+                                    post.isSellerVerified(),
+                                    post.getStatus()
                             );
                             if (post.getImages() != null && !post.getImages().isEmpty()) {
                                 item.imageUrl = post.getImages().get(0);
@@ -161,39 +162,30 @@ public class MyPostsActivity extends AppCompatActivity implements MyPostsAdapter
     }
 
     @Override
-    public void onEditPost(HomeFragment.PostItem post) {
-        // TODO: Open edit post activity
-        Toast.makeText(this, "Chức năng chỉnh sửa đang phát triển", Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
-    public void onDeletePost(HomeFragment.PostItem post, int position) {
+    public void onClosePost(HomeFragment.PostItem post, int position) {
         new AlertDialog.Builder(this)
-                .setTitle("Xác nhận xóa")
-                .setMessage("Bạn có chắc muốn xóa bài đăng này?")
-                .setPositiveButton("Xóa", (dialog, which) -> deletePost(post, position))
+                .setTitle("Xác nhận đóng")
+                .setMessage("Bạn có chắc muốn đóng bài đăng này? Bài đăng sẽ không còn hiển thị với người mua.")
+                .setPositiveButton("Đóng", (dialog, which) -> closePost(post, position))
                 .setNegativeButton("Hủy", null)
                 .show();
     }
 
-    private void deletePost(HomeFragment.PostItem post, int position) {
+    private void closePost(HomeFragment.PostItem post, int position) {
         progressBar.setVisibility(View.VISIBLE);
 
-        postApi.deletePost(post.id).enqueue(new Callback<ApiResponse<Void>>() {
+        postApi.closePost(post.id).enqueue(new Callback<ApiResponse<Void>>() {
             @Override
             public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
                 progressBar.setVisibility(View.GONE);
 
                 if (response.isSuccessful()) {
-                    posts.remove(position);
-                    adapter.notifyItemRemoved(position);
-                    Toast.makeText(MyPostsActivity.this, "Đã xóa bài đăng", Toast.LENGTH_SHORT).show();
-
-                    if (posts.isEmpty()) {
-                        showEmpty();
-                    }
+                    // Update local status instead of removing
+                    post.status = "CLOSED";
+                    adapter.notifyItemChanged(position);
+                    Toast.makeText(MyPostsActivity.this, "Đã đóng bài đăng", Toast.LENGTH_SHORT).show();
                 } else {
-                    Toast.makeText(MyPostsActivity.this, "Xóa thất bại", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MyPostsActivity.this, "Đóng bài đăng thất bại", Toast.LENGTH_SHORT).show();
                 }
             }
 

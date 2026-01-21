@@ -265,7 +265,8 @@ public class HomeFragment extends Fragment {
                         post.getLikeCount(),
                         post.getCommentCount(),
                         post.getViewCount(),
-                        post.isSellerVerified());
+                        post.isSellerVerified(),
+                        post.getStatus());
                 item.isLiked = post.isLiked();
                 if (post.getImages() != null && !post.getImages().isEmpty()) {
                     item.imageUrl = post.getImages().get(0);
@@ -324,9 +325,10 @@ public class HomeFragment extends Fragment {
         public boolean isVerified;
         public String imageUrl;
         public boolean isLiked;
+        public String status;
 
         public PostItem(String id, String userName, String time, String content,
-                String price, int likeCount, int commentCount, int viewCount, boolean isVerified) {
+                String price, int likeCount, int commentCount, int viewCount, boolean isVerified, String status) {
             this.id = id;
             this.userName = userName;
             this.time = time;
@@ -336,6 +338,7 @@ public class HomeFragment extends Fragment {
             this.commentCount = commentCount;
             this.viewCount = viewCount;
             this.isVerified = isVerified;
+            this.status = status;
             this.isLiked = false;
         }
     }

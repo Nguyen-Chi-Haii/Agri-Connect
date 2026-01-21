@@ -30,7 +30,8 @@
 
         <activity
             android:name=".ui.auth.CreateAccountActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
 
         <activity
             android:name=".ui.auth.VerifyOtpActivity"
@@ -42,7 +43,8 @@
 
         <activity
             android:name=".ui.auth.LoginActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
 
         <!-- Main Navigation - Now LAUNCHER for guest browsing -->
         <activity
@@ -79,7 +81,8 @@
         <!-- Profile Activities -->
         <activity
             android:name=".ui.profile.EditProfileActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
 
         <activity
             android:name=".ui.profile.StatisticsActivity"

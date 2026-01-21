@@ -122,7 +122,7 @@ public class AdminPostAdapter extends RecyclerView.Adapter<AdminPostAdapter.View
             btnApprove.setVisibility(View.GONE);
             btnReject.setVisibility(View.GONE);
             btnClose.setVisibility(View.GONE);
-            btnDelete.setVisibility(View.VISIBLE); // Always allow delete
+            btnDelete.setVisibility(View.GONE); // Delete disabled for admins
 
             if ("PENDING".equals(status)) {
                 bgColor = R.color.warning;

@@ -177,7 +177,8 @@ public class SearchActivity extends AppCompatActivity {
                                     post.getDescription() != null ? post.getDescription() : post.getTitle(),
                                     formatPrice(post.getPrice(), post.getUnit()),
                                     0, 0, post.getViewCount(),
-                                    post.isSellerVerified()
+                                    post.isSellerVerified(),
+                                    post.getStatus()
                             );
                             if (post.getImages() != null && !post.getImages().isEmpty()) {
                                 item.imageUrl = post.getImages().get(0);

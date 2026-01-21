@@ -36,6 +36,9 @@ public interface PostApi {
     @DELETE("api/posts/{postId}")
     Call<ApiResponse<Void>> deletePost(@Path("postId") String postId);
 
+    @PUT("api/posts/{postId}/close")
+    Call<ApiResponse<Void>> closePost(@Path("postId") String postId);
+
     // Like API
     @POST("api/posts/{postId}/like")
     Call<ApiResponse<Void>> toggleLike(@Path("postId") String postId);

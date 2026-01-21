@@ -21,8 +21,7 @@ public class MyPostsAdapter extends RecyclerView.Adapter<MyPostsAdapter.MyPostVi
     private OnPostActionListener listener;
 
     public interface OnPostActionListener {
-        void onEditPost(HomeFragment.PostItem post);
-        void onDeletePost(HomeFragment.PostItem post, int position);
+        void onClosePost(HomeFragment.PostItem post, int position);
     }
 
     public MyPostsAdapter(List<HomeFragment.PostItem> posts, OnPostActionListener listener) {
@@ -50,8 +49,8 @@ public class MyPostsAdapter extends RecyclerView.Adapter<MyPostsAdapter.MyPostVi
 
     class MyPostViewHolder extends RecyclerView.ViewHolder {
         ImageView ivImage;
-        TextView tvTitle, tvPrice, tvTime, tvViews;
-        MaterialButton btnEdit, btnDelete;
+        TextView tvTitle, tvPrice, tvTime, tvViews, tvStatus;
+        MaterialButton btnClose;
 
         public MyPostViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -60,8 +59,8 @@ public class MyPostsAdapter extends RecyclerView.Adapter<MyPostsAdapter.MyPostVi
             tvPrice = itemView.findViewById(R.id.tvPrice);
             tvTime = itemView.findViewById(R.id.tvTime);
             tvViews = itemView.findViewById(R.id.tvViews);
-            btnEdit = itemView.findViewById(R.id.btnEdit);
-            btnDelete = itemView.findViewById(R.id.btnDelete);
+            tvStatus = itemView.findViewById(R.id.tvStatus);
+            btnClose = itemView.findViewById(R.id.btnClose);
         }
 
         public void bind(HomeFragment.PostItem post, int position) {
@@ -76,8 +75,45 @@ public class MyPostsAdapter extends RecyclerView.Adapter<MyPostsAdapter.MyPostVi
                 tvPrice.setVisibility(View.GONE);
             }
 
-            // Load image - simple placeholder without Glide
+            // Status
+            String status = post.status;
+            int bgColor = R.color.text_hint;
+            String statusText = "Chờ duyệt";
+
+            if ("PENDING".equals(status)) {
+                bgColor = R.color.warning;
+                statusText = "Chờ duyệt";
+                btnClose.setVisibility(View.GONE); // Can't close pending posts (or maybe allow?) - let's allow closing any post
+                btnClose.setVisibility(View.VISIBLE);
+            } else if ("APPROVED".equals(status)) {
+                bgColor = R.color.success;
+                statusText = "Đã duyệt";
+                btnClose.setVisibility(View.VISIBLE);
+            } else if ("REJECTED".equals(status)) {
+                bgColor = R.color.error;
+                statusText = "Từ chối";
+                btnClose.setVisibility(View.GONE); // Already rejected
+            } else if ("CLOSED".equals(status)) {
+                bgColor = R.color.secondary;
+                statusText = "Đã đóng";
+                btnClose.setVisibility(View.GONE); // Already closed
+            }
+
+            tvStatus.setText(statusText);
+            android.graphics.drawable.GradientDrawable drawable = (android.graphics.drawable.GradientDrawable) tvStatus.getBackground();
+            if (drawable != null) {
+                drawable.setColor(androidx.core.content.ContextCompat.getColor(itemView.getContext(), bgColor));
+            }
+
+            // Load image
             if (post.imageUrl != null && !post.imageUrl.isEmpty()) {
+                com.bumptech.glide.Glide.with(itemView.getContext())
+                        .load(post.imageUrl)
+                        .placeholder(R.drawable.ic_gallery)
+                        .error(R.drawable.ic_gallery)
+                        .centerCrop()
+                        .into(ivImage);
+            } else {
                 ivImage.setImageResource(R.drawable.ic_gallery);
             }
 
@@ -89,17 +125,10 @@ public class MyPostsAdapter extends RecyclerView.Adapter<MyPostsAdapter.MyPostVi
                 itemView.getContext().startActivity(intent);
             });
 
-            // Edit button
-            btnEdit.setOnClickListener(v -> {
+            // Close button
+            btnClose.setOnClickListener(v -> {
                 if (listener != null) {
-                    listener.onEditPost(post);
-                }
-            });
-
-            // Delete button
-            btnDelete.setOnClickListener(v -> {
-                if (listener != null) {
-                    listener.onDeletePost(post, position);
+                    listener.onClosePost(post, position);
                 }
             });
         }

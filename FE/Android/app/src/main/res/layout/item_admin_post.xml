@@ -168,7 +168,8 @@
                 android:text="Xóa"
                 android:textSize="12sp"
                 app:backgroundTint="#D32F2F"
-                app:cornerRadius="8dp" />
+                app:cornerRadius="8dp"
+                android:visibility="gone" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnApprove"
