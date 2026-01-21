@@ -81,10 +81,16 @@ struct CreateAccountView: View {
                         .overlay(
                             HStack {
                                 Spacer()
-                                LocationFillButton { province, district in
-                                    self.address = "\(district), \(province)"
-                                    self.addressError = nil
-                                }
+                                LocationFillButton(
+                                    onAddressReceived: { province, district in
+                                        self.address = "\(district), \(province)"
+                                        self.addressError = nil
+                                    },
+                                    onError: { errorMsg in
+                                        self.errorMessage = errorMsg
+                                        self.showError = true
+                                    }
+                                )
                                 .padding(.trailing, 12)
                             }
                             .padding(.top, 24)

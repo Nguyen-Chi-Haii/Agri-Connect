@@ -187,12 +187,18 @@ struct CreatePostView: View {
                         Text("Vị trí")
                             .font(.headline)
                         Spacer()
-                        LocationFillButton { province, district in
-                            self.province = province
-                            self.district = district
-                            self.provinceError = nil
-                            self.districtError = nil
-                        }
+                        LocationFillButton(
+                            onAddressReceived: { province, district in
+                                self.province = province
+                                self.district = district
+                                self.provinceError = nil
+                                self.districtError = nil
+                            },
+                            onError: { errorMsg in
+                                self.errorMessage = errorMsg
+                                self.showError = true
+                            }
+                        )
                     }
                     
                     HStack(spacing: 12) {

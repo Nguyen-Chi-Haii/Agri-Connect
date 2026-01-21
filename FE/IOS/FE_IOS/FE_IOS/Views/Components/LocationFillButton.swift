@@ -3,9 +3,7 @@ import SwiftUI
 struct LocationFillButton: View {
     @ObservedObject var locationManager = LocationManager.shared
     var onAddressReceived: (_ province: String, _ district: String) -> Void
-    
-    @State private var showError = false
-    @State private var errorMessage = ""
+    var onError: ((String) -> Void)?
     
     var body: some View {
         Button(action: {
@@ -35,16 +33,8 @@ struct LocationFillButton: View {
         }
         .onReceive(locationManager.$locationError) { error in
             if let error = error {
-                errorMessage = error.localizedDescription
-                showError = true
+                onError?(error.localizedDescription)
             }
-        }
-        .alert(isPresented: $showError) {
-            Alert(
-                title: Text("Lỗi vị trí"),
-                message: Text(errorMessage),
-                dismissButton: .default(Text("OK"))
-            )
         }
     }
 }

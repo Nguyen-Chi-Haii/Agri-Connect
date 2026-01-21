@@ -438,6 +438,10 @@ struct EditProfileFormView: View {
                             locationManager: LocationManager.shared,
                             onAddressReceived: { province, district in
                                 address = "\(district), \(province)"
+                            },
+                            onError: { errorMsg in
+                                errorMessage = errorMsg
+                                showError = true
                             }
                         )
                     }
