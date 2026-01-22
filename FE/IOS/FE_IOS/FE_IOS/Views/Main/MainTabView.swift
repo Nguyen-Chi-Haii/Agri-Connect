@@ -5,7 +5,7 @@ struct MainTabView: View {
     @State private var showCreatePost = false
     
     var body: some View {
-        ZStack(alignment: .bottom) {
+        ZStack(alignment: .bottomTrailing) {
             TabView(selection: $selectedTab) {
                 // Home Tab
                 NavigationView {
@@ -65,18 +65,21 @@ struct MainTabView: View {
             .accentColor(Color(hex: "#2E7D32"))
             
             // Floating Action Button
-            Button(action: {
-                showCreatePost = true
-            }) {
-                Image(systemName: "plus")
-                    .font(.system(size: 24, weight: .bold))
-                    .foregroundColor(.white)
-                    .frame(width: 56, height: 56)
-                    .background(Color(hex: "#2E7D32"))
-                    .clipShape(Circle())
-                    .shadow(radius: 4)
+            if selectedTab == 0 {
+                Button(action: {
+                    showCreatePost = true
+                }) {
+                    Image(systemName: "plus")
+                        .font(.system(size: 24, weight: .bold))
+                        .foregroundColor(.white)
+                        .frame(width: 56, height: 56)
+                        .background(Color(hex: "#2E7D32"))
+                        .clipShape(Circle())
+                        .shadow(radius: 4)
+                }
+                .padding(.trailing, 20)
+                .padding(.bottom, 80) // Safe padding above tab bar
             }
-            .offset(y: -60) // Adjust position above tab bar
         }
         .sheet(isPresented: $showCreatePost) {
             NavigationView {
