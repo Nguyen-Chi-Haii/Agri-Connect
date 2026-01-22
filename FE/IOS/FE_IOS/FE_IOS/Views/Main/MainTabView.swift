@@ -2,90 +2,92 @@ import SwiftUI
 
 struct MainTabView: View {
     @State private var selectedTab = 0
+    @State private var showCreatePost = false
     
     var body: some View {
-        TabView(selection: $selectedTab) {
-            // Home Tab
-            NavigationView {
-                HomeView()
+        ZStack(alignment: .bottom) {
+            TabView(selection: $selectedTab) {
+                // Home Tab
+                NavigationView {
+                    HomeView()
+                }
+                .navigationViewStyle(StackNavigationViewStyle())
+                .tabItem {
+                    Image(systemName: "house.fill")
+                    Text("Trang chủ")
+                }
+                .tag(0)
+                
+                // Market Tab
+                NavigationView {
+                    MarketView()
+                }
+                .navigationViewStyle(StackNavigationViewStyle())
+                .tabItem {
+                    Image(systemName: "chart.line.uptrend.xyaxis")
+                    Text("Thị trường")
+                }
+                .tag(1)
+                
+                // Chat Tab
+                NavigationView {
+                    ChatListView()
+                }
+                .navigationViewStyle(StackNavigationViewStyle())
+                .tabItem {
+                    Image(systemName: "message.fill")
+                    Text("Tin nhắn")
+                }
+                .tag(2)
+                
+                // Notification Tab
+                NavigationView {
+                    NotificationListView()
+                }
+                .navigationViewStyle(StackNavigationViewStyle())
+                .tabItem {
+                    Image(systemName: "bell.fill")
+                    Text("Thông báo")
+                }
+                .tag(3)
+
+                // Profile Tab
+                NavigationView {
+                    ProfileView(tabSelection: $selectedTab)
+                }
+                .navigationViewStyle(StackNavigationViewStyle())
+                .tabItem {
+                    Image(systemName: "person.fill")
+                    Text("Cá nhân")
+                }
+                .tag(4)
             }
-            .navigationViewStyle(StackNavigationViewStyle())
-            .tabItem {
-                Image(systemName: "house.fill")
-                Text("Trang chủ")
-            }
-            .tag(0)
+            .accentColor(Color(hex: "#2E7D32"))
             
-            // Market Tab
-            NavigationView {
-                MarketView()
+            // Floating Action Button
+            Button(action: {
+                showCreatePost = true
+            }) {
+                Image(systemName: "plus")
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundColor(.white)
+                    .frame(width: 56, height: 56)
+                    .background(Color(hex: "#2E7D32"))
+                    .clipShape(Circle())
+                    .shadow(radius: 4)
             }
-            .navigationViewStyle(StackNavigationViewStyle())
-            .tabItem {
-                Image(systemName: "chart.line.uptrend.xyaxis")
-                Text("Thị trường")
-            }
-            .tag(1)
-            
-            // Create Post Tab
+            .offset(y: -60) // Adjust position above tab bar
+        }
+        .sheet(isPresented: $showCreatePost) {
             NavigationView {
                 CreatePostView(tabSelection: $selectedTab)
             }
-            .navigationViewStyle(StackNavigationViewStyle())
-            .tabItem {
-                Image(systemName: "plus.circle.fill")
-                Text("Đăng bài")
-            }
-            .tag(2)
-            
-            // Chat Tab
-            NavigationView {
-                ChatListView()
-            }
-            .navigationViewStyle(StackNavigationViewStyle())
-            .tabItem {
-                Image(systemName: "message.fill")
-                Text("Tin nhắn")
-            }
-            .tag(3)
-            
-            // Notification Tab
-            NavigationView {
-                NotificationListView()
-            }
-            .navigationViewStyle(StackNavigationViewStyle())
-            .tabItem {
-                Image(systemName: "bell.fill")
-                Text("Thông báo")
-            }
-            .tag(4)
-
-            // Profile Tab
-            NavigationView {
-                ProfileView(tabSelection: $selectedTab)
-            }
-            .navigationViewStyle(StackNavigationViewStyle())
-            .tabItem {
-                Image(systemName: "person.fill")
-                Text("Cá nhân")
-            }
-            .tag(5)
-        }
-        .accentColor(Color(hex: "#2E7D32"))
-        .onChange(of: selectedTab) { (tag: Int) in
-            checkRedirect(tag)
         }
     }
     
+    // Removed checkRedirect as it was only for the old CreatePost tab logic
     private func checkRedirect(_ tag: Int) {
-        guard tag == 2 else { return }
-        guard let user = TokenManager.shared.userProfile else { return }
-        
-        if !user.isVerified {
-            DispatchQueue.main.async {
-                self.selectedTab = 4
-            }
-        }
+        // No longer needed
     }
 }
 

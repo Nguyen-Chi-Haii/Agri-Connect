@@ -6,44 +6,42 @@ struct NotificationListView: View {
     @State private var unreadCount = 0
     
     var body: some View {
-        NavigationView {
-            Group {
-                if isLoading && notifications.isEmpty {
-                    ProgressView()
-                } else if notifications.isEmpty {
-                    VStack(spacing: 16) {
-                        Image(systemName: "bell.slash")
-                            .font(.system(size: 50))
-                            .foregroundColor(.gray)
-                        Text("Chưa có thông báo nào")
-                            .foregroundColor(.gray)
-                    }
-                } else {
-                    List {
-                        ForEach(notifications) { notification in
-                            NotificationCell(notification: notification)
-                                .onTapGesture {
-                                    markAsRead(notification)
-                                }
-                        }
-                    }
-                    .refreshable {
-                        loadData()
+        Group {
+            if isLoading && notifications.isEmpty {
+                ProgressView()
+            } else if notifications.isEmpty {
+                VStack(spacing: 16) {
+                    Image(systemName: "bell.slash")
+                        .font(.system(size: 50))
+                        .foregroundColor(.gray)
+                    Text("Chưa có thông báo nào")
+                        .foregroundColor(.gray)
+                }
+            } else {
+                List {
+                    ForEach(notifications) { notification in
+                        NotificationCell(notification: notification)
+                            .onTapGesture {
+                                markAsRead(notification)
+                            }
                     }
                 }
-            }
-            .navigationTitle("Thông báo")
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Đọc tất cả") {
-                        markAllRead()
-                    }
-                    .disabled(unreadCount == 0)
+                .refreshable {
+                    loadData()
                 }
             }
-            .onAppear {
-                loadData()
+        }
+        .navigationTitle("Thông báo")
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button("Đọc tất cả") {
+                    markAllRead()
+                }
+                .disabled(unreadCount == 0)
             }
+        }
+        .onAppear {
+            loadData()
         }
     }
     
