@@ -9,14 +9,18 @@ struct MyPostRow: View {
         HStack(alignment: .top, spacing: 12) {
             // Post thumbnail
             if let imageUrl = post.images?.first, let url = URL(string: imageUrl) {
-                AsyncImage(url: url) { phase in
-                    switch phase {
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                    default:
-                        Rectangle().fill(Color.gray.opacity(0.3))
+                ZStack {
+                    Color.gray.opacity(0.3)
+                    
+                    AsyncImage(url: url) { phase in
+                        switch phase {
+                        case .success(let image):
+                            image
+                                .resizable()
+                                .scaledToFill()
+                        default:
+                            EmptyView()
+                        }
                     }
                 }
                 .frame(width: 80, height: 80)
