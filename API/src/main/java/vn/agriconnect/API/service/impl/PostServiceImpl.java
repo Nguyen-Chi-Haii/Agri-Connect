@@ -34,6 +34,7 @@ public class PostServiceImpl implements PostService {
     private final MongoTemplate mongoTemplate;
     private final vn.agriconnect.API.service.AuthService authService;
     private final vn.agriconnect.API.repository.UserRepository userRepository;
+    private final vn.agriconnect.API.service.NotificationService notificationService;
 
     @Override
     public PostDetailResponse create(String sellerId, PostCreateRequest request) {
@@ -48,6 +49,17 @@ public class PostServiceImpl implements PostService {
         post.setSellerId(sellerId);
         post.setStatus(PostStatus.PENDING); // Still pending approval for content
         post = postRepository.save(post);
+        
+        // --- Notification Trigger: Notify All Admins ---
+        java.util.List<vn.agriconnect.API.model.User> admins = userRepository.findByRole(vn.agriconnect.API.model.enums.Role.ADMIN);
+        for (vn.agriconnect.API.model.User admin : admins) {
+            notificationService.create(
+                admin.getId(),
+                "Bài đăng mới cần duyệt",
+                "Người dùng " + seller.getFullName() + " vừa đăng bài viết mới: " + post.getTitle()
+            );
+        }
+        
         return toDetailResponse(post);
     }
 
@@ -200,6 +212,13 @@ public class PostServiceImpl implements PostService {
                 .orElseThrow(() -> new ResourceNotFoundException("Post", "id", postId));
         post.setStatus(PostStatus.APPROVED);
         postRepository.save(post);
+        
+        // --- Notification Trigger ---
+        notificationService.create(
+            post.getSellerId(),
+            "Bài đăng đã được duyệt",
+            "Bài đăng '" + post.getTitle() + "' của bạn đã được duyệt và hiển thị trên chợ."
+        );
     }
 
     @Override
@@ -209,6 +228,13 @@ public class PostServiceImpl implements PostService {
                 .orElseThrow(() -> new ResourceNotFoundException("Post", "id", postId));
         post.setStatus(PostStatus.REJECTED);
         postRepository.save(post);
+        
+        // --- Notification Trigger ---
+        notificationService.create(
+            post.getSellerId(),
+            "Bài đăng bị từ chối",
+            "Bài đăng '" + post.getTitle() + "' đã bị từ chối. Lý do: " + reason
+        );
     }
 
     @Override

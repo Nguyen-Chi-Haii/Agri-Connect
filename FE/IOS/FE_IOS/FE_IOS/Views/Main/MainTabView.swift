@@ -49,6 +49,17 @@ struct MainTabView: View {
             }
             .tag(3)
             
+            // Notification Tab
+            NavigationView {
+                NotificationListView()
+            }
+            .navigationViewStyle(StackNavigationViewStyle())
+            .tabItem {
+                Image(systemName: "bell.fill")
+                Text("Thông báo")
+            }
+            .tag(4)
+
             // Profile Tab
             NavigationView {
                 ProfileView(tabSelection: $selectedTab)
@@ -58,7 +69,7 @@ struct MainTabView: View {
                 Image(systemName: "person.fill")
                 Text("Cá nhân")
             }
-            .tag(4)
+            .tag(5)
         }
         .accentColor(Color(hex: "#2E7D32"))
         .onChange(of: selectedTab) { (tag: Int) in

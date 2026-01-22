@@ -26,6 +26,7 @@ public class ChatServiceImpl implements ChatService {
     private final ConversationRepository conversationRepository;
     private final MessageRepository messageRepository;
     private final UserRepository userRepository;
+    private final vn.agriconnect.API.service.NotificationService notificationService;
 
     @Override
     public Conversation getOrCreateConversation(String userId1, String userId2) {
@@ -64,9 +65,24 @@ public class ChatServiceImpl implements ChatService {
         message.setRead(false);
 
         Message savedMessage = messageRepository.save(message);
-
-        // Update conversation's last message
+        
+        // --- Notification Trigger ---
+        // Find the other participant in the conversation to notify
         conversationRepository.findById(request.getConversationId()).ifPresent(conv -> {
+            String recipientId = conv.getParticipants().stream()
+                    .filter(id -> !id.equals(senderId))
+                    .findFirst()
+                    .orElse(null);
+            
+            if (recipientId != null) {
+                notificationService.create(
+                    recipientId,
+                    "Tin nhắn mới",
+                    "Bạn có tin nhắn mới"
+                );
+            }
+
+            // Update conversation's last message
             LastMessage lastMessage = new LastMessage();
             lastMessage.setContent(request.getContent());
             lastMessage.setType(savedMessage.getType());

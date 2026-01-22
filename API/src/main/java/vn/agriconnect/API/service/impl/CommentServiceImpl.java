@@ -27,6 +27,7 @@ public class CommentServiceImpl implements CommentService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
     private final AuthService authService;
+    private final vn.agriconnect.API.service.NotificationService notificationService;
 
     @Override
     public Comment addComment(String postId, String content) {
@@ -50,6 +51,17 @@ public class CommentServiceImpl implements CommentService {
         // Update comment count in Post
         post.setCommentCount(post.getCommentCount() + 1);
         postRepository.save(post);
+        
+        // --- Notification Trigger ---
+        // Notify post owner if commenter is different from owner
+        if (!post.getSellerId().equals(userId)) {
+             String commenterName = (comment.getUserName() != null) ? comment.getUserName() : "Ai đó";
+             notificationService.create(
+                post.getSellerId(),
+                "Bình luận mới",
+                commenterName + " đã bình luận về bài viết của bạn: " + post.getTitle()
+             );
+        }
         
         return saved;
     }

@@ -78,6 +78,13 @@ struct APIConfig {
         static let single = "/upload"
         static let multiple = "/upload/multiple"
     }
+
+    struct Notifications {
+        static let list = "/notifications"
+        static let unreadCount = "/notifications/unread-count"
+        static let readAll = "/notifications/read-all"
+        static func markRead(_ id: String) -> String { return "/notifications/\(id)/read" }
+    }
 }
 
 // MARK: - APIClient Extension for Image Upload
