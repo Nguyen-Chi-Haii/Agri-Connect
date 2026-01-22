@@ -317,6 +317,8 @@ struct MyPostsListView: View {
                                     showDeleteAlert = true
                                 })
                             }
+                            .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16))
+                            .buttonStyle(PlainButtonStyle())
                         }
                     }
                     .listStyle(PlainListStyle())
