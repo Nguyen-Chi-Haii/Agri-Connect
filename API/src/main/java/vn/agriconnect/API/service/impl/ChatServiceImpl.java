@@ -66,23 +66,8 @@ public class ChatServiceImpl implements ChatService {
 
         Message savedMessage = messageRepository.save(message);
         
-        // --- Notification Trigger ---
-        // Find the other participant in the conversation to notify
+        // Update conversation's last message
         conversationRepository.findById(request.getConversationId()).ifPresent(conv -> {
-            String recipientId = conv.getParticipants().stream()
-                    .filter(id -> !id.equals(senderId))
-                    .findFirst()
-                    .orElse(null);
-            
-            if (recipientId != null) {
-                notificationService.create(
-                    recipientId,
-                    "Tin nhắn mới",
-                    "Bạn có tin nhắn mới"
-                );
-            }
-
-            // Update conversation's last message
             LastMessage lastMessage = new LastMessage();
             lastMessage.setContent(request.getContent());
             lastMessage.setType(savedMessage.getType());
