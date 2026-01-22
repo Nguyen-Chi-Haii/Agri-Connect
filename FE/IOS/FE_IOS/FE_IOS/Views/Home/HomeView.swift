@@ -224,7 +224,7 @@ struct PostCard: View {
                             .fill(Color.gray.opacity(0.3))
                     }
                 }
-                .frame(height: 150)
+                .frame(maxWidth: .infinity, maxHeight: 200)
                 .clipped()
                 .cornerRadius(12)
             }
