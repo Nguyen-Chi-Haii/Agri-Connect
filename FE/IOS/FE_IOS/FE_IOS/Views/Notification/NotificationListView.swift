@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct NotificationListView: View {
-    @State private var notifications: [Notification] = []
+    @State private var notifications: [AppNotification] = []
     @State private var isLoading = false
     @State private var unreadCount = 0
     
@@ -61,7 +61,7 @@ struct NotificationListView: View {
         }
     }
     
-    private func markAsRead(_ notification: Notification) {
+    private func markAsRead(_ notification: AppNotification) {
         guard !notification.isRead else { return }
         
         // Optimistic update

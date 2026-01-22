@@ -5,11 +5,11 @@ class NotificationService {
     
     private init() {}
     
-    func fetchNotifications(completion: @escaping (Result<[Notification], Error>) -> Void) {
+    func fetchNotifications(completion: @escaping (Result<[AppNotification], Error>) -> Void) {
         APIClient.shared.request(
             endpoint: APIConfig.Notifications.list,
             method: .get
-        ) { (result: Result<ApiResponse<[Notification]>, Error>) in
+        ) { (result: Result<ApiResponse<[AppNotification]>, Error>) in
             switch result {
             case .success(let response):
                 completion(.success(response.data ?? []))

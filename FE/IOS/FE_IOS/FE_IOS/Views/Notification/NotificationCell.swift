@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct NotificationCell: View {
-    let notification: Notification
+    let notification: AppNotification
     
     var body: some View {
         HStack(alignment: .top, spacing: 12) {

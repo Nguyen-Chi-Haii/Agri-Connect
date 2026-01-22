@@ -8,7 +8,7 @@ enum NotificationType: String, Decodable {
     case SYSTEM
 }
 
-struct Notification: Decodable, Identifiable {
+struct AppNotification: Decodable, Identifiable {
     let id: String
     let userId: String
     let type: NotificationType
