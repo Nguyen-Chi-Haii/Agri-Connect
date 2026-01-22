@@ -24,6 +24,7 @@ struct MyPostRow: View {
                     }
                 }
                 .frame(width: 80, height: 80)
+                .fixedSize()
                 .cornerRadius(8)
             }
             
@@ -75,6 +76,7 @@ struct MyPostRow: View {
             }
             .fixedSize(horizontal: true, vertical: false)
         }
+        .frame(height: 96)
         .padding(.vertical, 8)
         .sheet(isPresented: $showEditSheet) {
             EditPostView(post: post, onUpdate: {
