@@ -7,25 +7,33 @@ struct MyPostRow: View {
     
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
-            // Post thumbnail
-            if let imageUrl = post.images?.first, let url = URL(string: imageUrl) {
-                AsyncImage(url: url) { phase in
-                    switch phase {
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                            .frame(width: 80, height: 80)
-                            .clipped()
-                    default:
-                        Rectangle()
-                            .fill(Color.gray.opacity(0.3))
-                            .frame(width: 80, height: 80)
+            // Post thumbnail - always reserve space for alignment
+            Group {
+                if let imageUrl = post.images?.first, let url = URL(string: imageUrl) {
+                    AsyncImage(url: url) { phase in
+                        switch phase {
+                        case .success(let image):
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .frame(width: 80, height: 80)
+                                .clipped()
+                        default:
+                            Rectangle()
+                                .fill(Color.gray.opacity(0.3))
+                                .frame(width: 80, height: 80)
+                        }
                     }
+                    .frame(width: 80, height: 80)
+                    .fixedSize()
+                    .cornerRadius(8)
+                } else {
+                    // Placeholder to maintain alignment
+                    Rectangle()
+                        .fill(Color.gray.opacity(0.1))
+                        .frame(width: 80, height: 80)
+                        .cornerRadius(8)
                 }
-                .frame(width: 80, height: 80)
-                .fixedSize()
-                .cornerRadius(8)
             }
             
             VStack(alignment: .leading, spacing: 4) {
