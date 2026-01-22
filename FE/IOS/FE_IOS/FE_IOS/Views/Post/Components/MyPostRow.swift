@@ -51,6 +51,7 @@ struct MyPostRow: View {
                         .foregroundColor(.gray)
                 }
             }
+            .layoutPriority(1)
             
             Spacer()
             
@@ -68,6 +69,7 @@ struct MyPostRow: View {
                 }
                 .buttonStyle(BorderlessButtonStyle())
             }
+            .fixedSize(horizontal: true, vertical: false)
         }
         .padding(.vertical, 8)
         .sheet(isPresented: $showEditSheet) {

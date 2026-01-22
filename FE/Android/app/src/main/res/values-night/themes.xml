@@ -4,4 +4,9 @@
         <!-- Customize your dark theme here. -->
         <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
     </style>
+    
+    <!-- Toolbar Styles -->
+    <style name="Theme.AgriConnect.AppBarOverlay" parent="ThemeOverlay.Material3.Dark.ActionBar" />
+    
+    <style name="Theme.AgriConnect.PopupOverlay" parent="ThemeOverlay.Material3.Light" />
 </resources>
