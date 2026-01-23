@@ -437,8 +437,7 @@ struct EditProfileFormView: View {
                             .foregroundColor(.gray)
                         Spacer()
                         LocationFillButton(
-                            locationManager: LocationManager.shared,
-                            onAddressReceived: { province, district in
+                            onAddressReceived: { province, district, _ in
                                 address = "\(district), \(province)"
                             },
                             onError: { errorMsg in

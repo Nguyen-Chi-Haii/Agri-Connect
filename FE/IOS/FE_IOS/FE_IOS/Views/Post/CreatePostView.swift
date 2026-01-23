@@ -219,6 +219,8 @@ struct CreatePostView: View {
                         .disabled(LocationManager.shared.isLoading)
                         
                         ValidatedFormField(
+                            title: "Quận/Huyện",
+                            placeholder: "VD: Châu Đốc",
                             text: $district,
                             error: $districtError
                         )

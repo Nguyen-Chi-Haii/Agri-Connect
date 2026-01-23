@@ -23,6 +23,9 @@ struct HomeView: View {
         ScrollView {
             // Hidden Link for Redirect
             if let profile = TokenManager.shared.userProfile {
+                NavigationLink(
+                    destination: UpdateKycView(userProfile: profile),
+                    isActive: $navigateToVerification
                 ) { EmptyView() }
                 .hidden()
             }
@@ -397,7 +400,7 @@ struct AllPostsView: View {
 struct HomeView_Previews: PreviewProvider {
     static var previews: some View {
         NavigationView {
-            HomeView()
+            HomeView(redirectPostId: .constant(nil))
         }
     }
 }
