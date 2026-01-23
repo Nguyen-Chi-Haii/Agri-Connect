@@ -3,6 +3,8 @@ import SwiftUI
 struct MainTabView: View {
     @State private var selectedTab = 0
     @State private var showCreatePost = false
+    @State private var notificationBadgeCount = 0
+    @State private var chatBadgeCount = 0
     
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
@@ -38,6 +40,7 @@ struct MainTabView: View {
                     Image(systemName: "message.fill")
                     Text("Tin nhắn")
                 }
+                .badge(chatBadgeCount > 0 ? chatBadgeCount : nil)
                 .tag(2)
                 
                 // Notification Tab
@@ -49,6 +52,7 @@ struct MainTabView: View {
                     Image(systemName: "bell.fill")
                     Text("Thông báo")
                 }
+                .badge(notificationBadgeCount > 0 ? notificationBadgeCount : nil)
                 .tag(3)
 
                 // Profile Tab
@@ -86,6 +90,38 @@ struct MainTabView: View {
                 CreatePostView(tabSelection: $selectedTab)
             }
         }
+        .onAppear {
+            fetchBadgeCounts()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
+            fetchBadgeCounts()
+        }
+        .onChange(of: selectedTab) { newValue in
+            if newValue == 2 {
+                // Entered chat - clear badge
+                chatBadgeCount = 0
+            } else if newValue == 3 {
+                // Entered notifications - clear badge
+                notificationBadgeCount = 0
+            }
+        }
+    }
+    
+    private func fetchBadgeCounts() {
+        // Fetch notification count
+        APIClient.shared.request(
+            endpoint: APIConfig.Notifications.unreadCount,
+            method: .get
+        ) { (result: Result<ApiResponse<Int>, Error>) in
+            if case .success(let response) = result {
+                DispatchQueue.main.async {
+                    notificationBadgeCount = response.data ?? 0
+                }
+            }
+        }
+        
+        // TODO: Fetch chat count when API is available
+        // For now, chat badge stays at 0
     }
     
     // Removed checkRedirect as it was only for the old CreatePost tab logic
