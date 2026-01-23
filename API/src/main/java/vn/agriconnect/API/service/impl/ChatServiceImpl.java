@@ -137,4 +137,21 @@ public class ChatServiceImpl implements ChatService {
                     .build();
         }).collect(java.util.stream.Collectors.toList());
     }
+
+    @Override
+    public long countUnreadConversations(String userId) {
+        // Get all conversations for the user
+        List<Conversation> conversations = conversationRepository.findByParticipantsContaining(userId);
+        
+        // Count how many have unread messages
+        return conversations.stream()
+                .filter(conv -> {
+                    // Check if there are any unread messages in this conversation
+                    // from the other user (not sent by current user)
+                    List<Message> unreadMessages = messageRepository.findByConversationIdAndSenderIdNotAndIsReadFalse(
+                            conv.getId(), userId);
+                    return !unreadMessages.isEmpty();
+                })
+                .count();
+    }
 }

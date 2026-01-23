@@ -120,8 +120,22 @@ struct MainTabView: View {
             }
         }
         
-        // TODO: Fetch chat count when API is available
-        // chatBadgeCount will stay at 0 until chat unread count API is implemented
+        // Fetch chat unread count
+        APIClient.shared.request(
+            endpoint: APIConfig.Chat.unreadCount,
+            method: .get
+        ) { (result: Result<ApiResponse<Int>, Error>) in
+            switch result {
+            case .success(let response):
+                DispatchQueue.main.async {
+                    let count = response.data ?? 0
+                    print("💬 Chat badge count from API: \(count)")
+                    chatBadgeCount = count
+                }
+            case .failure(let error):
+                print("❌ Failed to fetch chat count: \(error)")
+            }
+        }
     }
     
     // Removed checkRedirect as it was only for the old CreatePost tab logic

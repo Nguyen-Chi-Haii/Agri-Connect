@@ -64,6 +64,7 @@ struct APIConfig {
     struct Chat {
         static let conversations = "/chat/conversations"
         static let messages = "/chat/messages"
+        static let unreadCount = "/chat/unread-count"
         
         static func createConversation(_ userId: String) -> String {
             return "/chat/conversations/\(userId)"

@@ -54,4 +54,11 @@ public class ChatController {
         chatService.markAsRead(conversationId, userId);
         return ResponseEntity.ok(ApiResponse.success("Marked as read", null));
     }
+
+    @GetMapping("/unread-count")
+    public ResponseEntity<ApiResponse<Long>> getUnreadCount() {
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        long count = chatService.countUnreadConversations(userId);
+        return ResponseEntity.ok(ApiResponse.success(count));
+    }
 }

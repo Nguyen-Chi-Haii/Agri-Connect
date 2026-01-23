@@ -18,4 +18,6 @@ public interface ChatService {
     List<Message> getMessages(String conversationId);
 
     void markAsRead(String conversationId, String userId);
+
+    long countUnreadConversations(String userId);
 }

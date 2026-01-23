@@ -213,7 +213,26 @@ public class MainNavigationActivity extends AppCompatActivity {
                     }
                 });
 
-        // TODO: Fetch chat unread count when API is available
-        // For now, chat badge stays hidden
+        // Fetch chat unread count
+        ApiClient.getInstance(this).getChatApi()
+                .getUnreadCount()
+                .enqueue(new retrofit2.Callback<com.agriconnect.agri_connect.api.model.ApiResponse<Long>>() {
+                    @Override
+                    public void onResponse(
+                            retrofit2.Call<com.agriconnect.agri_connect.api.model.ApiResponse<Long>> call,
+                            retrofit2.Response<com.agriconnect.agri_connect.api.model.ApiResponse<Long>> response) {
+                        if (response.isSuccessful() && response.body() != null && response.body().getData() != null) {
+                            Long count = response.body().getData();
+                            updateChatBadge(count.intValue());
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(
+                            retrofit2.Call<com.agriconnect.agri_connect.api.model.ApiResponse<Long>> call,
+                            Throwable t) {
+                        // Silently fail - badge just won't update
+                    }
+                });
     }
 }

@@ -24,4 +24,7 @@ public interface ChatApi {
 
     @POST("api/chat/messages")
     Call<ApiResponse<Message>> sendMessage(@Body SendMessageRequest request);
+
+    @GET("api/chat/unread-count")
+    Call<ApiResponse<Long>> getUnreadCount();
 }
