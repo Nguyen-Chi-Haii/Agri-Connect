@@ -26,6 +26,7 @@ public class ChatServiceImpl implements ChatService {
     private final ConversationRepository conversationRepository;
     private final MessageRepository messageRepository;
     private final UserRepository userRepository;
+    private final vn.agriconnect.API.service.NotificationService notificationService;
 
     @Override
     public Conversation getOrCreateConversation(String userId1, String userId2) {
@@ -64,7 +65,7 @@ public class ChatServiceImpl implements ChatService {
         message.setRead(false);
 
         Message savedMessage = messageRepository.save(message);
-
+        
         // Update conversation's last message
         conversationRepository.findById(request.getConversationId()).ifPresent(conv -> {
             LastMessage lastMessage = new LastMessage();
@@ -135,5 +136,22 @@ public class ChatServiceImpl implements ChatService {
                     .unreadCount(unreadCount)
                     .build();
         }).collect(java.util.stream.Collectors.toList());
+    }
+
+    @Override
+    public long countUnreadConversations(String userId) {
+        // Get all conversations for the user
+        List<Conversation> conversations = conversationRepository.findByParticipantsContaining(userId);
+        
+        // Count how many have unread messages
+        return conversations.stream()
+                .filter(conv -> {
+                    // Check if there are any unread messages in this conversation
+                    // from the other user (not sent by current user)
+                    List<Message> unreadMessages = messageRepository.findByConversationIdAndSenderIdNotAndIsReadFalse(
+                            conv.getId(), userId);
+                    return !unreadMessages.isEmpty();
+                })
+                .count();
     }
 }

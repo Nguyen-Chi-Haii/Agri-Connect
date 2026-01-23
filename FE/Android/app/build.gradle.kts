@@ -4,9 +4,8 @@ plugins {
 
 android {
     namespace = "com.agriconnect.agri_connect"
-    compileSdk {
-        version = release(36)
-    }
+    compileSdk = 36
+
 
     defaultConfig {
         applicationId = "com.agriconnect.agri_connect"
@@ -62,6 +61,9 @@ dependencies {
     
     // Location services
     implementation("com.google.android.gms:play-services-location:21.0.1")
+    
+    // SwipeRefreshLayout for pull-to-refresh
+    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
     
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)

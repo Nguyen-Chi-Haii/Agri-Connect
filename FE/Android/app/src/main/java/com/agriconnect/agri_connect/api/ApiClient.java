@@ -156,6 +156,15 @@ public class ApiClient {
         return uploadApi;
     }
 
+    private NotificationApi notificationApi;
+
+    public NotificationApi getNotificationApi() {
+        if (notificationApi == null) {
+            notificationApi = retrofit.create(NotificationApi.class);
+        }
+        return notificationApi;
+    }
+
     public TokenManager getTokenManager() {
         return tokenManager;
     }

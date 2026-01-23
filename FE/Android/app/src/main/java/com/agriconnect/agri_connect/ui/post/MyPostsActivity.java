@@ -56,6 +56,15 @@ public class MyPostsActivity extends AppCompatActivity implements MyPostsAdapter
             }
     );
 
+    private final ActivityResultLauncher<Intent> editPostLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == RESULT_OK) {
+                    loadMyPosts();
+                }
+            }
+    );
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -186,6 +195,13 @@ public class MyPostsActivity extends AppCompatActivity implements MyPostsAdapter
     private void showEmpty() {
         layoutEmpty.setVisibility(View.VISIBLE);
         rvPosts.setVisibility(View.GONE);
+    }
+
+    @Override
+    public void onEditPost(HomeFragment.PostItem post, int position) {
+        Intent intent = new Intent(this, EditPostActivity.class);
+        intent.putExtra(EditPostActivity.EXTRA_POST_ID, post.id);
+        editPostLauncher.launch(intent);
     }
 
     @Override

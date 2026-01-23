@@ -55,6 +55,7 @@
     <string name="nav_home">Trang chủ</string>
     <string name="nav_market">Thị trường</string>
     <string name="nav_chat">Chat</string>
+    <string name="nav_notification">Thông báo</string>
     <string name="nav_profile">Tôi</string>
     
     <!-- Home/Feed -->

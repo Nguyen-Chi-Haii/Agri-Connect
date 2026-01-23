@@ -147,7 +147,7 @@ struct Location: Decodable {
     let province: String?
     let district: String?
     let ward: String?
-    let address: String?
+    let detail: String?
 }
 
 struct Post: Decodable, Identifiable {
@@ -185,6 +185,7 @@ struct PostInteractionResponse: Decodable {
 struct CreateLocationRequest: Encodable {
     let province: String?
     let district: String?
+    let detail: String?
 }
 
 struct CreatePostRequest: Encodable {

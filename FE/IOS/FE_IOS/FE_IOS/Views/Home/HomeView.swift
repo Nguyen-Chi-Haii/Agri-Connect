@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct HomeView: View {
+    @Binding var redirectPostId: String?
     @State private var posts: [Post] = []
     @State private var categories: [Category] = []
     @State private var isLoading = false
@@ -12,6 +13,7 @@ struct HomeView: View {
     @State private var kycAlertTitle = ""
     @State private var kycAlertMessage = ""
     @State private var navigateToVerification = false
+    @State private var navigateToDetail = false
     
     var filteredPosts: [Post] {
         return posts
@@ -27,6 +29,13 @@ struct HomeView: View {
                 ) { EmptyView() }
                 .hidden()
             }
+            
+            // Redirect Navigation Link
+            NavigationLink(
+                destination: PostDetailView(postId: redirectPostId ?? ""),
+                isActive: $navigateToDetail
+            ) { EmptyView() }
+            .hidden()
 
             VStack(spacing: 16) {
                 // Search Bar
@@ -118,6 +127,15 @@ struct HomeView: View {
         )
         .onAppear {
             loadData()
+        }
+        .onChange(of: redirectPostId) { newValue in
+            if newValue != nil {
+                navigateToDetail = true
+                // Reset after a short delay so it can be triggered again if needed
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    redirectPostId = nil
+                }
+            }
         }
         .alert(isPresented: $showKYCAlert) {
             Alert(
@@ -224,7 +242,7 @@ struct PostCard: View {
                             .fill(Color.gray.opacity(0.3))
                     }
                 }
-                .frame(height: 150)
+                .frame(maxWidth: .infinity, maxHeight: 200)
                 .clipped()
                 .cornerRadius(12)
             }
@@ -382,7 +400,7 @@ struct AllPostsView: View {
 struct HomeView_Previews: PreviewProvider {
     static var previews: some View {
         NavigationView {
-            HomeView()
+            HomeView(redirectPostId: .constant(nil))
         }
     }
 }

@@ -9,18 +9,20 @@ struct MyPostRow: View {
         HStack(alignment: .top, spacing: 12) {
             // Post thumbnail
             if let imageUrl = post.images?.first, let url = URL(string: imageUrl) {
-                AsyncImage(url: url) { phase in
-                    switch phase {
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                    default:
-                        Rectangle().fill(Color.gray.opacity(0.3))
-                    }
-                }
-                .frame(width: 80, height: 80)
-                .cornerRadius(8)
+                Rectangle()
+                    .fill(Color.gray.opacity(0.3))
+                    .frame(width: 80, height: 80)
+                    .overlay(
+                        AsyncImage(url: url) { phase in
+                            if case .success(let image) = phase {
+                                image
+                                    .resizable()
+                                    .scaledToFill()
+                            }
+                        }
+                    )
+                    .clipped()
+                    .cornerRadius(8)
             }
             
             VStack(alignment: .leading, spacing: 4) {
@@ -51,8 +53,10 @@ struct MyPostRow: View {
                         .foregroundColor(.gray)
                 }
             }
+            .layoutPriority(1)
+            .frame(maxWidth: .infinity, alignment: .leading)
             
-            Spacer()
+            Spacer(minLength: 0)
             
             // Actions
             HStack(spacing: 12) {
@@ -68,7 +72,9 @@ struct MyPostRow: View {
                 }
                 .buttonStyle(BorderlessButtonStyle())
             }
+            .fixedSize(horizontal: true, vertical: false)
         }
+        .frame(height: 96)
         .padding(.vertical, 8)
         .sheet(isPresented: $showEditSheet) {
             EditPostView(post: post, onUpdate: {

@@ -23,4 +23,19 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
     }
+
+    @Override
+    public boolean onCreateOptionsMenu(android.view.Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_toolbar_notification, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(android.view.MenuItem item) {
+        if (item.getItemId() == R.id.action_notification) {
+            startActivity(new android.content.Intent(this, com.agriconnect.agri_connect.ui.notification.NotificationActivity.class));
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
 }

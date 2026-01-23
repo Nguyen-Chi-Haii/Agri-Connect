@@ -46,13 +46,24 @@ struct AdminTabView: View {
             }
             .tag(3)
             
+            // Notification Tab
+            NavigationView {
+                NotificationListView()
+            }
+            .navigationViewStyle(StackNavigationViewStyle())
+            .tabItem {
+                Image(systemName: "bell.fill")
+                Text("Thông báo")
+            }
+            .tag(4)
+
             // Settings Tab
             AdminSettingsView()
                 .tabItem {
                     Image(systemName: "gearshape.fill")
                     Text("Cài đặt")
                 }
-                .tag(4)
+                .tag(5)
         }
         .accentColor(Color(hex: "#2E7D32"))
     }

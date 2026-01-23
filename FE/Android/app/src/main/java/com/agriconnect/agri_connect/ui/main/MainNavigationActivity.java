@@ -22,6 +22,7 @@ public class MainNavigationActivity extends AppCompatActivity {
 
     private BottomNavigationView bottomNavigation;
     private BadgeDrawable chatBadge;
+    private BadgeDrawable notificationBadge;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,6 +74,11 @@ public class MainNavigationActivity extends AppCompatActivity {
                 fragment = new ChatListFragment();
                 // Clear badge when entering chat
                 clearChatBadge();
+            } else if (itemId == R.id.nav_notification) {
+                startActivity(new android.content.Intent(this, com.agriconnect.agri_connect.ui.notification.NotificationActivity.class));
+                // Clear badge when viewing notifications
+                clearNotificationBadge();
+                return true;
             } else if (itemId == R.id.nav_profile) {
                 fragment = new ProfileFragment();
             }
@@ -90,7 +96,11 @@ public class MainNavigationActivity extends AppCompatActivity {
         chatBadge = bottomNavigation.getOrCreateBadge(R.id.nav_chat);
         chatBadge.setVisible(false);
 
-        // Badge will be updated when there are actual unread messages
+        // Create notification badge
+        notificationBadge = bottomNavigation.getOrCreateBadge(R.id.nav_notification);
+        notificationBadge.setVisible(false);
+
+        // Badge will be updated when there are actual unread messages/notifications
         // (This should be called from a WebSocket listener or API fetch)
     }
 
@@ -106,6 +116,27 @@ public class MainNavigationActivity extends AppCompatActivity {
         } else {
             chatBadge.setVisible(false);
         }
+    }
+
+    /**
+     * Update the notification badge with unread count
+     * 
+     * @param count Number of unread notifications
+     */
+    public void updateNotificationBadge(int count) {
+        if (count > 0) {
+            notificationBadge.setNumber(count);
+            notificationBadge.setVisible(true);
+        } else {
+            notificationBadge.setVisible(false);
+        }
+    }
+
+    /**
+     * Clear the notification badge
+     */
+    public void clearNotificationBadge() {
+        notificationBadge.setVisible(false);
     }
 
     /**
@@ -153,7 +184,55 @@ public class MainNavigationActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // Refresh badge count (demo - in real app, fetch from API)
-        // updateChatBadge(getUnreadCount());
+        fetchBadgeCounts();
+    }
+
+    /**
+     * Fetch badge counts from API
+     */
+    private void fetchBadgeCounts() {
+        // Fetch notification count
+        ApiClient.getInstance(this).getNotificationApi()
+                .getUnreadCount()
+                .enqueue(new retrofit2.Callback<com.agriconnect.agri_connect.api.model.ApiResponse<Long>>() {
+                    @Override
+                    public void onResponse(
+                            retrofit2.Call<com.agriconnect.agri_connect.api.model.ApiResponse<Long>> call,
+                            retrofit2.Response<com.agriconnect.agri_connect.api.model.ApiResponse<Long>> response) {
+                        if (response.isSuccessful() && response.body() != null && response.body().getData() != null) {
+                            Long count = response.body().getData();
+                            updateNotificationBadge(count.intValue());
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(
+                            retrofit2.Call<com.agriconnect.agri_connect.api.model.ApiResponse<Long>> call,
+                            Throwable t) {
+                        // Silently fail - badge just won't update
+                    }
+                });
+
+        // Fetch chat unread count
+        ApiClient.getInstance(this).getChatApi()
+                .getUnreadCount()
+                .enqueue(new retrofit2.Callback<com.agriconnect.agri_connect.api.model.ApiResponse<Long>>() {
+                    @Override
+                    public void onResponse(
+                            retrofit2.Call<com.agriconnect.agri_connect.api.model.ApiResponse<Long>> call,
+                            retrofit2.Response<com.agriconnect.agri_connect.api.model.ApiResponse<Long>> response) {
+                        if (response.isSuccessful() && response.body() != null && response.body().getData() != null) {
+                            Long count = response.body().getData();
+                            updateChatBadge(count.intValue());
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(
+                            retrofit2.Call<com.agriconnect.agri_connect.api.model.ApiResponse<Long>> call,
+                            Throwable t) {
+                        // Silently fail - badge just won't update
+                    }
+                });
     }
 }

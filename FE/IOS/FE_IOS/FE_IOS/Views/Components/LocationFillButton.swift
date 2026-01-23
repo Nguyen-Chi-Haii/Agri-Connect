@@ -2,7 +2,7 @@ import SwiftUI
 
 struct LocationFillButton: View {
     @ObservedObject var locationManager = LocationManager.shared
-    var onAddressReceived: (_ province: String, _ district: String) -> Void
+    var onAddressReceived: (_ province: String, _ district: String, _ detail: String) -> Void
     var onError: ((String) -> Void)?
     
     var body: some View {
@@ -28,7 +28,7 @@ struct LocationFillButton: View {
         }
         .onReceive(locationManager.$addressComponents) { components in
             if let components = components {
-                onAddressReceived(components.province, components.district)
+                onAddressReceived(components.province, components.district, components.detail)
             }
         }
         .onReceive(locationManager.$locationError) { error in

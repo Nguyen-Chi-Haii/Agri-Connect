@@ -3,10 +3,13 @@ package com.agriconnect.agri_connect.ui.post;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.location.Address;
 import android.location.Geocoder;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,28 +37,25 @@ import com.agriconnect.agri_connect.api.PostApi;
 import com.agriconnect.agri_connect.api.model.ApiResponse;
 import com.agriconnect.agri_connect.api.model.Location;
 import com.agriconnect.agri_connect.api.model.Post;
+import com.agriconnect.agri_connect.utils.FormValidator;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
-import com.agriconnect.agri_connect.utils.FormValidator;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
-import android.util.Base64;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class CreatePostActivity extends AppCompatActivity {
+public class EditPostActivity extends AppCompatActivity {
+
+    public static final String EXTRA_POST_ID = "post_id";
 
     private ImageView btnBack;
     private MaterialButton btnPost, btnGetLocation;
@@ -71,12 +71,14 @@ public class CreatePostActivity extends AppCompatActivity {
     private static final int MAX_IMAGES = 5;
     private static final int LOCATION_PERMISSION_REQUEST = 100;
 
+    private String postId;
+    private Post currentPost;
+
     // Location
     private FusedLocationProviderClient fusedLocationClient;
 
     // Categories
-    private String[] categories = { "Lúa gạo", "Rau củ", "Trái cây", "Thủy sản", "Gia súc", "Gia cầm",
-            "Nông sản khác" };
+    private List<com.agriconnect.agri_connect.api.model.Category> categoryList = new ArrayList<>();
     private String selectedCategoryId = null;
 
     private final ActivityResultLauncher<String> pickImageLauncher = registerForActivityResult(
@@ -112,13 +114,21 @@ public class CreatePostActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_create_post);
+        setContentView(R.layout.activity_edit_post);
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        // Get post ID from intent
+        postId = getIntent().getStringExtra(EXTRA_POST_ID);
+        if (postId == null) {
+            Toast.makeText(this, "Lỗi: Không tìm thấy bài đăng", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
 
         // Initialize API
         postApi = ApiClient.getInstance(this).getPostApi();
@@ -129,6 +139,7 @@ public class CreatePostActivity extends AppCompatActivity {
         initViews();
         setupCategoryDropdown();
         setupListeners();
+        loadPostData();
     }
 
     private void initViews() {
@@ -151,8 +162,6 @@ public class CreatePostActivity extends AppCompatActivity {
         progressBar = findViewById(R.id.progressBar);
     }
 
-    private List<com.agriconnect.agri_connect.api.model.Category> categoryList = new ArrayList<>();
-
     private void setupCategoryDropdown() {
         // Fetch categories from API
         com.agriconnect.agri_connect.api.CategoryApi categoryApi = ApiClient.getInstance(this).getCategoryApi();
@@ -170,20 +179,25 @@ public class CreatePostActivity extends AppCompatActivity {
                                 categoryNames.add(display);
                             }
 
-                            ArrayAdapter<String> adapter = new ArrayAdapter<>(CreatePostActivity.this,
+                            ArrayAdapter<String> adapter = new ArrayAdapter<>(EditPostActivity.this,
                                     android.R.layout.simple_dropdown_item_1line, categoryNames);
                             actvCategory.setAdapter(adapter);
 
                             actvCategory.setOnItemClickListener((parent, view, position, id) -> {
                                 selectedCategoryId = categoryList.get(position).getId();
                             });
+
+                            // After categories loaded, populate if post is loaded
+                            if (currentPost != null) {
+                                populateCategory();
+                            }
                         }
                     }
 
                     @Override
                     public void onFailure(Call<ApiResponse<List<com.agriconnect.agri_connect.api.model.Category>>> call,
                             Throwable t) {
-                        Toast.makeText(CreatePostActivity.this, "Không thể tải danh mục: " + t.getMessage(),
+                        Toast.makeText(EditPostActivity.this, "Không thể tải danh mục: " + t.getMessage(),
                                 Toast.LENGTH_SHORT).show();
                     }
                 });
@@ -206,7 +220,7 @@ public class CreatePostActivity extends AppCompatActivity {
             pickImage();
         });
 
-        btnPost.setOnClickListener(v -> createPost());
+        btnPost.setOnClickListener(v -> updatePost());
 
         // Location button
         btnGetLocation.setOnClickListener(v -> {
@@ -219,8 +233,73 @@ public class CreatePostActivity extends AppCompatActivity {
         });
     }
 
+    private void loadPostData() {
+        showLoading(true);
+        
+        postApi.getPostById(postId).enqueue(new Callback<ApiResponse<Post>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<Post>> call, Response<ApiResponse<Post>> response) {
+                showLoading(false);
+                
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    currentPost = response.body().getData();
+                    populateFields();
+                } else {
+                    Toast.makeText(EditPostActivity.this, "Không thể tải thông tin bài đăng", Toast.LENGTH_SHORT).show();
+                    finish();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<Post>> call, Throwable t) {
+                showLoading(false);
+                Toast.makeText(EditPostActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                finish();
+            }
+        });
+    }
+
+    private void populateFields() {
+        if (currentPost == null) return;
+
+        etTitle.setText(currentPost.getTitle());
+        etContent.setText(currentPost.getDescription());
+        etPrice.setText(String.valueOf(currentPost.getPrice() != null ? currentPost.getPrice().intValue() : 0));
+        etUnit.setText(currentPost.getUnit() != null ? currentPost.getUnit() : "kg");
+        etQuantity.setText(String.valueOf(currentPost.getQuantity() != null ? currentPost.getQuantity() : 0));
+        
+        // Location
+        if (currentPost.getLocation() != null) {
+            etLocation.setText(currentPost.getLocation().toString());
+        }
+
+        // Category
+        selectedCategoryId = currentPost.getCategoryId();
+        populateCategory();
+
+        // Images - Note: existing images stay as URLs, new images will be URIs
+        // This is a simplified approach - just show that images exist
+        if (currentPost.getImages() != null && !currentPost.getImages().isEmpty()) {
+            // For simplicity, we won't display existing images in edit mode
+            // User must select images again if they want to change them
+            Toast.makeText(this, "Bài đăng hiện có " + currentPost.getImages().size() + " ảnh. Chọn ảnh mới để thay thế.", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private void populateCategory() {
+        if (selectedCategoryId == null || categoryList.isEmpty()) return;
+
+        for (int i = 0; i < categoryList.size(); i++) {
+            if (categoryList.get(i).getId().equals(selectedCategoryId)) {
+                String display = (categoryList.get(i).getIcon() != null ? categoryList.get(i).getIcon() + " " : "") 
+                        + categoryList.get(i).getName();
+                actvCategory.setText(display, false);
+                break;
+            }
+        }
+    }
+
     private boolean isLocationInVietnam(double latitude, double longitude) {
-        // Broad bounding box for Vietnam
         return latitude >= 8.0 && latitude <= 24.0 &&
                 longitude >= 102.0 && longitude <= 110.0;
     }
@@ -229,11 +308,9 @@ public class CreatePostActivity extends AppCompatActivity {
         btnGetLocation.setEnabled(false);
         btnGetLocation.setText("Đang lấy...");
 
-        // Default location (Ho Chi Minh City) for fallback
         double defaultLat = 10.762622;
         double defaultLng = 106.660172;
 
-        // Check permission
         if (ActivityCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             Toast.makeText(this, "Dùng vị trí mặc định (TP.HCM)", Toast.LENGTH_SHORT).show();
@@ -241,11 +318,9 @@ public class CreatePostActivity extends AppCompatActivity {
             return;
         }
 
-        // Try GPS with quick timeout
         android.os.Handler handler = new android.os.Handler(getMainLooper());
         final boolean[] locationReceived = { false };
 
-        // Timeout after 3 seconds
         handler.postDelayed(() -> {
             if (!locationReceived[0]) {
                 locationReceived[0] = true;
@@ -272,7 +347,6 @@ public class CreatePostActivity extends AppCompatActivity {
                                 Toast.makeText(this, "Đang lấy địa chỉ từ GPS...", Toast.LENGTH_SHORT).show();
                                 getAddressFromLocation(lat, lng);
                             } else {
-                                // Location is outside Vietnam (likely emulator default)
                                 Toast.makeText(this, "Vị trí GPS không thuộc Việt Nam, dùng vị trí mặc định (TP.HCM)",
                                         Toast.LENGTH_LONG).show();
                                 getAddressFromLocation(defaultLat, defaultLng);
@@ -296,7 +370,6 @@ public class CreatePostActivity extends AppCompatActivity {
     }
 
     private void getAddressFromLocation(double latitude, double longitude) {
-        // Use Nominatim (OpenStreetMap) API - works on both emulators and real devices
         new Thread(() -> {
             try {
                 String url = "https://nominatim.openstreetmap.org/reverse?format=json&lat="
@@ -359,9 +432,7 @@ public class CreatePostActivity extends AppCompatActivity {
         layoutImages.addView(imageView, layoutImages.getChildCount() - 1);
     }
 
-
-
-    private void createPost() {
+    private void updatePost() {
         String title = getText(etTitle);
         String content = getText(etContent);
         String priceStr = getText(etPrice);
@@ -401,7 +472,7 @@ public class CreatePostActivity extends AppCompatActivity {
 
         showLoading(true);
 
-        // Create post object
+        // Create post object with updated data
         Post post = new Post();
         post.setTitle(title);
         post.setDescription(content);
@@ -425,49 +496,42 @@ public class CreatePostActivity extends AppCompatActivity {
         loc.setProvince(location);
         post.setLocation(loc);
 
-        // Convert and add images
+        // Handle images
         if (!selectedImages.isEmpty()) {
+            // User selected new images - convert and add them
             List<String> base64Images = getImagesAsBase64();
             post.setImages(base64Images);
-            android.util.Log.d("CreatePost", "Images to upload: " + base64Images.size());
+            android.util.Log.d("EditPost", "New images to upload: " + base64Images.size());
         } else {
-            android.util.Log.d("CreatePost", "No images selected");
+            // No new images selected - keep existing images
+            if (currentPost != null && currentPost.getImages() != null) {
+                post.setImages(currentPost.getImages());
+                android.util.Log.d("EditPost", "Keeping existing images: " + currentPost.getImages().size());
+            }
         }
 
-        postApi.createPost(post).enqueue(new Callback<ApiResponse<Post>>() {
+        postApi.updatePost(postId, post).enqueue(new Callback<ApiResponse<Post>>() {
             @Override
             public void onResponse(Call<ApiResponse<Post>> call, Response<ApiResponse<Post>> response) {
                 showLoading(false);
 
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                    Post createdPost = response.body().getData();
-                    new com.google.android.material.dialog.MaterialAlertDialogBuilder(CreatePostActivity.this)
-                            .setTitle("Thành công")
-                            .setMessage("Bài đăng của bạn đã được khởi tạo và đang chờ duyệt.")
-                            .setPositiveButton("Xem bài đăng", (dialog, which) -> {
-                                if (createdPost != null) {
-                                    Intent intent = new Intent(CreatePostActivity.this, PostDetailActivity.class);
-                                    intent.putExtra(PostDetailActivity.EXTRA_POST_ID, createdPost.getId());
-                                    startActivity(intent);
-                                }
-                                finish();
-                            })
-                            .setNegativeButton("Đóng", (dialog, which) -> finish())
-                            .setCancelable(false)
-                            .show();
+                    Toast.makeText(EditPostActivity.this, "Cập nhật bài đăng thành công!", Toast.LENGTH_SHORT).show();
+                    setResult(RESULT_OK);
+                    finish();
                 } else {
-                    String error = "Đăng bài thất bại";
+                    String error = "Cập nhật thất bại";
                     if (response.body() != null && response.body().getMessage() != null) {
                         error = response.body().getMessage();
                     }
-                    Toast.makeText(CreatePostActivity.this, error, Toast.LENGTH_LONG).show();
+                    Toast.makeText(EditPostActivity.this, error, Toast.LENGTH_LONG).show();
                 }
             }
 
             @Override
             public void onFailure(Call<ApiResponse<Post>> call, Throwable t) {
                 showLoading(false);
-                Toast.makeText(CreatePostActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                Toast.makeText(EditPostActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -481,30 +545,24 @@ public class CreatePostActivity extends AppCompatActivity {
         btnPost.setEnabled(!show);
     }
 
-    /**
-     * Convert Uri to Base64 encoded string for image upload
-     */
     private String convertUriToBase64(Uri uri) {
         try {
             InputStream inputStream = getContentResolver().openInputStream(uri);
             if (inputStream == null)
                 return null;
 
-            // Decode and compress image
             Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
             inputStream.close();
 
             if (bitmap == null)
                 return null;
 
-            // Resize if too large (max 800px width)
             int maxWidth = 800;
             if (bitmap.getWidth() > maxWidth) {
                 int newHeight = (int) ((float) maxWidth / bitmap.getWidth() * bitmap.getHeight());
                 bitmap = Bitmap.createScaledBitmap(bitmap, maxWidth, newHeight, true);
             }
 
-            // Convert to Base64
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             bitmap.compress(Bitmap.CompressFormat.JPEG, 70, byteArrayOutputStream);
             byte[] byteArray = byteArrayOutputStream.toByteArray();
@@ -516,9 +574,6 @@ public class CreatePostActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Convert all selected images to Base64 strings
-     */
     private List<String> getImagesAsBase64() {
         List<String> base64Images = new ArrayList<>();
         for (Uri uri : selectedImages) {

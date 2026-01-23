@@ -10,7 +10,7 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     @Published var location: CLLocation?
     @Published var locationError: Error?
     @Published var isLoading = false
-    @Published var addressComponents: (province: String, district: String)?
+    @Published var addressComponents: (province: String, district: String, detail: String)?
     
     override private init() {
         super.init()
@@ -154,7 +154,8 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
 
                     
                     print("📍 [LocationManager] Geocoded: \(district), \(province) (Country: \(placemark.isoCountryCode ?? "unknown"))")
-                    self?.addressComponents = (province, district)
+                    let detail = [placemark.name, placemark.thoroughfare].compactMap { $0 }.joined(separator: ", ")
+                    self?.addressComponents = (province, district, detail)
                 }
             }
         }

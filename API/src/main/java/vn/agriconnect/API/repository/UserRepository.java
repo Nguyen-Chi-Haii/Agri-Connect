@@ -13,6 +13,8 @@ public interface UserRepository extends MongoRepository<User, String> {
     boolean existsByUsername(String username);
     boolean existsByPhone(String phone);
 
+    java.util.List<User> findByRole(vn.agriconnect.API.model.enums.Role role);
+
     @org.springframework.data.mongodb.repository.Query("{ '$or': [ { 'fullName': { '$regex': ?0, '$options': 'i' } }, { 'phone': { '$regex': ?0, '$options': 'i' } } ] }")
     java.util.List<User> searchUsers(String keyword);
 }

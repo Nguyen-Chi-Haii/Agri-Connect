@@ -395,6 +395,44 @@
             app:tint="@color/primary" />
     </LinearLayout>
 
+    <!-- Admin Actions -->
+    <LinearLayout
+        android:id="@+id/layoutAdminActions"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="@color/surface"
+        android:elevation="@dimen/elevation_md"
+        android:orientation="horizontal"
+        android:padding="@dimen/spacing_md"
+        android:visibility="gone">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnApprove"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginEnd="@dimen/spacing_sm"
+            android:text="Duyệt"
+            android:textAllCaps="false"
+            app:cornerRadius="@dimen/radius_md"
+            app:icon="@drawable/ic_check_circle"
+            android:backgroundTint="@color/primary" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnReject"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Từ chối"
+            android:textAllCaps="false"
+            app:cornerRadius="@dimen/radius_md"
+            app:icon="@drawable/ic_close"
+            app:strokeColor="@color/error"
+            android:textColor="@color/error" />
+    </LinearLayout>
+
     <!-- Loading -->
     <ProgressBar
         android:id="@+id/progressBar"

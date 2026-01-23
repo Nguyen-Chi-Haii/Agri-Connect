@@ -169,7 +169,8 @@ public class AdminPostsFragment extends Fragment implements AdminPostAdapter.OnP
         if (getContext() != null) {
             android.content.Intent intent = new android.content.Intent(getContext(),
                     com.agriconnect.agri_connect.ui.post.PostDetailActivity.class);
-            intent.putExtra("postId", post.getId());
+            intent.putExtra(com.agriconnect.agri_connect.ui.post.PostDetailActivity.EXTRA_POST_ID, post.getId());
+            intent.putExtra(com.agriconnect.agri_connect.ui.post.PostDetailActivity.EXTRA_IS_APPROVAL_FLOW, true);
             android.util.Log.d("AdminPostClick", "Starting PostDetailActivity with postId: " + post.getId());
             startActivity(intent);
         } else {

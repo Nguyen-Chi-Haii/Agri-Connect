@@ -82,7 +82,7 @@ struct CreateAccountView: View {
                             HStack {
                                 Spacer()
                                 LocationFillButton(
-                                    onAddressReceived: { province, district in
+                                    onAddressReceived: { province, district, _ in
                                         self.address = "\(district), \(province)"
                                         self.addressError = nil
                                     },

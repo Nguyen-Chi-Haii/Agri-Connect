@@ -99,6 +99,8 @@
                 android:id="@+id/ivPostImage"
                 android:layout_width="match_parent"
                 android:layout_height="200dp"
+                android:adjustViewBounds="false"
+                android:maxHeight="200dp"
                 android:scaleType="centerCrop"
                 android:visibility="gone"
                 tools:src="@color/surface_variant"

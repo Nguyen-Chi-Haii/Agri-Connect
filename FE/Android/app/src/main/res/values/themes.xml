@@ -92,4 +92,9 @@
         <item name="android:textColor">@color/text_secondary</item>
         <item name="android:textSize">@dimen/text_sm</item>
     </style>
+    
+    <!-- Toolbar Styles -->
+    <style name="Theme.AgriConnect.AppBarOverlay" parent="ThemeOverlay.Material3.Dark.ActionBar" />
+    
+    <style name="Theme.AgriConnect.PopupOverlay" parent="ThemeOverlay.Material3.Light" />
 </resources>

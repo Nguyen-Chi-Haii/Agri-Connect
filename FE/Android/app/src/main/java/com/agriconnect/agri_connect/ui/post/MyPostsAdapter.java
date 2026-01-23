@@ -22,6 +22,7 @@ public class MyPostsAdapter extends RecyclerView.Adapter<MyPostsAdapter.MyPostVi
 
     public interface OnPostActionListener {
         void onClosePost(HomeFragment.PostItem post, int position);
+        void onEditPost(HomeFragment.PostItem post, int position);
     }
 
     public MyPostsAdapter(List<HomeFragment.PostItem> posts, OnPostActionListener listener) {
@@ -50,7 +51,7 @@ public class MyPostsAdapter extends RecyclerView.Adapter<MyPostsAdapter.MyPostVi
     class MyPostViewHolder extends RecyclerView.ViewHolder {
         ImageView ivImage;
         TextView tvTitle, tvPrice, tvTime, tvViews, tvStatus;
-        MaterialButton btnClose;
+        MaterialButton btnClose, btnEdit;
 
         public MyPostViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -61,6 +62,7 @@ public class MyPostsAdapter extends RecyclerView.Adapter<MyPostsAdapter.MyPostVi
             tvViews = itemView.findViewById(R.id.tvViews);
             tvStatus = itemView.findViewById(R.id.tvStatus);
             btnClose = itemView.findViewById(R.id.btnClose);
+            btnEdit = itemView.findViewById(R.id.btnEdit);
             tvImageCount = itemView.findViewById(R.id.tvImageCount);
         }
         
@@ -87,18 +89,22 @@ public class MyPostsAdapter extends RecyclerView.Adapter<MyPostsAdapter.MyPostVi
                 bgColor = R.color.warning;
                 statusText = "Chờ duyệt";
                 btnClose.setVisibility(View.VISIBLE);
+                btnEdit.setVisibility(View.VISIBLE);
             } else if ("APPROVED".equals(status)) {
                 bgColor = R.color.success;
                 statusText = "Đã duyệt";
                 btnClose.setVisibility(View.VISIBLE);
+                btnEdit.setVisibility(View.VISIBLE);
             } else if ("REJECTED".equals(status)) {
                 bgColor = R.color.error;
                 statusText = "Từ chối";
                 btnClose.setVisibility(View.GONE); // Already rejected
+                btnEdit.setVisibility(View.VISIBLE); // Allow edit to fix and resubmit
             } else if ("CLOSED".equals(status)) {
                 bgColor = R.color.secondary;
                 statusText = "Đã đóng";
                 btnClose.setVisibility(View.GONE); // Already closed
+                btnEdit.setVisibility(View.GONE); // Cannot edit closed posts
             }
 
             tvStatus.setText(statusText);
@@ -134,6 +140,13 @@ public class MyPostsAdapter extends RecyclerView.Adapter<MyPostsAdapter.MyPostVi
                         itemView.getContext(), PostDetailActivity.class);
                 intent.putExtra(PostDetailActivity.EXTRA_POST_ID, post.id);
                 itemView.getContext().startActivity(intent);
+            });
+
+            // Edit button
+            btnEdit.setOnClickListener(v -> {
+                if (listener != null) {
+                    listener.onEditPost(post, position);
+                }
             });
 
             // Close button
