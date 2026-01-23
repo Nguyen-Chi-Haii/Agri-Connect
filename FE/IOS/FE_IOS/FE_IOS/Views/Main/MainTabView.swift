@@ -121,8 +121,7 @@ struct MainTabView: View {
         }
         
         // TODO: Fetch chat count when API is available
-        // For now, set test value
-        chatBadgeCount = 2  // Test value to show chat badge works
+        // chatBadgeCount will stay at 0 until chat unread count API is implemented
     }
     
     // Removed checkRedirect as it was only for the old CreatePost tab logic
