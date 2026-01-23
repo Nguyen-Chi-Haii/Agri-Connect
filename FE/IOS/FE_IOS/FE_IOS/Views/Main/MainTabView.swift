@@ -3,8 +3,8 @@ import SwiftUI
 struct MainTabView: View {
     @State private var selectedTab = 0
     @State private var showCreatePost = false
-    @State private var notificationBadgeCount = 5  // Test value
-    @State private var chatBadgeCount = 3  // Test value
+    @State private var notificationBadgeCount = 0
+    @State private var chatBadgeCount = 0
     
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
@@ -96,15 +96,6 @@ struct MainTabView: View {
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
             fetchBadgeCounts()
         }
-        .onChange(of: selectedTab) { newValue in
-            if newValue == 2 {
-                // Entered chat - clear badge
-                chatBadgeCount = 0
-            } else if newValue == 3 {
-                // Entered notifications - clear badge
-                notificationBadgeCount = 0
-            }
-        }
     }
     
     private func fetchBadgeCounts() {
@@ -113,15 +104,25 @@ struct MainTabView: View {
             endpoint: APIConfig.Notifications.unreadCount,
             method: .get
         ) { (result: Result<ApiResponse<Int>, Error>) in
-            if case .success(let response) = result {
+            switch result {
+            case .success(let response):
                 DispatchQueue.main.async {
-                    notificationBadgeCount = response.data ?? 0
+                    let count = response.data ?? 0
+                    print("🔔 Notification badge count from API: \(count)")
+                    notificationBadgeCount = count
+                }
+            case .failure(let error):
+                print("❌ Failed to fetch notification count: \(error)")
+                // Set test value to verify badge works
+                DispatchQueue.main.async {
+                    notificationBadgeCount = 3  // Test value
                 }
             }
         }
         
         // TODO: Fetch chat count when API is available
-        // For now, chat badge stays at 0
+        // For now, set test value
+        chatBadgeCount = 2  // Test value to show chat badge works
     }
     
     // Removed checkRedirect as it was only for the old CreatePost tab logic
