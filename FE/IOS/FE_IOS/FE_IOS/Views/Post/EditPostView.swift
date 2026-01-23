@@ -16,6 +16,11 @@ struct EditPostView: View {
     @State private var province: String
     @State private var district: String
     
+    // Image editing
+    @State private var selectedImages: [UIImage] = []
+    @State private var existingImageUrls: [String] = []
+    @State private var showImagePicker = false
+    
     // Categories
     @State private var categories: [Category] = []
     
@@ -40,6 +45,9 @@ struct EditPostView: View {
         _selectedCategory = State(initialValue: post.categoryId)
         _province = State(initialValue: post.province ?? "")
         _district = State(initialValue: post.district ?? "")
+        
+        // Initialize existing images
+        _existingImageUrls = State(initialValue: post.images ?? [])
     }
     
     var body: some View {
@@ -61,6 +69,54 @@ struct EditPostView: View {
                             RoundedRectangle(cornerRadius: 8)
                                 .stroke(Color.gray.opacity(0.2), lineWidth: 1)
                         )
+                }
+                
+                // Images Section
+                Section(header: Text("Hình ảnh")) {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 12) {
+                            // Add button
+                            Button(action: {
+                                showImagePicker = true
+                            }) {
+                                VStack {
+                                    Image(systemName: "plus.circle.fill")
+                                        .font(.system(size: 30))
+                                    Text("Thêm ảnh")
+                                        .font(.caption)
+                                }
+                                .frame(width: 80, height: 80)
+                                .background(Color(.systemGray6))
+                                .cornerRadius(12)
+                            }
+                            .foregroundColor(Color(hex: "#2E7D32"))
+                            
+                            ForEach(selectedImages.indices, id: \.self) { index in
+                                ZStack(alignment: .topTrailing) {
+                                    Image(uiImage: selectedImages[index])
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fill)
+                                        .frame(width: 80, height: 80)
+                                        .cornerRadius(12)
+                                        .clipped()
+                                    
+                                    Button {
+                                        selectedImages.remove(at: index)
+                                    } label: {
+                                        Image(systemName: "xmark.circle.fill")
+                                            .foregroundColor(.red)
+                                    }
+                                    .offset(x: 5, y: -5)
+                                }
+                            }
+                        }
+                    }
+                    
+                    if !existingImageUrls.isEmpty {
+                        Text("Bài đăng hiện có \(existingImageUrls.count) ảnh. Thêm ảnh mới để thay thế hoặc giữ nguyên.")
+                            .font(.caption)
+                            .foregroundColor(.gray)
+                    }
                 }
                 
                 Section(header: Text("Giá cả")) {
@@ -116,6 +172,9 @@ struct EditPostView: View {
             .onAppear {
                 loadCategories()
             }
+            .sheet(isPresented: $showImagePicker) {
+                UnifiedMultiImagePicker(images: $selectedImages, selectionLimit: 5)
+            }
         }
     }
     
@@ -153,10 +212,38 @@ struct EditPostView: View {
             let quantity: Double
             let unit: String
             let categoryId: String
+            let location: LocationRequest
+            let images: [String]?
+        }
+        
+        struct LocationRequest: Encodable {
             let province: String
             let district: String
         }
         
+        // Check if images were modified
+        if !selectedImages.isEmpty {
+            // User added new images - upload them first
+            APIClient.shared.uploadImages(selectedImages, folder: "posts") { result in
+                DispatchQueue.main.async {
+                    switch result {
+                    case .success(let urls):
+                        // Proceed with update using new image URLs
+                        self.sendUpdateRequest(imageUrls: urls)
+                    case .failure(let error):
+                        self.isLoading = false
+                        self.errorMessage = "Lỗi upload ảnh: \(error.localizedDescription)"
+                        self.showError = true
+                    }
+                }
+            }
+        } else {
+            // No new images - keep existing ones
+            sendUpdateRequest(imageUrls: existingImageUrls.isEmpty ? nil : existingImageUrls)
+        }
+    }
+    
+    private func sendUpdateRequest(imageUrls: [String]?) {
         let body = UpdatePostRequest(
             title: title,
             description: description,
@@ -164,8 +251,8 @@ struct EditPostView: View {
             quantity: Double(quantity) ?? 0,
             unit: unit,
             categoryId: selectedCategory ?? "",
-            province: province,
-            district: district
+            location: LocationRequest(province: province, district: district),
+            images: imageUrls
         )
         
         APIClient.shared.request(
