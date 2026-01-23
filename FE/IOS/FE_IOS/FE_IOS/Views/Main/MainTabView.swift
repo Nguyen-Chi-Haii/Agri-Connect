@@ -40,7 +40,7 @@ struct MainTabView: View {
                     Image(systemName: "message.fill")
                     Text("Tin nhắn")
                 }
-                .badge(chatBadgeCount > 0 ? chatBadgeCount : nil)
+                .badge(chatBadgeCount)
                 .tag(2)
                 
                 // Notification Tab
@@ -52,7 +52,7 @@ struct MainTabView: View {
                     Image(systemName: "bell.fill")
                     Text("Thông báo")
                 }
-                .badge(notificationBadgeCount > 0 ? notificationBadgeCount : nil)
+                .badge(notificationBadgeCount)
                 .tag(3)
 
                 // Profile Tab
