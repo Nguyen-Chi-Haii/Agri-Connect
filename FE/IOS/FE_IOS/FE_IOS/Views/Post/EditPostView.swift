@@ -1,5 +1,22 @@
 import SwiftUI
 
+// MARK: - Request Models for EditPostView
+private struct UpdatePostRequest: Encodable {
+    let title: String
+    let description: String
+    let price: Double
+    let quantity: Double
+    let unit: String
+    let categoryId: String
+    let location: LocationRequest
+    let images: [String]?
+}
+
+private struct LocationRequest: Encodable {
+    let province: String
+    let district: String
+}
+
 struct EditPostView: View {
     let post: Post
     let onUpdate: () -> Void
@@ -194,24 +211,6 @@ struct EditPostView: View {
                 categories = categoryList
             }
         }
-    }
-    
-    
-    // MARK: - Request Models
-    private struct UpdatePostRequest: Encodable {
-        let title: String
-        let description: String
-        let price: Double
-        let quantity: Double
-        let unit: String
-        let categoryId: String
-        let location: LocationRequest
-        let images: [String]?
-    }
-    
-    private struct LocationRequest: Encodable {
-        let province: String
-        let district: String
     }
     
     private func updatePost() {
