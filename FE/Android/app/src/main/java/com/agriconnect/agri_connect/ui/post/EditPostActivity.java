@@ -270,11 +270,7 @@ public class EditPostActivity extends AppCompatActivity {
         
         // Location
         if (currentPost.getLocation() != null) {
-            String location = currentPost.getLocation().getProvince();
-            if (currentPost.getLocation().getDistrict() != null && !currentPost.getLocation().getDistrict().isEmpty()) {
-                location = currentPost.getLocation().getDistrict() + ", " + location;
-            }
-            etLocation.setText(location);
+            etLocation.setText(currentPost.getLocation().toString());
         }
 
         // Category

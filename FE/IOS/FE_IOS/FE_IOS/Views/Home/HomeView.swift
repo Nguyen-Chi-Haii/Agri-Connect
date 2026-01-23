@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct HomeView: View {
+    @Binding var redirectPostId: String?
     @State private var posts: [Post] = []
     @State private var categories: [Category] = []
     @State private var isLoading = false
@@ -12,6 +13,7 @@ struct HomeView: View {
     @State private var kycAlertTitle = ""
     @State private var kycAlertMessage = ""
     @State private var navigateToVerification = false
+    @State private var navigateToDetail = false
     
     var filteredPosts: [Post] {
         return posts
@@ -21,12 +23,16 @@ struct HomeView: View {
         ScrollView {
             // Hidden Link for Redirect
             if let profile = TokenManager.shared.userProfile {
-                NavigationLink(
-                    destination: UpdateKycView(userProfile: profile),
-                    isActive: $navigateToVerification
                 ) { EmptyView() }
                 .hidden()
             }
+            
+            // Redirect Navigation Link
+            NavigationLink(
+                destination: PostDetailView(postId: redirectPostId ?? ""),
+                isActive: $navigateToDetail
+            ) { EmptyView() }
+            .hidden()
 
             VStack(spacing: 16) {
                 // Search Bar
@@ -118,6 +124,15 @@ struct HomeView: View {
         )
         .onAppear {
             loadData()
+        }
+        .onChange(of: redirectPostId) { newValue in
+            if newValue != nil {
+                navigateToDetail = true
+                // Reset after a short delay so it can be triggered again if needed
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    redirectPostId = nil
+                }
+            }
         }
         .alert(isPresented: $showKYCAlert) {
             Alert(

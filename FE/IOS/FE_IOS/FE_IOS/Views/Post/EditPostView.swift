@@ -15,6 +15,7 @@ private struct UpdatePostRequest: Encodable {
 private struct LocationRequest: Encodable {
     let province: String
     let district: String
+    let detail: String
 }
 
 struct EditPostView: View {
@@ -32,6 +33,7 @@ struct EditPostView: View {
     @State private var selectedCategory: String?
     @State private var province: String
     @State private var district: String
+    @State private var detail: String
     
     // Image editing
     @State private var selectedImages: [UIImage] = []
@@ -62,6 +64,7 @@ struct EditPostView: View {
         _selectedCategory = State(initialValue: post.categoryId)
         _province = State(initialValue: post.province ?? "")
         _district = State(initialValue: post.district ?? "")
+        _detail = State(initialValue: post.location?.detail ?? "")
         
         // Initialize existing images
         _existingImageUrls = State(initialValue: post.images ?? [])
@@ -158,8 +161,25 @@ struct EditPostView: View {
                 }
                 
                 Section(header: Text("Vị trí")) {
+                    HStack {
+                        Text("Địa điểm")
+                        Spacer()
+                        LocationFillButton(
+                            onAddressReceived: { province, district, detail in
+                                self.province = province
+                                self.district = district
+                                self.detail = detail
+                            },
+                            onError: { errorMsg in
+                                self.errorMessage = errorMsg
+                                self.showError = true
+                            }
+                        )
+                    }
+                    
                     TextField("Tỉnh/Thành phố", text: $province)
                     TextField("Quận/Huyện", text: $district)
+                    TextField("Địa chỉ chi tiết", text: $detail)
                 }
                 
                 if let error = errorMessage {
@@ -252,7 +272,7 @@ struct EditPostView: View {
             quantity: Double(quantity) ?? 0,
             unit: unit,
             categoryId: selectedCategory ?? "",
-            location: LocationRequest(province: province, district: district),
+            location: LocationRequest(province: province, district: district, detail: detail),
             images: imageUrls
         )
         

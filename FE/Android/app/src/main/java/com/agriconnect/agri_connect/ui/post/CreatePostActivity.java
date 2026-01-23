@@ -440,9 +440,21 @@ public class CreatePostActivity extends AppCompatActivity {
                 showLoading(false);
 
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                    Toast.makeText(CreatePostActivity.this, "Đăng bài thành công!", Toast.LENGTH_SHORT).show();
-                    setResult(RESULT_OK);
-                    finish();
+                    Post createdPost = response.body().getData();
+                    new com.google.android.material.dialog.MaterialAlertDialogBuilder(CreatePostActivity.this)
+                            .setTitle("Thành công")
+                            .setMessage("Bài đăng của bạn đã được khởi tạo và đang chờ duyệt.")
+                            .setPositiveButton("Xem bài đăng", (dialog, which) -> {
+                                if (createdPost != null) {
+                                    Intent intent = new Intent(CreatePostActivity.this, PostDetailActivity.class);
+                                    intent.putExtra(PostDetailActivity.EXTRA_POST_ID, createdPost.getId());
+                                    startActivity(intent);
+                                }
+                                finish();
+                            })
+                            .setNegativeButton("Đóng", (dialog, which) -> finish())
+                            .setCancelable(false)
+                            .show();
                 } else {
                     String error = "Đăng bài thất bại";
                     if (response.body() != null && response.body().getMessage() != null) {

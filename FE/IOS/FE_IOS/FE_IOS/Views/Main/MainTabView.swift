@@ -5,13 +5,15 @@ struct MainTabView: View {
     @State private var showCreatePost = false
     @State private var notificationBadgeCount = 0
     @State private var chatBadgeCount = 0
+    @State private var redirectPostId: String? = nil
+    @State private var shouldNavigateToDetail = false
     
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
             TabView(selection: $selectedTab) {
                 // Home Tab
                 NavigationView {
-                    HomeView()
+                    HomeView(redirectPostId: $redirectPostId)
                 }
                 .navigationViewStyle(StackNavigationViewStyle())
                 .tabItem {
@@ -95,6 +97,12 @@ struct MainTabView: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
             fetchBadgeCounts()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("NavigateToPostDetail"))) { notification in
+            if let postId = notification.userInfo?["postId"] as? String {
+                self.redirectPostId = postId
+                self.selectedTab = 0 // Switch to Home tab
+            }
         }
     }
     

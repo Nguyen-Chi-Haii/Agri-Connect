@@ -9,6 +9,7 @@ struct CreatePostView: View {
     @State private var quantity = ""
     @State private var province = ""
     @State private var district = ""
+    @State private var detail = ""
     @State private var selectedCategory: Category?
     @State private var categories: [Category] = []
     @State private var selectedImages: [UIImage] = []
@@ -24,10 +25,15 @@ struct CreatePostView: View {
     @State private var quantityError: String?
     @State private var provinceError: String?
     @State private var districtError: String?
+    @State private var detailError: String?
     @State private var categoryError: String?
     @State private var showKYCAlert = false
     @State private var kycAlertTitle = ""
     @State private var kycAlertMessage = ""
+    
+    @Environment(\.presentationMode) var presentationMode
+    @State private var createdPostId: String? = nil
+    @State private var navigateToDetail = false
     
     let units = ["kg", "tấn", "bao", "con", "cây", "trái", "chục"]
     
@@ -188,11 +194,13 @@ struct CreatePostView: View {
                             .font(.headline)
                         Spacer()
                         LocationFillButton(
-                            onAddressReceived: { province, district in
+                            onAddressReceived: { province, district, detail in
                                 self.province = province
                                 self.district = district
+                                self.detail = detail
                                 self.provinceError = nil
                                 self.districtError = nil
+                                self.detailError = nil
                             },
                             onError: { errorMsg in
                                 self.errorMessage = errorMsg
@@ -211,13 +219,19 @@ struct CreatePostView: View {
                         .disabled(LocationManager.shared.isLoading)
                         
                         ValidatedFormField(
-                            title: "Quận/Huyện",
-                            placeholder: "VD: Châu Đốc",
                             text: $district,
                             error: $districtError
                         )
                         .disabled(LocationManager.shared.isLoading)
                     }
+                    
+                    ValidatedFormField(
+                        title: "Địa chỉ chi tiết",
+                        placeholder: "Số nhà, tên đường...",
+                        text: $detail,
+                        error: $detailError
+                    )
+                    .disabled(LocationManager.shared.isLoading)
                 }
                 
                 // Submit Button
@@ -271,8 +285,17 @@ struct CreatePostView: View {
         }
         .alert("Thành công", isPresented: $showSuccess) {
             Button("Xem bài đăng") {
-                clearForm()
-                tabSelection = 4 // Go to Profile
+                if let postId = createdPostId {
+                    clearForm()
+                    // Set tab to Home and notify parent to navigate
+                    tabSelection = 0
+                    NotificationCenter.default.post(
+                        name: NSNotification.Name("NavigateToPostDetail"),
+                        object: nil,
+                        userInfo: ["postId": postId]
+                    )
+                    presentationMode.wrappedValue.dismiss()
+                }
             }
             Button("Tiếp tục đăng") {
                 clearForm()
@@ -385,7 +408,7 @@ struct CreatePostView: View {
             unit: unit,
             quantity: Double(quantity) ?? 0,
             images: imageUrls,
-            location: CreateLocationRequest(province: province, district: district)
+            location: CreateLocationRequest(province: province, district: district, detail: detail)
         )
         
         APIClient.shared.request(
@@ -398,7 +421,8 @@ struct CreatePostView: View {
                 
                 switch result {
                 case .success(let response):
-                    if response.success {
+                    if response.success, let post = response.data {
+                        self.createdPostId = post.id
                         self.showSuccess = true
                     } else {
                         self.errorMessage = response.message ?? "Đăng bài thất bại"
@@ -419,6 +443,7 @@ struct CreatePostView: View {
         quantity = ""
         province = ""
         district = ""
+        detail = ""
         selectedCategory = nil
         selectedImages = []
         
