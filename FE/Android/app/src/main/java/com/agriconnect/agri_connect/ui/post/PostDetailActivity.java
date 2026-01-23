@@ -40,6 +40,7 @@ import com.agriconnect.agri_connect.api.TokenManager;
 public class PostDetailActivity extends AppCompatActivity {
 
     public static final String EXTRA_POST_ID = "post_id";
+    public static final String EXTRA_IS_APPROVAL_FLOW = "is_approval_flow";
 
     private ImageView btnBack;
     private CircleImageView ivAvatar;
@@ -53,12 +54,16 @@ public class PostDetailActivity extends AppCompatActivity {
     private ImageView btnSendComment;
     private ProgressBar progressBar;
     private androidx.viewpager2.widget.ViewPager2 vpImages;
+    private View layoutAdminActions;
+    private com.google.android.material.button.MaterialButton btnApprove, btnReject;
 
     private PostApi postApi;
+    private AdminApi adminApi;
     private String postId;
     private Post currentPost;
     private boolean isLiked = false;
     private int likeCount = 0;
+    private boolean isApprovalFlow = false;
 
     private CommentAdapter commentAdapter;
     private List<CommentItem> comments = new ArrayList<>();
@@ -84,12 +89,15 @@ public class PostDetailActivity extends AppCompatActivity {
         if (postId == null) {
             postId = getIntent().getStringExtra("postId");
         }
+        isApprovalFlow = getIntent().getBooleanExtra(EXTRA_IS_APPROVAL_FLOW, false);
+
         if (postId == null) {
             finish();
             return;
         }
 
         postApi = ApiClient.getInstance(this).getPostApi();
+        adminApi = ApiClient.getInstance(this).getAdminApi();
 
         initViews();
         setupRecyclerView();
@@ -194,6 +202,9 @@ public class PostDetailActivity extends AppCompatActivity {
         scrollView = findViewById(R.id.nestedScrollView);
         vpImages = findViewById(R.id.vpImages);
         tvImageCount = findViewById(R.id.tvImageCount);
+        layoutAdminActions = findViewById(R.id.layoutAdminActions);
+        btnApprove = findViewById(R.id.btnApprove);
+        btnReject = findViewById(R.id.btnReject);
     }
 
     private void setupRecyclerView() {
@@ -231,6 +242,9 @@ public class PostDetailActivity extends AppCompatActivity {
                 }
             }
         });
+
+        btnApprove.setOnClickListener(v -> approvePost());
+        btnReject.setOnClickListener(v -> showRejectDialog());
     }
 
     /**
@@ -390,6 +404,19 @@ public class PostDetailActivity extends AppCompatActivity {
              btnComment.setEnabled(true);
              btnComment.setAlpha(1.0f);
              findViewById(R.id.layoutCommentInput).setVisibility(View.VISIBLE);
+        }
+
+        // Handle Admin Approval Flow UI
+        TokenManager tokenManager = TokenManager.getInstance(this);
+        boolean isAdmin = "ADMIN".equals(tokenManager.getUserRole());
+        
+        if (isAdmin && isApprovalFlow && "PENDING".equals(status)) {
+            layoutAdminActions.setVisibility(View.VISIBLE);
+            findViewById(R.id.layoutCommentInput).setVisibility(View.GONE);
+            btnChat.setVisibility(View.GONE);
+            btnComment.setVisibility(View.GONE);
+        } else {
+            layoutAdminActions.setVisibility(View.GONE);
         }
 
         if (post.getPrice() != null) {
@@ -606,6 +633,69 @@ public class PostDetailActivity extends AppCompatActivity {
         if (createdAt == null)
             return "";
         return createdAt.substring(0, Math.min(10, createdAt.length()));
+    }
+
+    private void approvePost() {
+        progressBar.setVisibility(View.VISIBLE);
+        adminApi.approvePost(postId).enqueue(new Callback<ApiResponse<Void>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
+                progressBar.setVisibility(View.GONE);
+                if (response.isSuccessful()) {
+                    Toast.makeText(PostDetailActivity.this, "Đã duyệt bài đăng", Toast.LENGTH_SHORT).show();
+                    loadPostDetail(); // Refresh UI
+                } else {
+                    Toast.makeText(PostDetailActivity.this, "Lỗi duyệt: " + response.message(), Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
+                progressBar.setVisibility(View.GONE);
+                Toast.makeText(PostDetailActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void showRejectDialog() {
+        android.widget.EditText input = new android.widget.EditText(this);
+        input.setHint("Nhập lý do từ chối");
+        
+        new android.app.AlertDialog.Builder(this)
+                .setTitle("Từ chối bài đăng")
+                .setView(input)
+                .setPositiveButton("Xác nhận", (dialog, which) -> {
+                    String reason = input.getText().toString().trim();
+                    if (!reason.isEmpty()) {
+                        rejectPost(reason);
+                    } else {
+                        Toast.makeText(this, "Vui lòng nhập lý do", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .setNegativeButton("Hủy", null)
+                .show();
+    }
+
+    private void rejectPost(String reason) {
+        progressBar.setVisibility(View.VISIBLE);
+        adminApi.rejectPost(postId, reason).enqueue(new Callback<ApiResponse<Void>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
+                progressBar.setVisibility(View.GONE);
+                if (response.isSuccessful()) {
+                    Toast.makeText(PostDetailActivity.this, "Đã từ chối bài đăng", Toast.LENGTH_SHORT).show();
+                    loadPostDetail(); // Refresh UI
+                } else {
+                    Toast.makeText(PostDetailActivity.this, "Lỗi từ chối: " + response.message(), Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
+                progressBar.setVisibility(View.GONE);
+                Toast.makeText(PostDetailActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     // Comment item for RecyclerView (different from API Comment model)

@@ -13,14 +13,22 @@ struct PostDetailView: View {
     @State private var commentText = ""
     @State private var isLoadingComments = false
     @State private var statsTimer: Timer?
+    
+    // Admin Actions
+    var showAdminActions: Bool = false
+    @State private var isProcessingAdminAction = false
+    @State private var showRejectReasonInput = false
+    @State private var rejectionReason = ""
+    
     @State private var showKYCAlert = false
     @State private var kycAlertTitle = ""
     @State private var kycAlertMessage = ""
     @State private var navigateToVerification = false
     
-    init(postId: String, initialPost: Post? = nil) {
+    init(postId: String, initialPost: Post? = nil, showAdminActions: Bool = false) {
         self.postId = postId
         self.initialPost = initialPost
+        self.showAdminActions = showAdminActions
         
         if let p = initialPost {
             _post = State(initialValue: p)
@@ -95,16 +103,18 @@ struct PostDetailView: View {
                     
                     Divider()
                     
-                    PostActionSection(
-                        isLiked: $isLiked,
-                        likeCount: $likeCount,
-                        commentCount: $commentCount,
-                        onLike: toggleLike,
-                        onChat: startChat
-                    )
-                    .padding(.vertical, 8)
-                    
-                    Divider()
+                    if !showAdminActions {
+                        PostActionSection(
+                            isLiked: $isLiked,
+                            likeCount: $likeCount,
+                            commentCount: $commentCount,
+                            onLike: toggleLike,
+                            onChat: startChat
+                        )
+                        .padding(.vertical, 8)
+                        
+                        Divider()
+                    }
                     
                     PostDetailListSection(post: post, formatDate: formatDate)
                     
@@ -119,15 +129,90 @@ struct PostDetailView: View {
                     
                     Divider().padding(.vertical, 8)
                     
-                    PostCommentSection(
-                        commentCount: commentCount,
-                        commentText: $commentText,
-                        comments: comments,
-                        isLoadingComments: isLoadingComments,
-                        onSend: sendComment
-                    )
+                    if showAdminActions {
+                        adminApprovalSection(post)
+                    } else {
+                        PostCommentSection(
+                            commentCount: commentCount,
+                            commentText: $commentText,
+                            comments: comments,
+                            isLoadingComments: isLoadingComments,
+                            onSend: sendComment
+                        )
+                    }
                 }
                 .padding()
+            }
+        }
+    }
+    
+    private func adminApprovalSection(_ post: Post) -> some View {
+        VStack(spacing: 16) {
+            Text("Thao tác quản trị")
+                .font(.headline)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            
+            HStack(spacing: 16) {
+                Button(action: approvePost) {
+                    Label("Duyệt bài", systemImage: "checkmark.circle.fill")
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.green)
+                        .foregroundColor(.white)
+                        .cornerRadius(12)
+                }
+                
+                Button(action: { showRejectReasonInput = true }) {
+                    Label("Từ chối", systemImage: "xmark.circle.fill")
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.red.opacity(0.1))
+                        .foregroundColor(.red)
+                        .cornerRadius(12)
+                }
+            }
+        }
+        .padding(.vertical)
+        .disabled(isProcessingAdminAction)
+        .opacity(isProcessingAdminAction ? 0.6 : 1.0)
+        .alert("Từ chối bài đăng", isPresented: $showRejectReasonInput) {
+            TextField("Lý do từ chối", text: $rejectionReason)
+            Button("Hủy", role: .cancel) { rejectionReason = "" }
+            Button("Xác nhận", role: .destructive) {
+                rejectPost()
+            }
+        } message: {
+            Text("Vui lòng nhập lý do từ chối bài viết này.")
+        }
+    }
+    
+    // MARK: - Admin Logic
+    
+    private func approvePost() {
+        isProcessingAdminAction = true
+        APIClient.shared.request(
+            endpoint: APIConfig.Posts.approve(postId),
+            method: .put
+        ) { (result: Result<ApiResponse<String>, Error>) in
+            isProcessingAdminAction = false
+            if case .success(let response) = result, response.success {
+                loadPost() // Reload to show updated status
+            }
+        }
+    }
+    
+    private func rejectPost() {
+        guard !rejectionReason.trimmingCharacters(in: .whitespaces).isEmpty else { return }
+        isProcessingAdminAction = true
+        let reasonParam = rejectionReason.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
+        APIClient.shared.request(
+            endpoint: APIConfig.Posts.reject(postId) + "?reason=\(reasonParam)",
+            method: .put
+        ) { (result: Result<ApiResponse<String>, Error>) in
+            isProcessingAdminAction = false
+            rejectionReason = ""
+            if case .success(let response) = result, response.success {
+                loadPost() // Reload
             }
         }
     }

@@ -104,7 +104,7 @@ struct AdminPostsView: View {
                 List {
                     ForEach(filteredPosts) { post in
                         ZStack {
-                            NavigationLink(destination: PostDetailView(postId: post.id)) {
+                            NavigationLink(destination: PostDetailView(postId: post.id, showAdminActions: true)) {
                                 EmptyView()
                             }
                             .opacity(0)
