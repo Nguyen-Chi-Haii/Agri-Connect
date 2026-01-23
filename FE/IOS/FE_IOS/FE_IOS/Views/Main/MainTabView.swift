@@ -3,8 +3,8 @@ import SwiftUI
 struct MainTabView: View {
     @State private var selectedTab = 0
     @State private var showCreatePost = false
-    @State private var notificationBadgeCount = 0
-    @State private var chatBadgeCount = 0
+    @State private var notificationBadgeCount = 5  // Test value
+    @State private var chatBadgeCount = 3  // Test value
     
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
