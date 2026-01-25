@@ -75,10 +75,9 @@ public class MainNavigationActivity extends AppCompatActivity {
                 // Clear badge when entering chat
                 clearChatBadge();
             } else if (itemId == R.id.nav_notification) {
-                startActivity(new android.content.Intent(this, com.agriconnect.agri_connect.ui.notification.NotificationActivity.class));
-                // Clear badge when viewing notifications
-                clearNotificationBadge();
-                return true;
+                fragment = new com.agriconnect.agri_connect.ui.notification.NotificationFragment();
+                // Clear badge when viewing notifications, handled in Fragment on load
+                // clearNotificationBadge();
             } else if (itemId == R.id.nav_profile) {
                 fragment = new ProfileFragment();
             }
@@ -190,7 +189,7 @@ public class MainNavigationActivity extends AppCompatActivity {
     /**
      * Fetch badge counts from API
      */
-    private void fetchBadgeCounts() {
+    public void fetchBadgeCounts() {
         // Fetch notification count
         ApiClient.getInstance(this).getNotificationApi()
                 .getUnreadCount()

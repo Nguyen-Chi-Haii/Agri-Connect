@@ -43,46 +43,7 @@
             android:orientation="vertical"
             android:padding="@dimen/spacing_md">
 
-            <!-- Market Statistics Section -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Thống kê bài đăng"
-                android:textColor="@color/text_primary"
-                android:textSize="@dimen/text_lg"
-                android:textStyle="bold" />
-
-            <androidx.cardview.widget.CardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_sm"
-                app:cardBackgroundColor="@color/surface"
-                app:cardCornerRadius="@dimen/radius_lg"
-                app:cardElevation="@dimen/elevation_sm">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="@dimen/spacing_md">
-
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/rvCategoryStats"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:nestedScrollingEnabled="false" />
-
-                    <TextView
-                        android:id="@+id/tvEmptyCategories"
-                         android:layout_width="match_parent"
-                         android:layout_height="wrap_content"
-                         android:text="Chưa có dữ liệu thống kê"
-                         android:gravity="center"
-                         android:textColor="@color/text_secondary"
-                         android:visibility="gone" />
-
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
+            <!-- Statistics Section Removed -->
 
             <!-- Today's Prices Section -->
             <TextView

@@ -67,8 +67,8 @@ public class MarketFragment extends Fragment {
 
     private void initViews(View view) {
         rvPrices = view.findViewById(R.id.rvPrices);
-        rvCategoryStats = view.findViewById(R.id.rvCategoryStats);
-        tvEmptyCategories = view.findViewById(R.id.tvEmptyCategories);
+        // rvCategoryStats = view.findViewById(R.id.rvCategoryStats); // Removed
+        // tvEmptyCategories = view.findViewById(R.id.tvEmptyCategories); // Removed
         progressBar = view.findViewById(R.id.progressBar);
     }
 
@@ -77,9 +77,9 @@ public class MarketFragment extends Fragment {
         rvPrices.setLayoutManager(new LinearLayoutManager(getContext()));
         rvPrices.setAdapter(priceAdapter);
         
-        categoryStatAdapter = new CategoryStatAdapter();
-        rvCategoryStats.setLayoutManager(new LinearLayoutManager(getContext()));
-        rvCategoryStats.setAdapter(categoryStatAdapter);
+        // categoryStatAdapter = new CategoryStatAdapter();
+        // rvCategoryStats.setLayoutManager(new LinearLayoutManager(getContext()));
+        // rvCategoryStats.setAdapter(categoryStatAdapter);
     }
 
     private void loadPrices() {
@@ -89,7 +89,7 @@ public class MarketFragment extends Fragment {
             @Override
             public void onResponse(Call<ApiResponse<List<MarketPrice>>> call,
                     Response<ApiResponse<List<MarketPrice>>> response) {
-                // Keep progress bar visible if statistics loading
+                progressBar.setVisibility(View.GONE); // Hide here since we don't load stats anymore
                 
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     List<MarketPrice> prices = response.body().getData();
@@ -121,6 +121,7 @@ public class MarketFragment extends Fragment {
 
             @Override
             public void onFailure(Call<ApiResponse<List<MarketPrice>>> call, Throwable t) {
+                progressBar.setVisibility(View.GONE);
                 if (getContext() != null) {
                     Toast.makeText(getContext(), "Lỗi tải dữ liệu giá: " + t.getMessage(), Toast.LENGTH_SHORT).show();
                 }
@@ -130,44 +131,11 @@ public class MarketFragment extends Fragment {
     }
     
     private void loadStatistics() {
-        if (userApi == null) {
-             progressBar.setVisibility(View.GONE);
-             return;
-        }
-        
-        userApi.getStatistics().enqueue(new Callback<ApiResponse<StatisticsResponse>>() {
-            @Override
-            public void onResponse(Call<ApiResponse<StatisticsResponse>> call,
-                    Response<ApiResponse<StatisticsResponse>> response) {
-                progressBar.setVisibility(View.GONE);
-                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                    displayStatistics(response.body().getData());
-                } else {
-                     rvCategoryStats.setVisibility(View.GONE);
-                     tvEmptyCategories.setVisibility(View.VISIBLE);
-                }
-            }
-
-            @Override
-            public void onFailure(Call<ApiResponse<StatisticsResponse>> call, Throwable t) {
-                progressBar.setVisibility(View.GONE);
-                // Fail silently for stats part or show small toast
-            }
-        });
+        // Disabled
     }
 
     private void displayStatistics(StatisticsResponse stats) {
-        if (stats == null) return;
-        
-        // Category Stats
-        if (stats.getCategoryStats() != null && !stats.getCategoryStats().isEmpty()) {
-            categoryStatAdapter.setData(stats.getCategoryStats());
-            rvCategoryStats.setVisibility(View.VISIBLE);
-            tvEmptyCategories.setVisibility(View.GONE);
-        } else {
-            rvCategoryStats.setVisibility(View.GONE);
-            tvEmptyCategories.setVisibility(View.VISIBLE);
-        }
+        // Disabled
     }
 
     private void showDemoData() {

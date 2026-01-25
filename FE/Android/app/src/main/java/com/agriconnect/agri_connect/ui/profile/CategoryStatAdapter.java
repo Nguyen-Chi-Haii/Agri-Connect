@@ -43,7 +43,9 @@ public class CategoryStatAdapter extends RecyclerView.Adapter<CategoryStatAdapte
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         StatisticsResponse.CategoryStat stat = stats.get(position);
         holder.tvCategoryName.setText(stat.categoryName);
-        holder.tvCount.setText(stat.postCount + " bài"); // Localize this properly in real app
+        holder.tvCategoryName.setText(stat.categoryName);
+        holder.tvCount.setVisibility(View.GONE); // Hide count as requested
+        // holder.tvCount.setText(stat.postCount + " bài");
         
         int progress = (int) ((stat.postCount * 100) / maxCount);
         holder.progressBar.setProgress(progress);

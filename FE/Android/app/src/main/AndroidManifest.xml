@@ -117,6 +117,10 @@
             android:name=".MainActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".ui.notification.NotificationActivity"
+            android:exported="false" />
+
     </application>
 
 </manifest>

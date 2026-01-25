@@ -2,11 +2,14 @@ package com.agriconnect.agri_connect.ui.notification;
 
 import android.os.Bundle;
 import android.util.Log;
-import android.view.MenuItem;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -15,6 +18,7 @@ import com.agriconnect.agri_connect.R;
 import com.agriconnect.agri_connect.api.ApiClient;
 import com.agriconnect.agri_connect.api.model.ApiResponse;
 import com.agriconnect.agri_connect.api.model.Notification;
+import com.agriconnect.agri_connect.ui.main.MainNavigationActivity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,27 +27,24 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class NotificationActivity extends AppCompatActivity {
+public class NotificationFragment extends Fragment {
 
     private SwipeRefreshLayout swipeRefreshLayout;
     private RecyclerView recyclerView;
     private NotificationAdapter adapter;
 
+    @Nullable
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_notification);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_notification, container, false);
+    }
 
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        if (getSupportActionBar() != null) {
-            // Remove back arrow to make it look like an independent activity
-            getSupportActionBar().setDisplayHomeAsUpEnabled(false);
-            getSupportActionBar().setDisplayShowHomeEnabled(false);
-        }
-
-        swipeRefreshLayout = findViewById(R.id.swipe_refresh);
-        recyclerView = findViewById(R.id.rv_notifications);
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        
+        swipeRefreshLayout = view.findViewById(R.id.swipe_refresh);
+        recyclerView = view.findViewById(R.id.rv_notifications);
         
         setupRecyclerView();
         loadNotifications();
@@ -53,42 +54,38 @@ public class NotificationActivity extends AppCompatActivity {
     
     private void setupRecyclerView() {
         adapter = new NotificationAdapter(this::onNotificationClick);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(adapter);
     }
     
     private void onNotificationClick(Notification notification) {
         try {
-            if (notification == null) {
-                Log.e("Notification", "Clicked notification is null");
-                return;
-            }
-            
-            if (notification.getId() == null) {
-                Log.e("Notification", "Notification ID is null for read mark");
-                // Still allow UI interaction if needed, but skip API call
-                return;
-            }
+            if (notification == null) return;
+            if (notification.getId() == null) return;
 
             if (!notification.isRead()) {
                 markAsRead(notification);
-            } else {
-                // Already read
             }
         } catch (Exception e) {
-            Log.e("Notification", "Error processing notification click", e);
-            Toast.makeText(this, "An error occurred", Toast.LENGTH_SHORT).show();
+            Log.e("Notification", "Error processing click", e);
         }
     }
     
     private void markAsRead(Notification notification) {
-        ApiClient.getInstance(this).getNotificationApi().markAsRead(notification.getId())
+        if (getContext() == null) return;
+        
+        ApiClient.getInstance(getContext()).getNotificationApi().markAsRead(notification.getId())
             .enqueue(new Callback<ApiResponse<Void>>() {
                 @Override
                 public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
                     if (response.isSuccessful()) {
                         notification.setRead(true);
                         adapter.notifyDataSetChanged();
+                        
+                        // Update badge in parent activity
+                        if (getActivity() instanceof MainNavigationActivity) {
+                            ((MainNavigationActivity) getActivity()).fetchBadgeCounts(); // Helper to refresh badge
+                        }
                     }
                 }
 
@@ -100,8 +97,10 @@ public class NotificationActivity extends AppCompatActivity {
     }
 
     private void loadNotifications() {
+        if (getContext() == null) return;
+        
         swipeRefreshLayout.setRefreshing(true);
-        ApiClient.getInstance(this).getNotificationApi().getNotifications()
+        ApiClient.getInstance(getContext()).getNotificationApi().getNotifications()
                 .enqueue(new Callback<ApiResponse<List<Notification>>>() {
                     @Override
                     public void onResponse(Call<ApiResponse<List<Notification>>> call, Response<ApiResponse<List<Notification>>> response) {
@@ -113,25 +112,24 @@ public class NotificationActivity extends AppCompatActivity {
                             } else {
                                 adapter.setNotifications(new ArrayList<>());
                             }
+                            
+                            // Once loaded, we can clear the badge since the user has seen the list
+                             if (getActivity() instanceof MainNavigationActivity) {
+                                ((MainNavigationActivity) getActivity()).clearNotificationBadge();
+                            }
+                            
                         } else {
-                            Toast.makeText(NotificationActivity.this, "Failed to load notifications", Toast.LENGTH_SHORT).show();
+                            if (getContext() != null)
+                                Toast.makeText(getContext(), "Failed to load notifications", Toast.LENGTH_SHORT).show();
                         }
                     }
 
                     @Override
                     public void onFailure(Call<ApiResponse<List<Notification>>> call, Throwable t) {
                         swipeRefreshLayout.setRefreshing(false);
-                        Toast.makeText(NotificationActivity.this, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                        if (getContext() != null)
+                            Toast.makeText(getContext(), "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {
-            finish();
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
     }
 }
